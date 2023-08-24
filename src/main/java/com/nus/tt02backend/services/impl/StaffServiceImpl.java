@@ -6,6 +6,8 @@ import com.nus.tt02backend.models.Staff;
 import com.nus.tt02backend.repositories.StaffRepository;
 import com.nus.tt02backend.services.StaffService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,13 +16,14 @@ import java.util.List;
 public class StaffServiceImpl implements StaffService {
     @Autowired
     StaffRepository staffRepository;
+    PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public Staff staffLogin(String email, String password) throws NotFoundException, BadRequestException {
         List<Staff> staffs = retrieveAllStaff();
 
         for (Staff staff : staffs) {
             if (staff.getEmail().equals(email)) {
-                if (staff.getPassword().equals(password)) {
+                if (encoder.matches(password, staff.getPassword())) {
                     return staff;
                 } else {
                     throw new BadRequestException("Incorrect password");
@@ -53,6 +56,7 @@ public class StaffServiceImpl implements StaffService {
             }
         }
 
+        staffToCreate.setPassword(encoder.encode(staffToCreate.getPassword()));
         staffRepository.save(staffToCreate);
         return staffToCreate.getStaff_id();
     }

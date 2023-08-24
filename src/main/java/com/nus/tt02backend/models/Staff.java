@@ -20,6 +20,6 @@ public class Staff {
     @Column(nullable = false, unique = true, length = 128)
     private String email;
 
-    @Column(columnDefinition = "CHAR(32) NOT NULL")
+    @Column(nullable = false)
     private String password;
 }
