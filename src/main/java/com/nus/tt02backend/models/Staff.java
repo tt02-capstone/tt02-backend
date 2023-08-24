@@ -12,10 +12,10 @@ import lombok.*;
 public class Staff {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long staffId;
+    private Long staff_id;
 
     @Column(nullable = false, length = 128)
-    private String staffName;
+    private String staff_name;
 
     @Column(nullable = false, unique = true, length = 128)
     private String email;

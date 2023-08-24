@@ -32,12 +32,12 @@ public class StaffServiceImpl implements StaffService {
     }
 
     public void updateStaff(Staff staffToUpdate) throws NotFoundException {
-        Staff staff = staffRepository.findById((staffToUpdate.getStaffId()))
+        Staff staff = staffRepository.findById((staffToUpdate.getStaff_id()))
                 .orElseThrow(() -> new NotFoundException("Staff not found"));
 
         if (staff.getEmail().equals(staffToUpdate.getEmail())) {
-            if (staffToUpdate.getStaffName() != null && !staffToUpdate.getStaffName().isEmpty()) {
-                staff.setStaffName(staffToUpdate.getStaffName());
+            if (staffToUpdate.getStaff_name() != null && !staffToUpdate.getStaff_name().isEmpty()) {
+                staff.setStaff_name(staffToUpdate.getStaff_name());
             }
         }
 
@@ -54,7 +54,7 @@ public class StaffServiceImpl implements StaffService {
         }
 
         staffRepository.save(staffToCreate);
-        return staffToCreate.getStaffId();
+        return staffToCreate.getStaff_id();
     }
 
     public List<Staff> retrieveAllStaff() {
