@@ -1,4 +1,4 @@
-package com.nus.tt02backend.exception;
+package com.nus.tt02backend.exceptions;
 
 import lombok.NoArgsConstructor;
 

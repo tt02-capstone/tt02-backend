@@ -1,4 +1,4 @@
-package com.nus.tt02backend.exception;
+package com.nus.tt02backend.exceptions;
 
 import com.nus.tt02backend.models.ErrorResponse;
 import org.springframework.http.HttpStatus;

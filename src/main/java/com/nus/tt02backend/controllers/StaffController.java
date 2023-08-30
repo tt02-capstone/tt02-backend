@@ -1,7 +1,7 @@
 package com.nus.tt02backend.controllers;
 
-import com.nus.tt02backend.exception.BadRequestException;
-import com.nus.tt02backend.exception.NotFoundException;
+import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Staff;
 import com.nus.tt02backend.services.impl.StaffServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
