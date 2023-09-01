@@ -7,24 +7,22 @@ import jakarta.persistence.Id;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
+
 @Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TourType {
+public class CartItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long tour_type_id;
+    private Long cart_item_id;
+    private Integer quality;
+    private String discountCode;
     private BigDecimal price;
-    private String description;
-    private String image;
-    private Integer recommended_pax;
 
-    private String special_note;
-    private String estimated_duration;
-    private Boolean is_published;
+//    private TicketEnum ticket_type;
+
 }

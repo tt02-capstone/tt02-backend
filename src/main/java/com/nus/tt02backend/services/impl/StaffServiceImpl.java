@@ -2,7 +2,7 @@ package com.nus.tt02backend.services.impl;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.models.Staff;
+import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.repositories.StaffRepository;
 import com.nus.tt02backend.services.StaffService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,50 +18,50 @@ public class StaffServiceImpl implements StaffService {
     StaffRepository staffRepository;
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public Staff staffLogin(String email, String password) throws NotFoundException, BadRequestException {
-        List<Staff> staffs = retrieveAllStaff();
+    public InternalStaff staffLogin(String email, String password) throws NotFoundException, BadRequestException {
+        List<InternalStaff> internalStaffs = retrieveAllStaff();
 
-        for (Staff staff : staffs) {
-            if (staff.getEmail().equals(email)) {
-                if (encoder.matches(password, staff.getPassword())) {
-                    return staff;
+        for (InternalStaff internalStaff : internalStaffs) {
+            if (internalStaff.getEmail().equals(email)) {
+                if (encoder.matches(password, internalStaff.getPassword())) {
+                    return internalStaff;
                 } else {
                     throw new BadRequestException("Incorrect password");
                 }
             }
         }
 
-        throw new NotFoundException("Staff account not found");
+        throw new NotFoundException("InternalStaff account not found");
     }
 
-    public void updateStaff(Staff staffToUpdate) throws NotFoundException {
-        Staff staff = staffRepository.findById((staffToUpdate.getStaff_id()))
-                .orElseThrow(() -> new NotFoundException("Staff not found"));
+    public void updateStaff(InternalStaff internalStaffToUpdate) throws NotFoundException {
+        InternalStaff internalStaff = staffRepository.findById((internalStaffToUpdate.getUser_id()))
+                .orElseThrow(() -> new NotFoundException("InternalStaff not found"));
 
-        if (staff.getEmail().equals(staffToUpdate.getEmail())) {
-            if (staffToUpdate.getStaff_name() != null && !staffToUpdate.getStaff_name().isEmpty()) {
-                staff.setStaff_name(staffToUpdate.getStaff_name());
+        if (internalStaff.getEmail().equals(internalStaffToUpdate.getEmail())) {
+            if (internalStaffToUpdate.getUser_id() != null && !internalStaffToUpdate.getName().isEmpty()) {
+                internalStaff.setName(internalStaffToUpdate.getName());
             }
         }
 
-        staffRepository.save(staff);
+        staffRepository.save(internalStaff);
     }
 
-    public Long createStaff(Staff staffToCreate) throws BadRequestException {
-        List<Staff> staffs = retrieveAllStaff();
+    public Long createStaff(InternalStaff internalStaffToCreate) throws BadRequestException {
+        List<InternalStaff> internalStaffs = retrieveAllStaff();
 
-        for (Staff staff : staffs) {
-            if (staff.getEmail().equals(staffToCreate.getEmail())) {
-                throw new BadRequestException("Staff email exists");
+        for (InternalStaff internalStaff : internalStaffs) {
+            if (internalStaff.getEmail().equals(internalStaffToCreate.getEmail())) {
+                throw new BadRequestException("InternalStaff email exists");
             }
         }
 
-        staffToCreate.setPassword(encoder.encode(staffToCreate.getPassword()));
-        staffRepository.save(staffToCreate);
-        return staffToCreate.getStaff_id();
+        internalStaffToCreate.setPassword(encoder.encode(internalStaffToCreate.getPassword()));
+        staffRepository.save(internalStaffToCreate);
+        return internalStaffToCreate.getUser_id();
     }
 
-    public List<Staff> retrieveAllStaff() {
+    public List<InternalStaff> retrieveAllStaff() {
         return staffRepository.findAll();
     }
 }

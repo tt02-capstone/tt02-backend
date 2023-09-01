@@ -1,6 +1,9 @@
 package com.nus.tt02backend.models;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -11,10 +14,10 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Tourist extends User {
+public class Local extends User {
 
-    @Column(nullable = false, length = 10)
-    private String passport_num;
+    @Column(nullable = false, length = 9)
+    private String nric_num;
 
     @Column(nullable = false)
     private Date date_of_birth;

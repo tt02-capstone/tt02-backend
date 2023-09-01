@@ -6,25 +6,22 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+
+
 @Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TourType {
+public class WithdrawBalanceRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long tour_type_id;
-    private BigDecimal price;
-    private String description;
-    private String image;
-    private Integer recommended_pax;
+    private Long withdraw_balance_request_id;
 
-    private String special_note;
-    private String estimated_duration;
-    private Boolean is_published;
+    private BigInteger amount;
+//    private StatusEnum withdraw_balance_status;
 }

@@ -1,30 +1,26 @@
 package com.nus.tt02backend.models;
 
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.Date;
+
 @Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TourType {
-
+public class Reply {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long tour_type_id;
-    private BigDecimal price;
-    private String description;
-    private String image;
-    private Integer recommended_pax;
+    private Long reply_id;
 
-    private String special_note;
-    private String estimated_duration;
-    private Boolean is_published;
+    private Date date_replied;
+    private String message;
+
 }

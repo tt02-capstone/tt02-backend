@@ -1,11 +1,12 @@
 package com.nus.tt02backend.models;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
 
 @Data
 @Entity
@@ -18,13 +19,17 @@ public class Deals {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long deal_id;
 
-//    discount_percent: Integer
-//+start_datetime: DateTime
-//+end_datetime: DateTime
-//+promo_code : String
-//+is_govt_voucher : Boolean
-//+image : String
-//+is_published : boolean
-//+publish_date : Date
-//+deal_type: DealCategoryEnum
+    private Integer discount_percent;
+    private LocalDateTime start_datetime;
+    private LocalDateTime end_datetime;
+    private String promo_code;
+    private Boolean is_govt_voucher;
+
+    @ElementCollection
+    @CollectionTable(name="image_list")
+    private ArrayList<String> image_list = new ArrayList<>();
+    private Boolean is_published;
+    private Date publish_date;
+//    private DealCategoryEnum deal_type;
+
 }

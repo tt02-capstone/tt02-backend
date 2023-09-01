@@ -6,8 +6,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 @Data
 @Entity
@@ -15,11 +13,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Attraction {
+public class Accommodation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long attraction_id;
+    private Long accommodation_id;
 
     @Column(nullable = false, length = 128)
     private String name;
@@ -30,18 +28,18 @@ public class Attraction {
     @OneToOne
     @JoinColumn(name = "address_id")
     private Address address;
-    private String opening_hours;
-    private String age_group;
+
     private String contact_num;
 
+    private LocalDateTime start_datetime;
+    private LocalDateTime end_datetime;
+
     @ElementCollection
-    @CollectionTable(name="image")
-    private ArrayList<String> image_list = new ArrayList<String>();;
+    @CollectionTable(name="image_list")
+    private ArrayList<String> image_list = new ArrayList<>();;
     private Boolean is_published;
-    private Integer suggested_duration;
-//    private AttractionCategory attraction_category;
+//    private AccomodationTypeEnum type;
 //    private GenericLocation generic_location;
 //    private PriceTierEnum estimated_price_tier;
-//    private RatingEnum avg_rating_tier;
 
 }

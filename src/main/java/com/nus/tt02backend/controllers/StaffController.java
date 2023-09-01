@@ -2,7 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.models.Staff;
+import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.services.impl.StaffServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,21 +16,21 @@ public class StaffController {
     StaffServiceImpl staffService;
 
     @PostMapping("/staffLogin/{email}/{password}")
-    public ResponseEntity<Staff> staffLogin(@PathVariable String email, @PathVariable String password)
+    public ResponseEntity<InternalStaff> staffLogin(@PathVariable String email, @PathVariable String password)
             throws NotFoundException, BadRequestException {
-        Staff staff = staffService.staffLogin(email, password);
-        return ResponseEntity.ok(staff);
+        InternalStaff internalStaff = staffService.staffLogin(email, password);
+        return ResponseEntity.ok(internalStaff);
     }
 
     @PutMapping ("/updateStaff")
-    public ResponseEntity<Void> staffLogin(@RequestBody Staff staffToUpdate) throws NotFoundException {
-        staffService.updateStaff(staffToUpdate);
+    public ResponseEntity<Void> staffLogin(@RequestBody InternalStaff internalStaffToUpdate) throws NotFoundException {
+        staffService.updateStaff(internalStaffToUpdate);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping ("/createStaff")
-    public ResponseEntity<Long> createStaff(@RequestBody Staff staffToCreate) throws BadRequestException {
-        Long staffId = staffService.createStaff(staffToCreate);
+    public ResponseEntity<Long> createStaff(@RequestBody InternalStaff internalStaffToCreate) throws BadRequestException {
+        Long staffId = staffService.createStaff(internalStaffToCreate);
         return ResponseEntity.ok(staffId);
     }
 }

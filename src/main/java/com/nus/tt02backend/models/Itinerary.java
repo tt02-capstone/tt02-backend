@@ -1,13 +1,11 @@
 package com.nus.tt02backend.models;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 
 @Data
@@ -28,4 +26,6 @@ public class Itinerary {
     private Integer number_of_pax;
     private String remarks;
 
+    @OneToMany(mappedBy = "itinerary")
+    private ArrayList<Booking> booking_list= new ArrayList<>();
 }

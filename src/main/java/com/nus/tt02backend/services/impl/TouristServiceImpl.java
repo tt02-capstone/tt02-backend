@@ -36,12 +36,12 @@ public class TouristServiceImpl implements TouristService {
     }
 
     public void updateTourist(Tourist touristToUpdate) throws NotFoundException {
-        Tourist tourist = touristRepository.findById((touristToUpdate.getTourist_id()))
+        Tourist tourist = touristRepository.findById((touristToUpdate.getUser_id()))
                 .orElseThrow(() -> new NotFoundException("Rourist not found"));
 
         if (tourist.getEmail().equals(touristToUpdate.getEmail())) {
-            if (touristToUpdate.getTourist_name() != null && !touristToUpdate.getTourist_name().isEmpty()) {
-                tourist.setTourist_name(touristToUpdate.getTourist_name());
+            if (touristToUpdate.getName() != null && !touristToUpdate.getName().isEmpty()) {
+                tourist.setName(touristToUpdate.getName());
             }
         }
 
@@ -59,7 +59,7 @@ public class TouristServiceImpl implements TouristService {
 
         touristToCreate.setPassword(encoder.encode(touristToCreate.getPassword()));
         touristRepository.save(touristToCreate);
-        return touristToCreate.getTourist_id();
+        return touristToCreate.getUser_id();
     }
 
     public List<Tourist> retrieveAllTourist() {

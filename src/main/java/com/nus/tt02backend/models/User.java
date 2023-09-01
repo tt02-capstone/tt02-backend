@@ -9,17 +9,26 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Staff {
+@Inheritance
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long staff_id;
+    private Long user_id;
 
     @Column(nullable = false, length = 128)
-    private String staff_name;
+    private String name;
 
     @Column(nullable = false, unique = true, length = 128)
     private String email;
 
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private Boolean is_blocked;
+
+    @OneToOne
+    @JoinColumn(name = "address_id")
+    private Address address;
+
 }
