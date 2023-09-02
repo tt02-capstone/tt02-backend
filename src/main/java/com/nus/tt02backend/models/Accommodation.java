@@ -1,11 +1,14 @@
 package com.nus.tt02backend.models;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
+import com.nus.tt02backend.models.enums.AccommodationTypeEnum;
+import com.nus.tt02backend.models.enums.GenericLocationEnum;
+import com.nus.tt02backend.models.enums.PriceTierEnum;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.*;
 
 @Data
 @Entity
@@ -25,21 +28,25 @@ public class Accommodation {
     @Column(nullable = false, length = 400)
     private String description;
 
-    @OneToOne
-    @JoinColumn(name = "address_id")
-    private Address address;
-
     private String contact_num;
-
-    private LocalDateTime start_datetime;
-    private LocalDateTime end_datetime;
 
     @ElementCollection
     @CollectionTable(name="image_list")
-    private ArrayList<String> image_list = new ArrayList<>();;
-    private Boolean is_published;
-//    private AccomodationTypeEnum type;
-//    private GenericLocation generic_location;
-//    private PriceTierEnum estimated_price_tier;
+    private List<String> image_list = new ArrayList<>();;
 
+    public Boolean is_published;
+
+    private LocalDateTime check_in_time;
+
+    private LocalDateTime check_out_time;
+
+    private AccommodationTypeEnum type;
+
+    private GenericLocationEnum generic_location;
+
+    private PriceTierEnum estimated_price_tier;
+
+    @OneToOne
+    @JoinColumn(name = "address_id")
+    private Address address;
 }

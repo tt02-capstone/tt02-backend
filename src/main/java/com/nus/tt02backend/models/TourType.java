@@ -19,12 +19,20 @@ public class TourType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tour_type_id;
+
     private BigDecimal price;
+
+    private String name;
+
     private String description;
+
     private String image;
+
     private Integer recommended_pax;
 
     private String special_note;
-    private String estimated_duration;
+
+    private Integer estimated_duration;
+
     private Boolean is_published;
 }

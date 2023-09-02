@@ -19,12 +19,16 @@ public class SeasonalActivity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long activity_id;
+    private Long seasonal_activity_id;
+
     private String name;
 
     @Column(nullable = false, length = 400)
     private String description;
+
     private LocalDateTime start_datetime;
+
     private LocalDateTime end_datetime;
+
     private Integer suggested_duration;
 }

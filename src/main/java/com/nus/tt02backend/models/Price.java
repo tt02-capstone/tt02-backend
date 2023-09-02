@@ -1,12 +1,10 @@
 package com.nus.tt02backend.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import com.nus.tt02backend.models.enums.TicketEnum;
 
 @Data
 @Entity
@@ -18,10 +16,13 @@ public class Price {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long itinerary_id;
     private Long price_id;
-    private BigDecimal local_amount;
-    private BigDecimal tourist_amount;
-//    private TicketEnum ticket_type;
 
+    @Column(nullable = false)
+    private BigDecimal local_amount;
+
+    @Column(nullable = false)
+    private BigDecimal tourist_amount;
+
+    private TicketEnum ticket_type;
 }

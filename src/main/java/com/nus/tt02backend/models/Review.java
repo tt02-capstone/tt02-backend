@@ -22,10 +22,12 @@ public class Review {
     private Long review_id;
 
     private LocalDateTime datetime;
-    private String title;
-    private String content;
-    private String image;
-//    private Tourist user;
-    private BigDecimal rating;
 
+    private String title;
+
+    private String content;
+
+    private String image;
+
+    private BigDecimal rating;
 }
