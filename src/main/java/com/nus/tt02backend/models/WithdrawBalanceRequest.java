@@ -1,13 +1,9 @@
 package com.nus.tt02backend.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigInteger;
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 
 @Data
@@ -22,6 +18,9 @@ public class WithdrawBalanceRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long withdraw_balance_request_id;
 
-    private BigInteger amount;
-//    private StatusEnum withdraw_balance_status;
+    @Column(nullable = false)
+    private BigDecimal amount;
+
+    @Column(nullable = false)
+    private Boolean is_approved;
 }

@@ -1,11 +1,11 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
+import com.nus.tt02backend.models.enums.VendorEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
 
 @Data
 @Entity
@@ -23,9 +23,6 @@ public class Vendor {
     private String business_name;
 
     @Column(nullable = false)
-    private Date date_of_birth;
-
-    @Column(nullable = false)
     private String poc_name;
 
     @Column(nullable = false)
@@ -37,12 +34,17 @@ public class Vendor {
     @Column(nullable = false)
     private String poc_mobile_num;
 
-//    private ApplicationStatusEnum application_status;
-//
-//    private VendorEnum vendor_type;
-
     @Column(nullable = false)
     private BigDecimal wallet_balance;
+
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatusEnum application_status;
+
+    @Enumerated(EnumType.STRING)
+    private VendorEnum vendor_type;
+
+    @Column(nullable = false)
+    private String service_description;
 
     @ManyToOne
     private Subscription subscription;

@@ -16,10 +16,10 @@ public class Address {
     private Long address_id;
 
     @Column(nullable = false)
-    private String street;
+    private String address_line_1;
 
     @Column(nullable = false)
-    private String unit_num;
+    private String address_line_2;
 
     @Column(nullable = false)
     private String postal_code;

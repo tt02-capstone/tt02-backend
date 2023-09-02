@@ -1,10 +1,8 @@
 package com.nus.tt02backend.models;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.nus.tt02backend.models.enums.BankEnum;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -19,8 +17,14 @@ import lombok.NoArgsConstructor;
 public class BankAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bank_id;
+    private Long bank_account_id;
 
+    @Enumerated(EnumType.STRING)
+    private BankEnum bank_name;
+
+    @Column(nullable = false)
     private String account_holder_name;
+
+    @Column(nullable = false)
     private String bank_account_num;
 }

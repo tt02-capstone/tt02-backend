@@ -3,7 +3,6 @@ package com.nus.tt02backend.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -24,7 +23,4 @@ public class Tourist extends User {
 
     @Column(nullable = false)
     private String mobile_num;
-
-    @Column(nullable = false)
-    private BigDecimal wallet_balance;
 }
