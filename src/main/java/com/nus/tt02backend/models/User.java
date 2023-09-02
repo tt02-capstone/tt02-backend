@@ -27,8 +27,7 @@ public class User {
     @Column(nullable = false)
     private Boolean is_blocked;
 
-    @OneToOne
-    @JoinColumn(name = "address_id")
+    @OneToOne(fetch = FetchType.LAZY)
     private Address address;
 
 }

@@ -18,7 +18,7 @@ public class WithdrawBalanceRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long withdraw_balance_request_id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
     @Column(nullable = false)

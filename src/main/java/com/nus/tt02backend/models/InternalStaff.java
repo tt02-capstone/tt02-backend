@@ -11,10 +11,11 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false)
 public class InternalStaff extends User {
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 8)
     private String staff_num;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private InternalRoleEnum role;
 
 }

@@ -18,14 +18,14 @@ public class Card {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long card_id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 16)
     private String card_num;
 
     private String hidden_card_num;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2)
     private String expiry_month;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2)
     private String expiry_year;
 }

@@ -13,9 +13,9 @@ public class VendorStaff extends User {
     @Column(nullable = false)
     private Boolean is_master_account;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 128)
     private String position;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Vendor vendor;
 }

@@ -22,9 +22,9 @@ public class BankAccount {
     @Enumerated(EnumType.STRING)
     private BankEnum bank_name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 128)
     private String account_holder_name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 17)
     private String bank_account_num;
 }

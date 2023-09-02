@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Entity
@@ -22,19 +23,19 @@ public class Vendor {
     @Column(nullable = false, length = 128)
     private String business_name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 128)
     private String poc_name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 128)
     private String poc_position;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 4)
     private String country_code;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 13)
     private String poc_mobile_num;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal wallet_balance;
 
     @Enumerated(EnumType.STRING)
@@ -45,6 +46,15 @@ public class Vendor {
 
     @Column(nullable = false)
     private String service_description;
+
+    @OneToMany(mappedBy = "vendor")
+    private List<VendorStaff> vendor_staff_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<WithdrawBalanceRequest> withdrawal_list;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private BankAccount bank_account;
 
     @ManyToOne
     private Subscription subscription;

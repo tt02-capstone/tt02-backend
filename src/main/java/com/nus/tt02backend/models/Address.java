@@ -15,19 +15,19 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long address_id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 128)
     private String address_line_1;
 
-    @Column(nullable = false)
+    @Column(length = 128)
     private String address_line_2;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 6)
     private String postal_code;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 85)
     private String city;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 56)
     private String country;
 
     @OneToOne

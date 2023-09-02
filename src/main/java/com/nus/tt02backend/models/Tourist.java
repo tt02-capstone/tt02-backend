@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -18,9 +19,12 @@ public class Tourist extends User {
     @Column(nullable = false)
     private Date date_of_birth;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 4)
     private String country_code;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 13)
     private String mobile_num;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Card> card_list;
 }

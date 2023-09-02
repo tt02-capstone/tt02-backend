@@ -1,13 +1,11 @@
 package com.nus.tt02backend.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -22,12 +20,21 @@ public class Local extends User {
     @Column(nullable = false)
     private Date date_of_birth;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 4)
     private String country_code;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 13)
     private String mobile_num;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal wallet_balance;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Card> card_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<WithdrawBalanceRequest> withdrawal_list;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private BankAccount bank_account;
 }
