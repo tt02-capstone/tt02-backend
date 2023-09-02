@@ -28,28 +28,4 @@ public class Tour {
         this.start_datetime = start_datetime;
         this.end_datetime = end_datetime;
     }
-
-    public Long getTour_id() {
-        return tour_id;
-    }
-
-    public void setTour_id(Long tour_id) {
-        this.tour_id = tour_id;
-    }
-
-    public LocalDateTime getStart_datetime() {
-        return start_datetime;
-    }
-
-    public void setStart_datetime(LocalDateTime start_datetime) {
-        this.start_datetime = start_datetime;
-    }
-
-    public LocalDateTime getEnd_datetime() {
-        return end_datetime;
-    }
-
-    public void setEnd_datetime(LocalDateTime end_datetime) {
-        this.end_datetime = end_datetime;
-    }
 }

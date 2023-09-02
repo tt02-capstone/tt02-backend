@@ -32,36 +32,4 @@ public class Price {
         this.tourist_amount = tourist_amount;
         this.ticket_type = ticket_type;
     }
-
-    public Long getPrice_id() {
-        return price_id;
-    }
-
-    public void setPrice_id(Long price_id) {
-        this.price_id = price_id;
-    }
-
-    public BigDecimal getLocal_amount() {
-        return local_amount;
-    }
-
-    public void setLocal_amount(BigDecimal local_amount) {
-        this.local_amount = local_amount;
-    }
-
-    public BigDecimal getTourist_amount() {
-        return tourist_amount;
-    }
-
-    public void setTourist_amount(BigDecimal tourist_amount) {
-        this.tourist_amount = tourist_amount;
-    }
-
-    public TicketEnum getTicket_type() {
-        return ticket_type;
-    }
-
-    public void setTicket_type(TicketEnum ticket_type) {
-        this.ticket_type = ticket_type;
-    }
 }
