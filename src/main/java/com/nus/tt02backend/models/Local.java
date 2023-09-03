@@ -46,4 +46,8 @@ public class Local extends User {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Badge> badge_list;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Itinerary itinerary;
+
 }
