@@ -11,42 +11,41 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-
+@Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+
 public class Post {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long post_id;
-//
-//    @ManyToOne(mappedBy = "comment_list")
-//    @Column(nullable = false, unique = true)
-//    private Tourist user;
 
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private Long downvote;
+    @ElementCollection
+    @CollectionTable(name="image_list")
+    private ArrayList<String> image_list = new ArrayList<>();
 
     @Column(nullable = false)
-    private Long upvote;
-
     private LocalDateTime publish_time;
 
     @Column(nullable = false)
     private LocalDateTime updated_time;
 
+    @Column(nullable = false)
+    private Integer upvote;
+
+    @Column(nullable = false)
+    private Integer downvote;
+
     @ManyToOne
     @JoinColumn(name="category_item_id")
     private CategoryItem category_item;
-
-    @ElementCollection
-    @CollectionTable(name="image_list")
-    private ArrayList<String> image_list = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "tourist_id")
@@ -63,4 +62,7 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "internal_staff_id")
     private InternalStaff internal_staff_user;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "post")
+    private List<Comment> comment_list;
 }

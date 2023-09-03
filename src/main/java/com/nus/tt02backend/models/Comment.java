@@ -10,29 +10,27 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-
+@Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+
 public class Comment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long comment_id;
 
-    private Long parent_id;
-
-//    @Column(nullable = false, unique = true)
-//    private Post post:
-
-    @Column(nullable = false, unique = true)
-    private Long upvote;
-
-    @Column(nullable = false, unique = true)
-    private Long downvote;
-
+    @Column(nullable = false)
     private String content;
+
+    @Column(nullable = false)
+    private Integer upvote;
+
+    @Column(nullable = false)
+    private Integer downvote;
 
     @Column(nullable = false)
     private LocalDateTime publish_time;
@@ -46,6 +44,18 @@ public class Comment {
 
     @OneToMany
     private ArrayList<Report> reported_comment_list = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    @Column(nullable = false)
+    private Post post;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_comment_id")
+    private Comment parent_comment;
+
+    @OneToMany(mappedBy = "parent_comment")
+    private List<Comment> child_comment_list = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "tourist_id")

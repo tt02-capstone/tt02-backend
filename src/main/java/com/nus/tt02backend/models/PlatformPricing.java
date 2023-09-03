@@ -14,15 +14,17 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+
 public class PlatformPricing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long pricing_platform_id;
+    private Long platform_pricing_id;
 
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal subscription_fee;
-    private BigDecimal commission_percentage;
 
-//    private TicketEnum ticket_type;
+    @Column(nullable = false, precision = 3, scale = 3)
+    private BigDecimal commission_percentage;
 
 }

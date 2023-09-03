@@ -14,15 +14,18 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+
 public class Subscription {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long subscription_id;
 
+    @Column(nullable = false)
     private Date subscription_expiry_date;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private SubscriptionPlanEnum subscription_plan;
 
 }

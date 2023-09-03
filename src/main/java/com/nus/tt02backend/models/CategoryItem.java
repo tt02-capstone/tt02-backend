@@ -10,22 +10,25 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-
+@Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+
 public class CategoryItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long category_item_id;
 
+    @Column(nullable = false, unique = true, length = 128)
+    private String name;
+
     private String image;
 
-    private LocalDateTime publish_time;
-
-    @OneToMany(mappedBy = "category_item")
-    private ArrayList<Post> post_list = new ArrayList<Post>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private ArrayList<Post> post_list = new ArrayList<>();
 
 }

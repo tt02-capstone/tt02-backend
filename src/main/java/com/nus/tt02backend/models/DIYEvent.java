@@ -12,6 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+
 public class DIYEvent {
 
     @Id
@@ -22,8 +23,29 @@ public class DIYEvent {
     private String name;
 
     private LocalDateTime start_datetime;
+
     private LocalDateTime end_datetime;
+
     private String location;
+
     private String remarks;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Deals deal;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Telecom telecom;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private TourType tourtype;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Accommodation accommodation;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Attraction attraction;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Restaurant restaurant;
 
 }

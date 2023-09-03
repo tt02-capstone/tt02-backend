@@ -15,18 +15,28 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+
 public class Itinerary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long itinerary_id;
 
+    @Column(nullable = false)
     private Date start_date;
 
+    @Column(nullable = false)
     private Date end_date;
+
     private Integer number_of_pax;
+
+    @Column(nullable = false)
     private String remarks;
 
     @OneToMany(fetch = FetchType.LAZY)
+    private List<DIYEvent> diy_event_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
     private List<Booking> booking_list;
+
 }
