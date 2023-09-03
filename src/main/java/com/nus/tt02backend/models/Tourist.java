@@ -27,4 +27,13 @@ public class Tourist extends User {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Card> card_list;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tourist_user")
+    private List<Comment> comment_list;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tourist_user")
+    private List<Post> post_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Badge> badge_list;
 }

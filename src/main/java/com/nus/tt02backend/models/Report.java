@@ -29,9 +29,9 @@ public class Report {
 
 //    private ReasonTypeEnum reason_type;
 
-    @ManyToOne
+    @OneToOne(fetch = FetchType.LAZY)
     private Comment reported_comment;
 
-    @ManyToOne
+    @OneToOne(fetch = FetchType.LAZY)
     private Post reported_post;
 }

@@ -56,7 +56,12 @@ public class Vendor {
     @OneToOne(fetch = FetchType.LAZY)
     private BankAccount bank_account;
 
-    @ManyToOne
+    @OneToOne(fetch = FetchType.LAZY)
     private Subscription subscription;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendor_user")
+    private List<Comment> comment_list;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendor_user")
+    private List<Post> post_list;
 }

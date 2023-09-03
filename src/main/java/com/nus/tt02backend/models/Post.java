@@ -46,9 +46,21 @@ public class Post {
 
     @ElementCollection
     @CollectionTable(name="image_list")
-    private ArrayList<String> image_list = new ArrayList<>();;
+    private ArrayList<String> image_list = new ArrayList<>();
 
-    @Column(nullable = false)
-    @OneToMany
-    private ArrayList<Report> reported_post_list = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "tourist_id")
+    private Tourist tourist_user;
+
+    @ManyToOne
+    @JoinColumn(name = "local_id")
+    private Local local_user;
+
+    @ManyToOne
+    @JoinColumn(name = "vendor_id")
+    private Vendor vendor_user;
+
+    @ManyToOne
+    @JoinColumn(name = "internal_staff_id")
+    private InternalStaff internal_staff_user;
 }

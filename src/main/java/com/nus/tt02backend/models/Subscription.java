@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.SubscriptionPlanEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,10 +20,9 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long subscription_id;
 
-//    private SubscriptionPlanEnum subscription_plan;
     private Date subscription_expiry_date;
 
-    @OneToMany(mappedBy = "subscription")
-    private ArrayList<Vendor> vendor_list = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    private SubscriptionPlanEnum subscription_plan;
 
 }

@@ -37,4 +37,13 @@ public class Local extends User {
 
     @OneToOne(fetch = FetchType.LAZY)
     private BankAccount bank_account;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "local_user")
+    private List<Comment> comment_list;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "local_user")
+    private List<Post> post_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Badge> badge_list;
 }

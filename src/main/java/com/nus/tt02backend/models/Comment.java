@@ -25,10 +25,6 @@ public class Comment {
 
 //    @Column(nullable = false, unique = true)
 //    private Post post:
-//
-//    @ManyToOne(mappedBy = "comment_list")
-//    @Column(nullable = false, unique = true)
-//    private Tourist user;
 
     @Column(nullable = false, unique = true)
     private Long upvote;
@@ -50,4 +46,20 @@ public class Comment {
 
     @OneToMany
     private ArrayList<Report> reported_comment_list = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "tourist_id")
+    private Tourist tourist_user;
+
+    @ManyToOne
+    @JoinColumn(name = "local_id")
+    private Local local_user;
+
+    @ManyToOne
+    @JoinColumn(name = "vendor_id")
+    private Vendor vendor_user;
+
+    @ManyToOne
+    @JoinColumn(name = "internal_staff_id")
+    private InternalStaff internal_staff_user;
 }
