@@ -1,9 +1,6 @@
 package com.nus.tt02backend.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -23,6 +20,22 @@ public class CartItem {
     private String discountCode;
     private BigDecimal price;
 
-//    private TicketEnum ticket_type;
+    @OneToOne(fetch = FetchType.LAZY)
+    private Deals deal;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Telecom telecom;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Tour tour;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Room room;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Attraction attraction;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Restaurant restaurant;
 
 }

@@ -1,10 +1,7 @@
 package com.nus.tt02backend.models;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
@@ -23,4 +20,15 @@ public class Reply {
     private Date date_replied;
     private String message;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    private Tourist tourist_user;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Local local_user;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private VendorStaff vendor_staff_user;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private InternalStaff internal_staff_user;
 }

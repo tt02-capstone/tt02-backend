@@ -1,14 +1,13 @@
 package com.nus.tt02backend.models;
 
 
-import com.nus.tt02backend.models.enums.BookingStatusEnum;
-import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.SupportTicketCategoryEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -19,7 +18,7 @@ import java.util.Date;
 public class SupportTicket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ticket_id;
+    private Long support_ticket_id;
 
     private String description;
 
@@ -27,5 +26,11 @@ public class SupportTicket {
 
     @Enumerated(EnumType.STRING)
     private SupportTicketCategoryEnum ticket_category;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Reply> reply_list;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Booking booking;
 
 }

@@ -37,6 +37,21 @@ public class Booking {
     @OneToOne(mappedBy = "booking" , fetch = FetchType.LAZY)
     private Payment payment;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    private Deals deal;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Telecom telecom;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Tour tour;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Room room;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Attraction attraction;
+
     @ManyToOne
     @JoinColumn(name = "tourist_id")
     private Tourist tourist_user;
