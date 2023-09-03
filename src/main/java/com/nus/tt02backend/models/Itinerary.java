@@ -7,6 +7,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -26,6 +27,6 @@ public class Itinerary {
     private Integer number_of_pax;
     private String remarks;
 
-    @OneToMany(mappedBy = "itinerary")
-    private ArrayList<Booking> booking_list= new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Booking> booking_list;
 }
