@@ -28,6 +28,9 @@ public class Attraction {
     private String description;
 
     @Column(nullable = false)
+    private String address;
+
+    @Column(nullable = false)
     private String opening_hours;
 
     @Column(nullable = false)
@@ -74,15 +77,11 @@ public class Attraction {
     @JoinColumn(nullable = true)
     private List<TourType> tour_type_list = new ArrayList<>();
 
-    @OneToOne
-    @JoinColumn(nullable = false)
-    private Address address;
-
     public Attraction(String name, String description, String opening_hours,
                       String age_group, String contact_num, Boolean is_published,
                       Integer suggested_duration, AttractionCategoryEnum attraction_category,
                       GenericLocationEnum generic_location, PriceTierEnum estimated_price_tier,
-                      List<Price> price_list, Address address) {
+                      List<Price> price_list, String address) {
         this.name = name;
         this.description = description;
         this.opening_hours = opening_hours;

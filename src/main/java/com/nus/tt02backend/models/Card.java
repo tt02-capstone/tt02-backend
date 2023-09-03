@@ -28,4 +28,7 @@ public class Card {
 
     @Column(nullable = false, length = 2)
     private String expiry_year;
+
+    @Column(nullable = true)
+    private String billing_address;
 }

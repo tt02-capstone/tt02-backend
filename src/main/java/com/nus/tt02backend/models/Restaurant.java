@@ -24,8 +24,8 @@ public class Restaurant {
     @Column(nullable = false, length = 400)
     private String description;
 
-    @OneToOne
-    private Address address;
+    @Column(nullable = false)
+    private String address;
 
     private String opening_hours;
     private String contact_num;

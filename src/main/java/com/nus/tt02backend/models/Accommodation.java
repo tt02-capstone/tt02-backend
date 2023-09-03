@@ -28,6 +28,9 @@ public class Accommodation {
     @Column(nullable = false, length = 400)
     private String description;
 
+    @Column(nullable = false)
+    private String address;
+
     private String contact_num;
 
     @ElementCollection
@@ -56,15 +59,11 @@ public class Accommodation {
     @JoinColumn(nullable = true)
     private List<Room> room_list = new ArrayList<>();
 
-    @OneToOne
-    @JoinColumn(nullable = false)
-    private Address address;
-
     public Accommodation(String name, String description, String contact_num,
                          Boolean is_published, LocalDateTime check_in_time,
                          LocalDateTime check_out_time, AccommodationTypeEnum type,
                          GenericLocationEnum generic_location, PriceTierEnum estimated_price_tier,
-                         Address address) {
+                         String address) {
         this.name = name;
         this.description = description;
         this.contact_num = contact_num;

@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@Inheritance
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,8 +26,4 @@ public class User {
 
     @Column(nullable = false)
     private Boolean is_blocked;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    private Address address;
-
 }
