@@ -9,6 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -21,11 +22,10 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long booking_id;
 
-    @ManyToOne
-    @JoinColumn(name="itinerary_id")
-    private Itinerary itinerary;
     private LocalDateTime start_datetime;
+
     private LocalDateTime end_datetime;
+
     private Date last_update;
 
     @Enumerated(EnumType.STRING)
@@ -34,6 +34,14 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private BookingTypeEnum type;
 
-    @OneToOne(mappedBy = "booking")
+    @OneToOne(mappedBy = "booking" , fetch = FetchType.LAZY)
     private Payment payment;
+
+    @ManyToOne
+    @JoinColumn(name = "tourist_id")
+    private Tourist tourist_user;
+
+    @ManyToOne
+    @JoinColumn(name = "local_id")
+    private Local local_user;
 }

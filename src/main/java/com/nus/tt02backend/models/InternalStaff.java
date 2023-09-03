@@ -28,4 +28,7 @@ public class InternalStaff extends User {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Badge> badge_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<SupportTicket> support_ticket_list;
 }

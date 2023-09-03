@@ -39,4 +39,13 @@ public class Tourist extends User {
 
     @OneToOne(fetch = FetchType.LAZY)
     private Itinerary itinerary;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<CartItem> cart_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<SupportTicket> support_ticket_list;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tourist_user")
+    private List<Booking> booking_list;
 }
