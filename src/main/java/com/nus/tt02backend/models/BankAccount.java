@@ -25,6 +25,6 @@ public class BankAccount {
     @Column(nullable = false, length = 128)
     private String account_holder_name;
 
-    @Column(nullable = false, length = 17)
+    @Column(nullable = false, unique = true, length = 17)
     private String bank_account_num;
 }

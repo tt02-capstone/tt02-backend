@@ -11,7 +11,7 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false)
 public class InternalStaff extends User {
 
-    @Column(nullable = false, length = 8)
+    @Column(nullable = false, unique = true, length = 8)
     private String staff_num;
 
     @Enumerated(EnumType.STRING)

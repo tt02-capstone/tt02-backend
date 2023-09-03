@@ -14,7 +14,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class Local extends User {
 
-    @Column(nullable = false, length = 9)
+    @Column(nullable = false, unique = true, length = 9)
     private String nric_num;
 
     @Column(nullable = false)
@@ -23,7 +23,7 @@ public class Local extends User {
     @Column(nullable = false, length = 4)
     private String country_code;
 
-    @Column(nullable = false, length = 13)
+    @Column(nullable = false, unique = true, length = 13)
     private String mobile_num;
 
     @Column(nullable = false, precision = 19, scale = 2)

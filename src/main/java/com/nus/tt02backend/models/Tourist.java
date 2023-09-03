@@ -13,7 +13,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class Tourist extends User {
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, unique = true, length = 10)
     private String passport_num;
 
     @Column(nullable = false)
@@ -22,7 +22,7 @@ public class Tourist extends User {
     @Column(nullable = false, length = 4)
     private String country_code;
 
-    @Column(nullable = false, length = 13)
+    @Column(nullable = false, unique = true, length = 13)
     private String mobile_num;
 
     @OneToMany(fetch = FetchType.LAZY)
