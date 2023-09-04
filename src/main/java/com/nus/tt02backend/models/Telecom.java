@@ -1,5 +1,9 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.GBLimitEnum;
+import com.nus.tt02backend.models.enums.NumberOfValidDaysEnum;
+import com.nus.tt02backend.models.enums.PriceTierEnum;
+import com.nus.tt02backend.models.enums.TelecomTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,16 +23,33 @@ public class Telecom {
     private Long telecom_id;
 
     @Column(nullable = false, length = 128)
-    private String telecom_name;
+    private String name;
 
-    @Column(nullable = false, unique = true, length = 400)
+    @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
     private BigDecimal price;
+
+    @Column(nullable = false)
     private Boolean is_published;
-//    private TelecomTypeEnum type;
-//    private PriceTierEnum estimated_price_tier;
-//    private NumberOfValidDaysEnum num_of_days_valid;
-//    private GBLimitEnum data_limit;
+
+    @Enumerated(EnumType.STRING)
+    private TelecomTypeEnum type;
+
+    @Enumerated(EnumType.STRING)
+    private PriceTierEnum estimated_price_tier;
+
+    @Column(nullable = false, length = 2)
+    private Integer num_of_days_valid;
+
+    @Enumerated(EnumType.STRING)
+    private NumberOfValidDaysEnum plan_duration_category;
+
+    @Column(nullable = false, length = 3)
+    private Integer data_limit;
+
+    @Enumerated(EnumType.STRING)
+    private GBLimitEnum data_limit_category;
 
 }

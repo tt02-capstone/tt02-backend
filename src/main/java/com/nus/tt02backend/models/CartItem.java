@@ -21,7 +21,7 @@ public class CartItem {
     private BigDecimal price;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private Deals deal;
+    private Deal deal;
 
     @OneToOne(fetch = FetchType.LAZY)
     private Telecom telecom;

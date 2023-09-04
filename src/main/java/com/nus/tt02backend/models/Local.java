@@ -79,6 +79,6 @@ public class Local extends User {
     private List<Telecom> telecom_list;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<Deals> deals_list;
+    private List<Deal> deals_list;
 
 }

@@ -2,10 +2,7 @@ package com.nus.tt02backend.models;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,8 +43,7 @@ public class Comment {
     private ArrayList<Report> reported_comment_list = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @ManyToOne
@@ -55,7 +51,7 @@ public class Comment {
     private Comment parent_comment;
 
     @OneToMany(mappedBy = "parent_comment")
-    private List<Comment> child_comment_list = new ArrayList<>();
+    private ArrayList<Comment> child_comment_list = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "tourist_id")

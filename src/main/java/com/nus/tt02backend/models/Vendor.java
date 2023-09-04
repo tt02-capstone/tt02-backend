@@ -81,5 +81,5 @@ public class Vendor {
     private List<Telecom> telecom_list;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<Deals> deals_list;
+    private List<Deal> deals_list;
 }

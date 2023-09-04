@@ -38,7 +38,7 @@ public class Booking {
     private Payment payment;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private Deals deal;
+    private Deal deal;
 
     @OneToOne(fetch = FetchType.LAZY)
     private Telecom telecom;

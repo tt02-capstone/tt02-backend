@@ -40,7 +40,7 @@ public class Attraction {
     private String contact_num;
 
     @ElementCollection
-    @CollectionTable(name="image")
+    @CollectionTable(name="image_list")
     private List<String> image_list = new ArrayList<>();
 
     @Column(nullable = false)

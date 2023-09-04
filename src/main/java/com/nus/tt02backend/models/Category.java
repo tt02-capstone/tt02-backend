@@ -2,10 +2,7 @@ package com.nus.tt02backend.models;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,6 +24,6 @@ public class Category {
     private String name;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<CategoryItem> category_item_list;
+    private ArrayList<CategoryItem> category_item_list;
 
 }

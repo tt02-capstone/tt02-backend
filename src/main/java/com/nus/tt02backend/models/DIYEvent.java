@@ -31,7 +31,7 @@ public class DIYEvent {
     private String remarks;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private Deals deal;
+    private Deal deal;
 
     @OneToOne(fetch = FetchType.LAZY)
     private Telecom telecom;

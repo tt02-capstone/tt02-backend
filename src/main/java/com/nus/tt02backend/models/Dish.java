@@ -22,16 +22,24 @@ public class Dish {
     @Column(nullable = false, length = 128)
     private String name;
 
-    @Column(nullable = false, length = 400)
+    @Column(nullable = false)
     private String description;
+
+    @Column(nullable = false)
     private BigDecimal price;
+
+    @Column(nullable = false)
     private Integer spice_level;
+
+    @Column(nullable = false)
     private Boolean is_signature;
+
+    @Column(nullable = false)
     private Boolean is_chef_recommendation;
 
     @ElementCollection
     @CollectionTable(name="image_list")
-    private ArrayList<String> image_list = new ArrayList<String>();;
+    private ArrayList<String> image_list = new ArrayList<>();;
 
 
 }

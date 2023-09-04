@@ -65,5 +65,5 @@ public class Tourist extends User {
     private List<Telecom> telecom_list;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<Deals> deals_list;
+    private List<Deal> deal_list;
 }
