@@ -3,6 +3,8 @@ package com.nus.tt02backend.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @Entity
 @NoArgsConstructor
@@ -18,4 +20,7 @@ public class VendorStaff extends User {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Vendor vendor;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<SupportTicket> support_ticket_list;
 }

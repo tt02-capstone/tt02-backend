@@ -65,8 +65,6 @@ public class Vendor {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendor_user")
     private List<Post> post_list;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<SupportTicket> support_ticket_list;
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Attraction> attraction_list;
