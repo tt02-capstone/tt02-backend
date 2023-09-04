@@ -3,13 +3,11 @@ package com.nus.tt02backend.models;
 
 import jakarta.persistence.*;
 import jdk.jfr.Category;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
