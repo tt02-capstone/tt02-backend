@@ -3,8 +3,8 @@ package com.nus.tt02backend.services.impl;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.InternalStaff;
-import com.nus.tt02backend.repositories.StaffRepository;
-import com.nus.tt02backend.services.StaffService;
+import com.nus.tt02backend.repositories.InternalStaffRepository;
+import com.nus.tt02backend.services.InternalStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class StaffServiceImpl implements StaffService {
+public class InternalStaffServiceImpl implements InternalStaffService {
     @Autowired
-    StaffRepository staffRepository;
+    InternalStaffRepository internalStaffRepository;
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public InternalStaff staffLogin(String email, String password) throws NotFoundException, BadRequestException {
@@ -35,7 +35,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     public void updateStaff(InternalStaff internalStaffToUpdate) throws NotFoundException {
-        InternalStaff internalStaff = staffRepository.findById((internalStaffToUpdate.getUser_id()))
+        InternalStaff internalStaff = internalStaffRepository.findById((internalStaffToUpdate.getUser_id()))
                 .orElseThrow(() -> new NotFoundException("InternalStaff not found"));
 
         if (internalStaff.getEmail().equals(internalStaffToUpdate.getEmail())) {
@@ -44,7 +44,7 @@ public class StaffServiceImpl implements StaffService {
             }
         }
 
-        staffRepository.save(internalStaff);
+        internalStaffRepository.save(internalStaff);
     }
 
     public Long createStaff(InternalStaff internalStaffToCreate) throws BadRequestException {
@@ -57,11 +57,11 @@ public class StaffServiceImpl implements StaffService {
         }
 
         internalStaffToCreate.setPassword(encoder.encode(internalStaffToCreate.getPassword()));
-        staffRepository.save(internalStaffToCreate);
+        internalStaffRepository.save(internalStaffToCreate);
         return internalStaffToCreate.getUser_id();
     }
 
     public List<InternalStaff> retrieveAllStaff() {
-        return staffRepository.findAll();
+        return internalStaffRepository.findAll();
     }
 }
