@@ -3,6 +3,8 @@ package com.nus.tt02backend.services.impl;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.InternalStaff;
+import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.InternalStaffRepository;
 import com.nus.tt02backend.services.InternalStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +21,25 @@ public class InternalStaffServiceImpl implements InternalStaffService {
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public InternalStaff staffLogin(String email, String password) throws NotFoundException, BadRequestException {
-        List<InternalStaff> internalStaffs = retrieveAllStaff();
+        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(email);
 
-        for (InternalStaff internalStaff : internalStaffs) {
-            if (internalStaff.getEmail().equals(email)) {
-                if (encoder.matches(password, internalStaff.getPassword())) {
-                    return internalStaff;
-                } else {
-                    throw new BadRequestException("Incorrect password");
-                }
-            }
+        if (internalStaff == null) {
+            throw new NotFoundException("There is no staff account associated with this email address");
         }
 
-        throw new NotFoundException("InternalStaff account not found");
+        if (encoder.matches(password, internalStaff.getPassword())
+                && !internalStaff.getIs_blocked()) {
+            internalStaff.setComment_list(null);
+            internalStaff.setPost_list(null);
+            internalStaff.setBadge_list(null);
+            internalStaff.setSupport_ticket_list(null);
+            return internalStaff;
+        } else if (internalStaff.getIs_blocked()) {
+            throw new BadRequestException("Your staff account is disabled, please contact your administrator");
+        }
+        else {
+            throw new BadRequestException("Incorrect password");
+        }
     }
 
     public void updateStaff(InternalStaff internalStaffToUpdate) throws NotFoundException {

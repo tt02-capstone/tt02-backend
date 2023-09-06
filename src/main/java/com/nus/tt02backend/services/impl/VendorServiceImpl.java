@@ -2,8 +2,8 @@ package com.nus.tt02backend.services.impl;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.models.Vendor;
-import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.models.*;
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import com.nus.tt02backend.services.VendorService;
@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,19 +24,34 @@ public class VendorServiceImpl implements VendorService {
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public VendorStaff vendorLogin(String email, String password) throws NotFoundException, BadRequestException {
-        List<VendorStaff> vendorStaffs = retrieveAllVendors();
+        VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(email);
 
-        for (VendorStaff vendorStaff : vendorStaffs) {
-            if (vendorStaff.getEmail().equals(email)) {
-                if (encoder.matches(password, vendorStaff.getPassword())) {
-                    return vendorStaff;
-                } else {
-                    throw new BadRequestException("Incorrect password");
-                }
-            }
+        if (vendorStaff == null) {
+            throw new NotFoundException("There is no staff account associated with this email address");
         }
 
-        throw new NotFoundException("VendorStaff account not found");
+        if (encoder.matches(password, vendorStaff.getPassword())
+                && !vendorStaff.getIs_blocked()
+                && vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
+            vendorStaff.getVendor().setWithdrawal_list(null);
+            vendorStaff.getVendor().setVendor_staff_list(null);
+            vendorStaff.getVendor().setComment_list(null);
+            vendorStaff.getVendor().setPost_list(null);
+            vendorStaff.getVendor().setAttraction_list(null);
+            vendorStaff.getVendor().setAccommodation_list(null);
+            vendorStaff.getVendor().setRestaurant_list(null);
+            vendorStaff.getVendor().setTelecom_list(null);
+            vendorStaff.getVendor().setDeals_list(null);
+            return vendorStaff;
+        } else if (vendorStaff.getIs_blocked()) {
+            throw new BadRequestException("Your staff account is disabled, please contact your administrator");
+        }
+        else if (vendorStaff.getVendor().getApplication_status() != ApplicationStatusEnum.APPROVED) {
+            throw new BadRequestException("Your application is still pending review");
+        }
+        else {
+            throw new BadRequestException("Incorrect password");
+        }
     }
 
     public void updateVendor(VendorStaff vendorStaffToUpdate) throws NotFoundException {
@@ -52,24 +68,18 @@ public class VendorServiceImpl implements VendorService {
     }
 
     public Long createVendor(VendorStaff vendorStaffToCreate) throws BadRequestException {
-        List<VendorStaff> vendorStaffs = retrieveAllVendors();
-        for (VendorStaff vendorStaff : vendorStaffs) {
-            if (vendorStaff.getEmail().equals(vendorStaffToCreate.getEmail())) {
-                throw new BadRequestException("The email address has been used, please enter another email");
-            }
+        VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(vendorStaffToCreate.getEmail());
+
+        if (vendorStaff != null) {
+            throw new BadRequestException("The email address has been used, please enter another email");
         }
 
         Vendor vendorToCreate = vendorStaffToCreate.getVendor();
         vendorRepository.save(vendorToCreate);
 
-        //vendorStaffToCreate.setVendor(vendorToCreate);
         vendorStaffToCreate.setPassword(encoder.encode(vendorStaffToCreate.getPassword()));
         vendorStaffRepository.save(vendorStaffToCreate);
 
         return vendorStaffToCreate.getUser_id();
-    }
-
-    public List<VendorStaff> retrieveAllVendors() {
-        return vendorStaffRepository.findAll();
     }
 }
