@@ -3,7 +3,7 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.VendorStaff;
-import com.nus.tt02backend.services.impl.VendorServiceImpl;
+import com.nus.tt02backend.services.VendorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/vendor")
 public class VendorController {
     @Autowired
-    VendorServiceImpl vendorService;
+    VendorService vendorService;
 
     @PostMapping("/vendorLogin/{email}/{password}")
     public ResponseEntity<VendorStaff> vendorLogin(@PathVariable String email, @PathVariable String password)
