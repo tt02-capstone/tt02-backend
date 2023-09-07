@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.stripe.model.Customer;
+import com.stripe.param.CustomerCreateParams;
 
 import java.util.List;
 
@@ -57,8 +59,27 @@ public class TouristServiceImpl implements TouristService {
             }
         }
 
+        CustomerCreateParams params = CustomerCreateParams.builder()
+                .setEmail(touristToCreate.getEmail())
+                .setName(touristToCreate.getName())
+                // add more parameters as needed
+                .build();
+
+        try {
+            Customer stripeCustomer = Customer.create(params);
+            //touristToCreate.setStripeAccountId(stripeCustomer.getId());
+
+
+        } catch (Exception e) {
+            // handle error
+            System.out.println(e);
+        }
+
         touristToCreate.setPassword(encoder.encode(touristToCreate.getPassword()));
         touristRepository.save(touristToCreate);
+
+
+
         return touristToCreate.getUser_id();
     }
 

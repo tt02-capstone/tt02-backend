@@ -7,6 +7,8 @@ import com.nus.tt02backend.services.impl.TouristServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.stripe.model.Customer;
+import com.stripe.param.CustomerCreateParams;
 
 @CrossOrigin
 @RestController
