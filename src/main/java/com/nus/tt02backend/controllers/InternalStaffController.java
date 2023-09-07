@@ -3,7 +3,7 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.InternalStaff;
-import com.nus.tt02backend.services.impl.InternalStaffServiceImpl;
+import com.nus.tt02backend.services.InternalStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/staff")
 public class InternalStaffController {
     @Autowired
-    InternalStaffServiceImpl internalStaffService;
+    InternalStaffService internalStaffService;
 
     @PostMapping("/staffLogin/{email}/{password}")
     public ResponseEntity<InternalStaff> staffLogin(@PathVariable String email, @PathVariable String password)
