@@ -17,7 +17,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class VendorService {
@@ -103,16 +106,78 @@ public class VendorService {
         return vendorStaffToCreate.getUser_id();
     }
 
+    public List<VendorStaff> retrieveAllVendors() {
+        return vendorStaffRepository.findAll();
+    }
+
+    public String passwordResetStageOne(String email) throws BadRequestException {
+        String passwordResetToken = UUID.randomUUID().toString();
+        VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(email);
+
+        if (vendorStaff == null) {
+            throw new BadRequestException("There is no account associated with this email address");
+        }
+
+        vendorStaff.setPassword_reset_token(passwordResetToken);
+        vendorStaff.setToken_date(LocalDateTime.now());
+        vendorStaffRepository.save(vendorStaff);
+        String passwordResetLink = "http://localhost:3000/passwordreset?token=" + vendorStaff.getPassword_reset_token();
+        System.out.println(passwordResetLink);
+        try {
+            String subject = "[WithinSG] Password Reset Instructions";
+            String content = "<p>Dear " + vendorStaff.getName() + ",</p>" +
+                    "<p>A request was received to reset the password for your account." +
+                    "<p>You can reset your password by clicking on the button below: </p>" +
+                    "<a href=\"" + passwordResetLink +"\" target=\"_blank\">" +
+                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
+                    "Reset Password</button></a>" +
+                    "<p>Note that the link will expire after 60 minutes.</p>" +
+                    "<p>If you did not initiate this request, please let us know immediately by replying to this email</p>" +
+                    "<p>Kind Regards,<br> WithinSG</p>";
+            sendEmail(vendorStaff.getEmail(), subject, content);
+        } catch (MessagingException ex) {
+            throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+        }
+
+        return "You will receive an email containing the instructions to reset your password.";
+    }
+
+    public String passwordResetStageTwo(String token, String password) throws BadRequestException {
+        VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByToken(token);
+
+        if (vendorStaff == null) {
+            throw new BadRequestException("Invalid token");
+        }
+
+        if (Duration.between(vendorStaff.getToken_date(), LocalDateTime.now()).toMinutes() > 60) {
+            throw new BadRequestException("Your token has expired, please request for a new password reset link");
+        }
+
+        vendorStaff.setPassword(encoder.encode(password));
+        vendorStaff.setPassword_reset_token(null);
+        vendorStaff.setToken_date(null);
+        vendorStaffRepository.save(vendorStaff);
+
+        try {
+            String subject = "[WithinSG] Password Reset Successfully";
+            String content = "<p>Dear " + vendorStaff.getName() + ",</p>" +
+                    "<p>Your password has been reset successfully." +
+                    "<p>If you did not perform this action, please let us know immediately by replying to this email</p>" +
+                    "<p>Kind Regards,<br> WithinSG</p>";
+            sendEmail(vendorStaff.getEmail(), subject, content);
+        } catch (MessagingException ex) {
+            throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+        }
+
+        return "Your password has been changed successfully";
+    }
+
     public void sendEmail(String email, String subject, String content) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);;
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
         mimeMessageHelper.setTo(email);
         mimeMessageHelper.setSubject(subject);
         mimeMessageHelper.setText(content, true);
         javaMailSender.send(mimeMessage);
-    }
-
-    public List<VendorStaff> retrieveAllVendors() {
-        return vendorStaffRepository.findAll();
     }
 }
