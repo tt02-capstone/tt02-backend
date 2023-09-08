@@ -7,7 +7,12 @@ import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +25,9 @@ public class VendorService {
     VendorStaffRepository vendorStaffRepository;
     @Autowired
     VendorRepository vendorRepository;
+    @Autowired
+    JavaMailSender javaMailSender;
+
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public VendorStaff vendorLogin(String email, String password) throws NotFoundException, BadRequestException {
@@ -66,7 +74,7 @@ public class VendorService {
         vendorStaffRepository.save(vendorStaff);
     }
 
-    public Long createVendor(VendorStaff vendorStaffToCreate) throws BadRequestException {
+    public Long createVendor(VendorStaff vendorStaffToCreate) throws BadRequestException  {
         VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(vendorStaffToCreate.getEmail());
 
         if (vendorStaff != null) {
@@ -79,7 +87,29 @@ public class VendorService {
         vendorStaffToCreate.setPassword(encoder.encode(vendorStaffToCreate.getPassword()));
         vendorStaffRepository.save(vendorStaffToCreate);
 
+        try {
+            String subject = "[WithinSG] Account Application Processing";
+            String content = "<p>Dear " + vendorStaffToCreate.getName() + ",</p>" +
+                    "<p>Thank you for registering for a vendor account with WithinSG. " +
+                    "We are glad that you have chosen us as your service provider!</p>" +
+                    "<p>We have received your application and it is in the midst of processing.</p>" +
+                    "<p>An email will be sent to you once your account has been activated.</p>" +
+                    "<p>Kind Regards,<br> WithinSG</p>";
+            sendEmail(vendorStaffToCreate.getEmail(), subject, content);
+        } catch (MessagingException ex) {
+            throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+        }
+
         return vendorStaffToCreate.getUser_id();
+    }
+
+    public void sendEmail(String email, String subject, String content) throws MessagingException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);;
+        mimeMessageHelper.setTo(email);
+        mimeMessageHelper.setSubject(subject);
+        mimeMessageHelper.setText(content, true);
+        javaMailSender.send(mimeMessage);
     }
 
     public List<VendorStaff> retrieveAllVendors() {
