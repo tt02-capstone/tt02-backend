@@ -122,7 +122,6 @@ public class VendorService {
         vendorStaff.setToken_date(LocalDateTime.now());
         vendorStaffRepository.save(vendorStaff);
         String passwordResetLink = "http://localhost:3000/passwordreset?token=" + vendorStaff.getPassword_reset_token();
-        System.out.println(passwordResetLink);
         try {
             String subject = "[WithinSG] Password Reset Instructions";
             String content = "<p>Dear " + vendorStaff.getName() + ",</p>" +

@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface InternalStaffRepository extends JpaRepository<InternalStaff, Long> {
-    @Query("SELECT vs FROM InternalStaff vs WHERE vs.email=?1")
+    @Query("SELECT ins FROM InternalStaff ins WHERE ins.email=?1")
     InternalStaff retrieveInternalStaffByEmail(String email);
+
+    @Query("SELECT ins FROM InternalStaff ins WHERE ins.password_reset_token=?1")
+    InternalStaff retrieveInternalStaffByToken(String token);
 }
