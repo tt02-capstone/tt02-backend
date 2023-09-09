@@ -166,7 +166,6 @@ public class InternalStaffService {
                 } else if (encoder.matches(oldPassword, internalStaff.getPassword())) {
                     internalStaff.setPassword(encoder.encode(newPassword));
                     internalStaffRepository.save(internalStaff);
-                    System.out.println("successfully changed password!");
 
                 } else {
                     throw new EditPasswordException("Incorrect old password!");

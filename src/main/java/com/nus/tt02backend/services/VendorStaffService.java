@@ -1,18 +1,13 @@
 package com.nus.tt02backend.services;
 
-import com.nus.tt02backend.exceptions.BadRequestException;
-import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.exceptions.*;
 
-import com.nus.tt02backend.exceptions.TouristNotFoundException;
-import com.nus.tt02backend.exceptions.VendorNotFoundException;
-import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -26,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
-public class VendorService {
+public class VendorStaffService {
     @Autowired
     VendorStaffRepository vendorStaffRepository;
     @Autowired
@@ -36,7 +31,7 @@ public class VendorService {
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public VendorStaff vendorLogin(String email, String password) throws NotFoundException, BadRequestException {
+    public VendorStaff vendorStaffLogin(String email, String password) throws NotFoundException, BadRequestException {
         VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(email);
 
         if (vendorStaff == null) {
@@ -57,17 +52,17 @@ public class VendorService {
             vendorStaff.getVendor().setDeals_list(null);
             return vendorStaff;
         } else if (vendorStaff.getIs_blocked()) {
-            throw new BadRequestException("Your staff account is disabled, please contact your administrator");
+            throw new BadRequestException("Your staff account is disabled, please contact your administrator!");
         }
         else if (vendorStaff.getVendor().getApplication_status() != ApplicationStatusEnum.APPROVED) {
-            throw new BadRequestException("Your application is still pending review");
+            throw new BadRequestException("Your application is still pending review!");
         }
         else {
-            throw new BadRequestException("Incorrect password");
+            throw new BadRequestException("Incorrect password!");
         }
     }
 
-    public void updateVendor(VendorStaff vendorStaffToUpdate) throws NotFoundException {
+    public void updateVendorStaff(VendorStaff vendorStaffToUpdate) throws NotFoundException {
         VendorStaff vendorStaff = vendorStaffRepository.findById((vendorStaffToUpdate.getUser_id()))
                 .orElseThrow(() -> new NotFoundException("VendorStaff not found"));
 
@@ -80,7 +75,7 @@ public class VendorService {
         vendorStaffRepository.save(vendorStaff);
     }
 
-    public Long createVendor(VendorStaff vendorStaffToCreate) throws BadRequestException  {
+    public Long createVendorStaff(VendorStaff vendorStaffToCreate) throws BadRequestException  {
         VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(vendorStaffToCreate.getEmail());
 
         if (vendorStaff != null) {
@@ -183,20 +178,79 @@ public class VendorService {
         javaMailSender.send(mimeMessage);
     }
 
-    public VendorStaff retrieveVendorProfile(Long vendorId) throws IllegalArgumentException, VendorNotFoundException {
+    public VendorStaff getVendorStaffProfile(Long vendorStaffId) throws IllegalArgumentException, VendorStaffNotFoundException {
         try {
-            Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorId);
+            Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(vendorStaffId);
 
-            if (vendorOptional.isPresent()) {
-                VendorStaff vendorStaff = vendorOptional.get();
+            if (vendorStaffOptional.isPresent()) {
+                VendorStaff vendorStaff = vendorStaffOptional.get();
                 vendorStaff.setPassword(null);
+                vendorStaff.setVendor(null);
                 return vendorStaff;
+
             } else {
-                throw new VendorNotFoundException("Vendor not found!");
+                throw new VendorStaffNotFoundException("Vendor staff not found!");
             }
 
         } catch(Exception ex) {
-            throw new VendorNotFoundException(ex.getMessage());
+            throw new VendorStaffNotFoundException(ex.getMessage());
+        }
+    }
+
+    public VendorStaff editVendorStaffProfile(VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
+        try {
+
+            Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(vendorStaffToEdit.getUser_id());
+
+            if (vendorStaffOptional.isPresent()) {
+                VendorStaff vendorStaff = vendorStaffOptional.get();
+
+                if (!vendorStaff.getEmail().equals(vendorStaffToEdit.getEmail())) { // user wants to change email
+                    Long existingId = vendorStaffRepository.getVendorStaffByEmail(vendorStaffToEdit.getEmail());
+                    if (existingId != null) { // but there is an existing email
+                        throw new EditVendorStaffException("Email currently in use. Please use a different email!");
+                    }
+                }
+
+                vendorStaff.setEmail(vendorStaffToEdit.getEmail());
+                vendorStaff.setName(vendorStaffToEdit.getName());
+                vendorStaff.setPosition(vendorStaffToEdit.getPosition());
+                vendorStaffRepository.save(vendorStaff);
+                vendorStaff.setVendor(null);
+                vendorStaff.setPassword(null);
+                return vendorStaff;
+
+            } else {
+                throw new EditVendorStaffException("Admin staff not found!");
+            }
+        } catch (Exception ex) {
+            throw new EditVendorStaffException(ex.getMessage());
+        }
+    }
+
+    public void editVendorStaffPassword(Long id, String oldPassword, String newPassword) throws EditPasswordException {
+        try {
+            Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(id);
+
+            if (vendorStaffOptional.isPresent()) {
+                VendorStaff vendorStaff = vendorStaffOptional.get();
+
+                if (oldPassword.equals(newPassword)) {
+                    throw new EditPasswordException("New password must be different from old password!");
+
+                } else if (encoder.matches(oldPassword, vendorStaff.getPassword())) {
+                    vendorStaff.setPassword(encoder.encode(newPassword));
+                    vendorStaffRepository.save(vendorStaff);
+
+                } else {
+                    throw new EditPasswordException("Incorrect old password!");
+                }
+
+            } else {
+                throw new EditVendorStaffException("Vendor staff not found!");
+            }
+        } catch (Exception ex) {
+            throw new EditPasswordException(ex.getMessage());
         }
     }
 }
