@@ -1,23 +1,25 @@
 package com.nus.tt02backend.services;
 
-import com.nus.tt02backend.exceptions.AdminNotFoundException;
-import com.nus.tt02backend.exceptions.BadRequestException;
-import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.exceptions.TouristNotFoundException;
+import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.repositories.TouristRepository;
+import com.nus.tt02backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TouristService {
     @Autowired
     TouristRepository touristRepository;
+    @Autowired
+    UserRepository userRepository;
+
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public Tourist touristLogin(String email, String password) throws NotFoundException, BadRequestException {
@@ -50,12 +52,11 @@ public class TouristService {
     }
 
     public Long createTourist(Tourist touristToCreate) throws BadRequestException {
-        List<Tourist> tourists = retrieveAllTourist();
 
-        for (Tourist tourist : tourists) {
-            if (tourist.getEmail().equals(touristToCreate.getEmail())) {
-                throw new BadRequestException("Tourist email exists");
-            }
+        Long existingId = userRepository.getUserIdByEmail(touristToCreate.getEmail()); // need to check with all users
+
+        if (existingId != null) {
+            throw new BadRequestException("Tourist email exists!");
         }
 
         touristToCreate.setPassword(encoder.encode(touristToCreate.getPassword()));
@@ -65,21 +66,5 @@ public class TouristService {
 
     public List<Tourist> retrieveAllTourist() {
         return touristRepository.findAll();
-    }
-
-    public Tourist retrieveTouristProfile(Long touristId) throws IllegalArgumentException, TouristNotFoundException {
-        try {
-            Tourist tourist = touristRepository.findById(touristId).get();
-
-            if (tourist == null) {
-                throw new TouristNotFoundException("Tourist not found!");
-            }
-
-            tourist.setPassword(null);
-
-            return tourist;
-        } catch(Exception ex) {
-            throw new TouristNotFoundException(ex.getMessage());
-        }
     }
 }
