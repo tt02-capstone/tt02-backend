@@ -1,6 +1,8 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.exceptions.AdminNotFoundException;
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.EditAdminException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.services.InternalStaffService;
@@ -32,5 +34,22 @@ public class InternalStaffController {
     public ResponseEntity<Long> createStaff(@RequestBody InternalStaff internalStaffToCreate) throws BadRequestException {
         Long staffId = internalStaffService.createStaff(internalStaffToCreate);
         return ResponseEntity.ok(staffId);
+    }
+
+    @GetMapping("/getStaffProfile/{staffId}")
+    public ResponseEntity<InternalStaff> getStaffProfile(@PathVariable Long staffId) throws AdminNotFoundException {
+        InternalStaff internalStaff = internalStaffService.getStaffProfile(staffId);
+        return ResponseEntity.ok(internalStaff);
+    }
+
+    @PostMapping("/editAdminProfile")
+    public ResponseEntity<InternalStaff> editStaffProfile(@RequestBody InternalStaff staffToEdit) throws EditAdminException {
+        InternalStaff internalStaff = internalStaffService.editStaffProfile(staffToEdit);
+        return ResponseEntity.ok(internalStaff);
+    }
+
+    @PostMapping("/editAdminPassword/{staffId}/{oldPassword}/{newPassword}")
+    public void editStaffPassword(@PathVariable Long staffId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditAdminException {
+        internalStaffService.editStaffPassword(staffId, oldPassword, newPassword);
     }
 }

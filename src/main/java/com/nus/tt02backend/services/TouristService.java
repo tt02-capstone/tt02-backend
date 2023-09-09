@@ -1,7 +1,10 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.exceptions.AdminNotFoundException;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.exceptions.TouristNotFoundException;
+import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.repositories.TouristRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,5 +65,21 @@ public class TouristService {
 
     public List<Tourist> retrieveAllTourist() {
         return touristRepository.findAll();
+    }
+
+    public Tourist retrieveTouristProfile(Long touristId) throws IllegalArgumentException, TouristNotFoundException {
+        try {
+            Tourist tourist = touristRepository.findById(touristId).get();
+
+            if (tourist == null) {
+                throw new TouristNotFoundException("Tourist not found!");
+            }
+
+            tourist.setPassword(null);
+
+            return tourist;
+        } catch(Exception ex) {
+            throw new TouristNotFoundException(ex.getMessage());
+        }
     }
 }

@@ -2,6 +2,9 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.exceptions.TouristNotFoundException;
+import com.nus.tt02backend.exceptions.VendorNotFoundException;
+import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.repositories.VendorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,5 +65,21 @@ public class VendorService {
 
     public List<VendorStaff> retrieveAllVendors() {
         return vendorRepository.findAll();
+    }
+
+    public VendorStaff retrieveVendorProfile(Long vendorId) throws IllegalArgumentException, VendorNotFoundException {
+        try {
+            VendorStaff vendor = vendorRepository.findById(vendorId).get();
+
+            if (vendor == null) {
+                throw new VendorNotFoundException("Vendor not found!");
+            }
+
+            vendor.setPassword(null);
+
+            return vendor;
+        } catch(Exception ex) {
+            throw new VendorNotFoundException(ex.getMessage());
+        }
     }
 }
