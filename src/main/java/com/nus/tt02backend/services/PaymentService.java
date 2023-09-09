@@ -21,12 +21,14 @@ public class PaymentService {
 
         Map<String, Object> params = new HashMap<>();
         //To get user based on user_email and get their stripe_account_id
-        String stripe_account_id = "";
+        String stripe_account_id = "cus_OalsHOTNEwycEX";
 
         params.put("customer", stripe_account_id);
 
         PaymentMethod updatedPaymentMethod =
                 paymentMethod.attach(params);
     }
+
+
 
 }
