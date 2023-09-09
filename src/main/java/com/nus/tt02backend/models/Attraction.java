@@ -40,8 +40,8 @@ public class Attraction {
     private String contact_num;
 
     @ElementCollection
-    @CollectionTable(name="image_list")
-    private List<String> image_list = new ArrayList<>();
+    @CollectionTable(name="attraction_image_list")
+    private List<String> attraction_image_list;
 
     @Column(nullable = false)
     private Boolean is_published;
@@ -50,7 +50,7 @@ public class Attraction {
     private Integer suggested_duration;
 
     @Column(nullable = false)
-    private Double avg_rating_tier = 0.0;
+    private Double avg_rating_tier;
 
     @Enumerated(EnumType.STRING)
     private AttractionCategoryEnum attraction_category;
@@ -61,38 +61,16 @@ public class Attraction {
     @Enumerated(EnumType.STRING)
     private PriceTierEnum estimated_price_tier;
 
-    @OneToMany
-    @JoinColumn(nullable = true)
-    private List<SeasonalActivity> seasonal_activity_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<SeasonalActivity> seasonal_activity_list;
 
-    @OneToMany
-    @JoinColumn(nullable = false)
-    private List<Price> price_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Price> price_list;
 
-    @OneToMany
-    @JoinColumn(nullable = true)
-    private List<Review> review_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Review> review_list;
 
-    @OneToMany
-    @JoinColumn(nullable = true)
-    private List<TourType> tour_type_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<TourType> tour_type_list;
 
-    public Attraction(String name, String description, String opening_hours,
-                      String age_group, String contact_num, Boolean is_published,
-                      Integer suggested_duration, AttractionCategoryEnum attraction_category,
-                      GenericLocationEnum generic_location, PriceTierEnum estimated_price_tier,
-                      List<Price> price_list, String address) {
-        this.name = name;
-        this.description = description;
-        this.opening_hours = opening_hours;
-        this.age_group = age_group;
-        this.contact_num = contact_num;
-        this.is_published = is_published;
-        this.suggested_duration = suggested_duration;
-        this.attraction_category = attraction_category;
-        this.generic_location = generic_location;
-        this.estimated_price_tier = estimated_price_tier;
-        this.price_list = price_list;
-        this.address = address;
-    }
 }
