@@ -36,7 +36,6 @@ public class InternalStaffController {
         return ResponseEntity.ok(staffId);
     }
 
-<<<<<<< HEAD
     @GetMapping("/getStaffProfile/{staffId}")
     public ResponseEntity<InternalStaff> getStaffProfile(@PathVariable Long staffId) throws AdminNotFoundException {
         InternalStaff internalStaff = internalStaffService.getStaffProfile(staffId);
@@ -52,6 +51,7 @@ public class InternalStaffController {
     @PostMapping("/editAdminPassword/{staffId}/{oldPassword}/{newPassword}")
     public void editStaffPassword(@PathVariable Long staffId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditAdminException {
         internalStaffService.editStaffPassword(staffId, oldPassword, newPassword);
+    }
 
     @PostMapping ("/passwordResetStageOne/{email}")
     public ResponseEntity<String> passwordResetStageOne(@PathVariable String email) throws BadRequestException {

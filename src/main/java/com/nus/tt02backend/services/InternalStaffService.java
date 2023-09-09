@@ -152,6 +152,7 @@ public class InternalStaffService {
         } catch (Exception ex) {
             throw new EditAdminException(ex.getMessage());
         }
+    }
 
     public String passwordResetStageOne(String email) throws BadRequestException {
         String passwordResetToken = UUID.randomUUID().toString();
