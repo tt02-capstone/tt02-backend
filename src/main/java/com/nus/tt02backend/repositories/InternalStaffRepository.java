@@ -13,4 +13,6 @@ public interface InternalStaffRepository extends JpaRepository<InternalStaff, Lo
     @Query("SELECT ins FROM InternalStaff ins WHERE ins.password_reset_token=?1")
     InternalStaff retrieveInternalStaffByToken(String token);
 
+    @Query("SELECT u.user_id FROM User u WHERE u.email = ?1")
+    Long getAdminByEmail(String email);
 }

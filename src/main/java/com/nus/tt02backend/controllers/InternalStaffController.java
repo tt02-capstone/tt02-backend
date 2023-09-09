@@ -1,9 +1,6 @@
 package com.nus.tt02backend.controllers;
 
-import com.nus.tt02backend.exceptions.AdminNotFoundException;
-import com.nus.tt02backend.exceptions.BadRequestException;
-import com.nus.tt02backend.exceptions.EditAdminException;
-import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.services.InternalStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +46,7 @@ public class InternalStaffController {
     }
 
     @PostMapping("/editAdminPassword/{staffId}/{oldPassword}/{newPassword}")
-    public void editStaffPassword(@PathVariable Long staffId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditAdminException {
+    public void editStaffPassword(@PathVariable Long staffId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
         internalStaffService.editStaffPassword(staffId, oldPassword, newPassword);
     }
 

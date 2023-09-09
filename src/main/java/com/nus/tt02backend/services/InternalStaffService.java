@@ -1,9 +1,6 @@
 package com.nus.tt02backend.services;
 
-import com.nus.tt02backend.exceptions.AdminNotFoundException;
-import com.nus.tt02backend.exceptions.BadRequestException;
-import com.nus.tt02backend.exceptions.EditAdminException;
-import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.repositories.InternalStaffRepository;
 
@@ -115,10 +112,19 @@ public class InternalStaffService {
 
     public InternalStaff editStaffProfile(InternalStaff staffToEdit) throws EditAdminException {
         try {
+
             Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(staffToEdit.getUser_id());
 
             if (internalStaffOptional.isPresent()) {
                 InternalStaff internalStaff = internalStaffOptional.get();
+
+                if (!internalStaff.getEmail().equals(staffToEdit.getEmail())) { // user wants to change email
+                    Long existingId = internalStaffRepository.getAdminByEmail(staffToEdit.getEmail());
+                    if (existingId != null) { // but there is an existing email
+                        throw new EditAdminException("Email currently in use. Please use a different email!");
+                    }
+                }
+
                 internalStaff.setEmail(staffToEdit.getEmail());
                 internalStaff.setName(staffToEdit.getName());
                 internalStaffRepository.save(internalStaff);
@@ -133,24 +139,30 @@ public class InternalStaffService {
         }
     }
 
-    public void editStaffPassword(Long id, String oldPassword, String newPassword) throws EditAdminException {
+    public void editStaffPassword(Long id, String oldPassword, String newPassword) throws EditPasswordException {
         try {
             Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(id);
 
             if (internalStaffOptional.isPresent()) {
                 InternalStaff internalStaff = internalStaffOptional.get();
-                if (encoder.matches(oldPassword, internalStaff.getPassword())) {
+
+                if (oldPassword.equals(newPassword)) {
+                    throw new EditAdminException("New password must be different from old password!");
+
+                } else if (encoder.matches(oldPassword, internalStaff.getPassword())) {
                     internalStaff.setPassword(encoder.encode(newPassword));
                     internalStaffRepository.save(internalStaff);
+                    System.out.println("successfully changed password!");
+
                 } else {
-                    throw new BadRequestException("Incorrect old password!");
+                    throw new EditPasswordException("Incorrect old password!");
                 }
 
             } else {
                 throw new EditAdminException("Admin staff not found!");
             }
         } catch (Exception ex) {
-            throw new EditAdminException(ex.getMessage());
+            throw new EditPasswordException(ex.getMessage());
         }
     }
 
