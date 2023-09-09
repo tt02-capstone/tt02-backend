@@ -23,8 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class VendorService {
@@ -186,15 +185,16 @@ public class VendorService {
 
     public VendorStaff retrieveVendorProfile(Long vendorId) throws IllegalArgumentException, VendorNotFoundException {
         try {
-            VendorStaff vendor = vendorRepository.findById(vendorId).get();
+            Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorId);
 
-            if (vendor == null) {
+            if (vendorOptional.isPresent()) {
+                VendorStaff vendorStaff = vendorOptional.get();
+                vendorStaff.setPassword(null);
+                return vendorStaff;
+            } else {
                 throw new VendorNotFoundException("Vendor not found!");
             }
 
-            vendor.setPassword(null);
-
-            return vendor;
         } catch(Exception ex) {
             throw new VendorNotFoundException(ex.getMessage());
         }
