@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.*;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/staff")
@@ -27,10 +29,16 @@ public class InternalStaffController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping ("/createStaff")
+    @PutMapping ("/createStaff")
     public ResponseEntity<Long> createStaff(@RequestBody InternalStaff internalStaffToCreate) throws BadRequestException {
         Long staffId = internalStaffService.createStaff(internalStaffToCreate);
         return ResponseEntity.ok(staffId);
+    }
+
+    @GetMapping("/getAllStaff")
+    public ResponseEntity<List<InternalStaff>> getAllStaff() {
+        List<InternalStaff> internalStaffList = internalStaffService.retrieveAllStaff();
+        return ResponseEntity.ok(internalStaffList);
     }
 
     @GetMapping("/getStaffProfile/{staffId}")

@@ -30,7 +30,7 @@ public class InternalStaffService {
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public InternalStaff staffLogin(String email, String password) throws NotFoundException, BadRequestException {
-        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(email);
+        InternalStaff internalStaff = internalStaffRepository.getInternalStaffByEmail(email);
 
         if (internalStaff == null) {
             throw new NotFoundException("There is no staff account associated with this email address");
@@ -64,12 +64,20 @@ public class InternalStaffService {
     }
 
     public Long createStaff(InternalStaff internalStaffToCreate) throws BadRequestException {
-        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(internalStaffToCreate.getEmail());
+        InternalStaff internalStaff = internalStaffRepository.getInternalStaffByEmail(internalStaffToCreate.getEmail());
 
         if (internalStaff != null) {
-            throw new BadRequestException("The email address has been used, please enter another email");
+            throw new BadRequestException("Email is in used, please enter another email!");
         }
 
+        Long latestStaffNum = internalStaffRepository.getLatestStaffNum();
+        if (latestStaffNum == null || latestStaffNum < 1L) {
+            latestStaffNum = 1L;
+        } else {
+            latestStaffNum++;
+        }
+
+        internalStaffToCreate.setStaff_num(latestStaffNum);
         internalStaffToCreate.setPassword(encoder.encode(internalStaffToCreate.getPassword()));
         internalStaffRepository.save(internalStaffToCreate);
 
@@ -89,7 +97,13 @@ public class InternalStaffService {
     }
 
     public List<InternalStaff> retrieveAllStaff() {
-        return internalStaffRepository.findAll();
+        List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
+
+        for (InternalStaff i : internalStaffList) {
+            i.setPassword(null);
+        }
+
+        return internalStaffList;
     }
 
     public InternalStaff getStaffProfile(Long staffId) throws IllegalArgumentException, AdminNotFoundException {
@@ -168,7 +182,7 @@ public class InternalStaffService {
 
     public String passwordResetStageOne(String email) throws BadRequestException {
         String passwordResetToken = UUID.randomUUID().toString();
-        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(email);
+        InternalStaff internalStaff = internalStaffRepository.getInternalStaffByEmail(email);
 
         if (internalStaff == null) {
             throw new BadRequestException("There is no account associated with this email address");
@@ -199,7 +213,7 @@ public class InternalStaffService {
 
     public String passwordResetStageTwo(String token, String password) throws BadRequestException {
         System.out.println(token);
-        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByToken(token);
+        InternalStaff internalStaff = internalStaffRepository.getInternalStaffByToken(token);
 
         if (internalStaff == null) {
             throw new BadRequestException("Invalid token");

@@ -8,11 +8,17 @@ import org.springframework.data.jpa.repository.Query;
 public interface InternalStaffRepository extends JpaRepository<InternalStaff, Long> {
 
     @Query("SELECT ins FROM InternalStaff ins WHERE ins.email=?1")
-    InternalStaff retrieveInternalStaffByEmail(String email);
+    InternalStaff getInternalStaffByEmail(String email);
 
     @Query("SELECT ins FROM InternalStaff ins WHERE ins.password_reset_token=?1")
-    InternalStaff retrieveInternalStaffByToken(String token);
+    InternalStaff getInternalStaffByToken(String token);
 
     @Query("SELECT u.user_id FROM User u WHERE u.email = ?1")
     Long getAdminByEmail(String email);
+
+    @Query("SELECT MAX(s.staff_num) FROM InternalStaff s")
+    Long getLatestStaffNum();
+
+//    @Query(SELECT )
+//    List<InternalStaff> getListOfInternalStaffSortedById(String order)
 }
