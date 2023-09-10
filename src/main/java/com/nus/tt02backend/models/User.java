@@ -3,6 +3,8 @@ package com.nus.tt02backend.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Builder
@@ -26,4 +28,10 @@ public class User {
 
     @Column(nullable = false)
     private Boolean is_blocked;
+
+    @Column
+    private String password_reset_token;
+
+    @Column
+    private LocalDateTime token_date;
 }

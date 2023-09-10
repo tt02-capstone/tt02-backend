@@ -33,4 +33,17 @@ public class TouristController {
         Long touristId = touristService.createTourist(touristToCreate);
         return ResponseEntity.ok(touristId);
     }
+
+    @PostMapping ("/passwordResetStageOne/{email}")
+    public ResponseEntity<String> passwordResetStageOne(@PathVariable String email) throws BadRequestException {
+        String successMessage = touristService.passwordResetStageOne(email);
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @PostMapping ("/passwordResetStageTwo/{token}/{password}")
+    public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token, @PathVariable String password)
+            throws BadRequestException {
+        String successMessage = touristService.passwordResetStageTwo(token, password);
+        return ResponseEntity.ok(successMessage);
+    }
 }
