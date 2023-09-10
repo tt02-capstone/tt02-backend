@@ -1,5 +1,7 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +30,9 @@ public class User {
 
     @Column(nullable = false)
     private Boolean is_blocked;
+
+    @Enumerated(EnumType.STRING)
+    private UserTypeEnum userTypeEnum;
 
     @Column
     private String password_reset_token;
