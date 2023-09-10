@@ -1,15 +1,14 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.*;
-import com.nus.tt02backend.models.Price;
-import com.nus.tt02backend.models.Vendor;
-import com.nus.tt02backend.models.VendorStaff;
-import com.nus.tt02backend.repositories.PriceRepository;
-import com.nus.tt02backend.repositories.VendorStaffRepository;
+import com.nus.tt02backend.models.*;
+import com.nus.tt02backend.models.enums.GenericLocationEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
+import com.nus.tt02backend.repositories.*;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.nus.tt02backend.models.Attraction;
-import com.nus.tt02backend.repositories.AttractionRepository;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Attr;
 
 import java.util.*;
 import java.util.List;
@@ -25,8 +24,82 @@ public class AttractionService {
     @Autowired
     PriceRepository priceRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    TouristRepository touristRepository;
+
+    @Autowired
+    LocalRepository localRepository;
+
+    public User findUser(Long userId) throws NotFoundException {
+        try {
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isPresent()) {
+                return userOptional.get();
+            } else {
+                throw new NotFoundException("User not found!");
+            }
+        } catch(Exception ex) {
+            throw new NotFoundException(ex.getMessage());
+        }
+    }
+
+    public Tourist findTourist(Long touristId) throws NotFoundException {
+        try {
+            Tourist tourist = touristRepository.getTouristByUserId(touristId);
+            if (tourist != null) {
+                return tourist;
+            } else {
+                throw new NotFoundException("Tourist not found!");
+            }
+        } catch (Exception ex) {
+            throw new NotFoundException(ex.getMessage());
+        }
+    }
+
+    public Local findLocal(Long localId) throws NotFoundException {
+        try {
+            Local local = localRepository.getLocalByUserId(localId);
+            if (local != null) {
+                return local;
+            } else {
+                throw new NotFoundException("Local not found!");
+            }
+        } catch (Exception ex) {
+            throw new NotFoundException(ex.getMessage());
+        }
+    }
+
+    public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
+        try {
+            Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
+            if (vendorOptional.isPresent()) {
+                return vendorOptional.get();
+            } else {
+                throw new NotFoundException("Vendor not found!");
+            }
+
+        } catch(Exception ex) {
+            throw new NotFoundException(ex.getMessage());
+        }
+    }
+
     public List<Attraction> retrieveAllAttraction() {
         return attractionRepository.findAll();
+    }
+
+    public List<Attraction> retrieveAllPublishedAttraction() { // for mobile view
+        List<Attraction> attractionList = attractionRepository.findAll();
+        List<Attraction> publishedList = new ArrayList<>();
+        for (Attraction a : attractionList) {
+            if (a.getIs_published() == Boolean.TRUE) {
+                publishedList.add(a);
+            }
+        }
+
+        return publishedList;
     }
 
     public Attraction retrieveAttraction(Long attractionId) throws NotFoundException {
@@ -42,19 +115,25 @@ public class AttractionService {
         }
     }
 
-    public VendorStaff retrieveVendor(Long vendorId) throws IllegalArgumentException, NotFoundException {
-        try {
-            Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorId);
+    public List<Attraction> retrieveAllAttractionByVendor(Long vendorStaffId) throws NotFoundException {
+        VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
+        Vendor vendor = vendorStaff.getVendor();
 
-            if (vendorOptional.isPresent()) {
-                return vendorOptional.get();
-            } else {
-                throw new NotFoundException("Vendor not found!");
-            }
-
-        } catch(Exception ex) {
-            throw new NotFoundException(ex.getMessage());
+        if (!vendor.getAttraction_list().isEmpty()) {
+            return vendor.getAttraction_list();
+        } else {
+            throw new NotFoundException("Attractions not found!");
         }
+    }
+
+    public Attraction retrieveAttractionByVendor(Long vendorStaffId, Long attractionId) throws NotFoundException {
+        List<Attraction> attractionList = retrieveAllAttractionByVendor(vendorStaffId);
+        for (Attraction a : attractionList) {
+            if (a.getAttraction_id().equals(attractionId)) {
+                return a;
+            }
+        }
+        throw new NotFoundException("Attraction not found!"); // if the attraction is not part of vendor's listing
     }
 
     public List<Price> createPriceList(List<Price> price_list) {
@@ -140,4 +219,87 @@ public class AttractionService {
 
         attractionRepository.save(attraction);
     }
+
+    public List<Attraction> relatedAttractionRecommendation (Long currentAttractionId) throws NotFoundException {
+        Attraction currentAttraction = retrieveAttraction(currentAttractionId);
+        GenericLocationEnum location = currentAttraction.getGeneric_location();
+
+        List<Attraction> publishedList = retrieveAllPublishedAttraction(); // recommendation cannot be based on hidden listings
+        List<Attraction> recommendedAttractionList = new ArrayList<>();
+
+        if (!publishedList.isEmpty()) {
+            for (Attraction a : publishedList) {
+                if (!a.getAttraction_id().equals(currentAttractionId) && a.getGeneric_location() == location) {
+                    recommendedAttractionList.add(a);
+                }
+            }
+        } else {
+            throw new NotFoundException("List of attractions is empty!");
+        }
+
+        if (recommendedAttractionList.isEmpty()) {
+            throw new NotFoundException("No recommended attractions for this listing!");
+        } else {
+            Collections.shuffle(recommendedAttractionList, new Random()); // anyhow shuffle so it wont keep return the same things
+            return recommendedAttractionList.subList(0,2); // take the first 2 will update accordingly ltr on
+        }
+    }
+
+    public List<Attraction> retrieveAllSavedAttractionsForTouristAndLocal(Long userId) throws NotFoundException, BadRequestException {
+        UserTypeEnum touristType = UserTypeEnum.TOURIST;
+        UserTypeEnum localType = UserTypeEnum.LOCAL;
+
+        User currentUser = findUser(userId);
+
+        if (currentUser.getUserTypeEnum().equals(touristType)) {
+            Tourist tourist = findTourist(userId);
+            return tourist.getAttraction_list();
+        } else if (currentUser.getUserTypeEnum().equals(localType)) {
+            Local local = findLocal(userId);
+            return local.getAttraction_list();
+        } else {
+            throw new BadRequestException("Current user type not tourist or local");
+        }
+    }
+
+    public void saveAttractionForTouristAndLocal (Long userId, Long currentAttractionId) throws BadRequestException, NotFoundException {
+        Attraction attractionToSave = retrieveAttraction(currentAttractionId);
+        if (attractionToSave.getIs_published() == Boolean.FALSE) {
+            throw new BadRequestException("Can't save a hidden attraction!"); // shouldn't trigger if thr is a frontend
+        }
+
+        UserTypeEnum touristType = UserTypeEnum.TOURIST;
+        UserTypeEnum localType = UserTypeEnum.LOCAL;
+
+        User currentUser = findUser(userId);
+        if (currentUser.getUserTypeEnum().equals(touristType)) {
+            Tourist tourist = findTourist(userId);
+            List<Attraction> currentTouristSavedAttractions = tourist.getAttraction_list();
+
+            for (Attraction a : currentTouristSavedAttractions) {
+                if (a.getAttraction_id().equals(currentAttractionId)) {
+                    throw new BadRequestException("You have already saved this attraction!");
+                }
+            }
+
+            currentTouristSavedAttractions.add(attractionToSave);
+            touristRepository.save(tourist); // update the list of saved attractions
+
+        } else if (currentUser.getUserTypeEnum().equals(localType)) {
+            Local local = findLocal(userId);
+            List<Attraction> currentLocalSavedAttractions = local.getAttraction_list();
+
+            for (Attraction a : currentLocalSavedAttractions) {
+                if (a.getAttraction_id().equals(currentAttractionId)) {
+                    throw new BadRequestException("You have already saved this attraction!");
+                }
+            }
+
+            currentLocalSavedAttractions.add(attractionToSave);
+            localRepository.save(local);
+        } else {
+            throw new BadRequestException("Invalid User Type! Only Local or Tourist can save an attraction!");
+        }
+    }
+
 }
