@@ -5,6 +5,7 @@ import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
+import com.nus.tt02backend.repositories.UserRepository;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import jakarta.mail.MessagingException;
@@ -26,6 +27,8 @@ public class VendorStaffService {
     VendorStaffRepository vendorStaffRepository;
     @Autowired
     VendorRepository vendorRepository;
+    @Autowired
+    UserRepository userRepository;
     @Autowired
     JavaMailSender javaMailSender;
 
@@ -76,10 +79,10 @@ public class VendorStaffService {
     }
 
     public Long createVendorStaff(VendorStaff vendorStaffToCreate) throws BadRequestException  {
-        VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(vendorStaffToCreate.getEmail());
+        Long existingId = userRepository.getUserIdByEmail(vendorStaffToCreate.getEmail());
 
-        if (vendorStaff != null) {
-            throw new BadRequestException("The email address has been used, please enter another email");
+        if (existingId != null) {
+            throw new BadRequestException("Email address in used, please enter another email!");
         }
 
         Vendor vendorToCreate = vendorStaffToCreate.getVendor();
@@ -104,8 +107,18 @@ public class VendorStaffService {
         return vendorStaffToCreate.getUser_id();
     }
 
-    public List<VendorStaff> retrieveAllVendors() {
+    public List<VendorStaff> getAllVendorStaff() {
         return vendorStaffRepository.findAll();
+    }
+
+    public List<VendorStaff> getAllAssociatedVendorStaff(Long vendorId) {
+        List<VendorStaff> vendorStaffs = vendorStaffRepository.getAllAssociatedVendorStaff(vendorId);
+
+        for (VendorStaff vs : vendorStaffs) {
+            vs.getVendor().setVendor_staff_list(null);
+        }
+
+        return vendorStaffs;
     }
 
     public String passwordResetStageOne(String email) throws BadRequestException {

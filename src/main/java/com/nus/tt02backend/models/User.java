@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,4 +35,7 @@ public class User {
 
     @Column
     private LocalDateTime token_date;
+
+    @Enumerated(EnumType.STRING)
+    private UserTypeEnum user_type;
 }

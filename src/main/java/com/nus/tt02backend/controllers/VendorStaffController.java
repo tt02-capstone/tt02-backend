@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.*;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/vendorStaff")
@@ -31,6 +33,12 @@ public class VendorStaffController {
     public ResponseEntity<Long> createVendorStaff(@RequestBody VendorStaff vendorStaffToCreate) throws BadRequestException {
         Long vendorStaffId = vendorStaffService.createVendorStaff(vendorStaffToCreate);
         return ResponseEntity.ok(vendorStaffId);
+    }
+
+    @GetMapping("/getAllAssociatedVendorStaff/{vendorId}")
+    public ResponseEntity<List<VendorStaff>> getAllVendorStaff(@PathVariable Long vendorId) {
+        List<VendorStaff> vendorStaffs = vendorStaffService.getAllAssociatedVendorStaff(vendorId);
+        return ResponseEntity.ok(vendorStaffs);
     }
 
     @PutMapping ("/passwordResetStageOne/{email}")
