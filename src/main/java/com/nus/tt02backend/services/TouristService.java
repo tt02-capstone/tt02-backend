@@ -58,6 +58,8 @@ public class TouristService {
         } else {
             throw new BadRequestException("Incorrect password");
         }
+
+        throw new NotFoundException("Tourist account not found");
     }
 
     public void updateTourist(Tourist touristToUpdate) throws NotFoundException {
