@@ -46,4 +46,11 @@ public class VendorController {
         String successMessage = vendorService.passwordResetStageTwo(token, password);
         return ResponseEntity.ok(successMessage);
     }
+
+    @GetMapping ("/verifyEmail/{token}")
+    public ResponseEntity<String> verifyEmail(@PathVariable String token)
+            throws BadRequestException {
+        String successMessage = vendorService.verifyEmail(token);
+        return ResponseEntity.ok(successMessage);
+    }
 }
