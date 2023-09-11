@@ -29,7 +29,7 @@ public class InternalStaffController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping ("/createStaff")
+    @PostMapping ("/createStaff")
     public ResponseEntity<Long> createStaff(@RequestBody InternalStaff internalStaffToCreate) throws BadRequestException {
         Long staffId = internalStaffService.createStaff(internalStaffToCreate);
         return ResponseEntity.ok(staffId);
@@ -47,15 +47,15 @@ public class InternalStaffController {
         return ResponseEntity.ok(internalStaff);
     }
 
-    @PostMapping("/editAdminProfile")
+    @PutMapping("/editStaffProfile")
     public ResponseEntity<InternalStaff> editStaffProfile(@RequestBody InternalStaff staffToEdit) throws EditAdminException {
         InternalStaff internalStaff = internalStaffService.editStaffProfile(staffToEdit);
         return ResponseEntity.ok(internalStaff);
     }
 
-    @PostMapping("/editAdminPassword/{staffId}/{oldPassword}/{newPassword}")
+    @PutMapping("/editStaffPassword/{staffId}/{oldPassword}/{newPassword}")
     public void editStaffPassword(@PathVariable Long staffId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
-        internalStaffService.editStaffPassword(staffId, oldPassword, newPassword);
+        internalStaffService.editInternalStaffPassword(staffId, oldPassword, newPassword);
     }
 
     @PostMapping ("/passwordResetStageOne/{email}")

@@ -14,7 +14,7 @@ public interface VendorStaffRepository extends JpaRepository<VendorStaff, Long> 
     VendorStaff retrieveVendorStaffByToken(String token);
 
     @Query("SELECT u.user_id FROM User u WHERE u.email = ?1")
-    Long getVendorStaffByEmail(String email);
+    Long getVendorStaffIdByEmail(String email);
 
     @Query("SELECT vs FROM VendorStaff vs WHERE vs.vendor.vendor_id = ?1")
     List<VendorStaff> getAllAssociatedVendorStaff(Long vendorId);

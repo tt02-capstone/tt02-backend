@@ -2,8 +2,10 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.*;
 
+import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.UserRepository;
 import com.nus.tt02backend.repositories.VendorRepository;
@@ -46,7 +48,7 @@ public class VendorStaffService {
                 && vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
             vendorStaff.getVendor().setWithdrawal_list(null);
             vendorStaff.getVendor().setVendor_staff_list(null);
-            vendorStaff.getVendor().setComment_list(null);
+            vendorStaff.setComment_list(null);
             vendorStaff.getVendor().setPost_list(null);
             vendorStaff.getVendor().setAttraction_list(null);
             vendorStaff.getVendor().setAccommodation_list(null);
@@ -79,10 +81,10 @@ public class VendorStaffService {
     }
 
     public Long createVendorStaff(VendorStaff vendorStaffToCreate) throws BadRequestException  {
-        Long existingId = userRepository.getUserIdByEmail(vendorStaffToCreate.getEmail());
 
-        if (existingId != null) {
-            throw new BadRequestException("Email address in used, please enter another email!");
+        Long existingId = vendorStaffRepository.getVendorStaffIdByEmail(vendorStaffToCreate.getEmail());
+        if (existingId != null && existingId != vendorStaffToCreate.getUser_id()) { // but there is an existing email
+            throw new BadRequestException("Email currently in use. Please use a different email!");
         }
 
         Vendor vendorToCreate = vendorStaffToCreate.getVendor();
@@ -218,23 +220,21 @@ public class VendorStaffService {
             if (vendorStaffOptional.isPresent()) {
                 VendorStaff vendorStaff = vendorStaffOptional.get();
 
-                if (!vendorStaff.getEmail().equals(vendorStaffToEdit.getEmail())) { // user wants to change email
-                    Long existingId = vendorStaffRepository.getVendorStaffByEmail(vendorStaffToEdit.getEmail());
-                    if (existingId != null) { // but there is an existing email
-                        throw new EditVendorStaffException("Email currently in use. Please use a different email!");
-                    }
+                Long existingId = vendorStaffRepository.getVendorStaffIdByEmail(vendorStaffToEdit.getEmail());
+                if (existingId != null && existingId != vendorStaffToEdit.getUser_id()) { // but there is an existing email
+                    throw new EditVendorStaffException("Email currently in use. Please use a different email!");
                 }
 
                 vendorStaff.setEmail(vendorStaffToEdit.getEmail());
                 vendorStaff.setName(vendorStaffToEdit.getName());
                 vendorStaff.setPosition(vendorStaffToEdit.getPosition());
                 vendorStaffRepository.save(vendorStaff);
-                vendorStaff.setVendor(null);
                 vendorStaff.setPassword(null);
+                vendorStaff.getVendor().setVendor_staff_list(null);
                 return vendorStaff;
 
             } else {
-                throw new EditVendorStaffException("Admin staff not found!");
+                throw new EditVendorStaffException("Vendor staff not found!");
             }
         } catch (Exception ex) {
             throw new EditVendorStaffException(ex.getMessage());
@@ -264,6 +264,24 @@ public class VendorStaffService {
             }
         } catch (Exception ex) {
             throw new EditPasswordException(ex.getMessage());
+        }
+    }
+
+    public void toggleBlock(Long vendorStaffId) throws NotFoundException, ToggleBlockException {
+
+        Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(vendorStaffId);
+
+        if (vendorStaffOptional.isPresent()) {
+            VendorStaff vendorStaff = vendorStaffOptional.get();
+
+            if (vendorStaff.getIs_master_account() && !vendorStaff.getIs_blocked()) { // master vendor staff
+                throw new ToggleBlockException("Vendor Staff access rights prevents him from being blocked!");
+            }
+            vendorStaff.setIs_blocked(!vendorStaff.getIs_blocked());
+            vendorStaffRepository.save(vendorStaff);
+
+        } else {
+            throw new NotFoundException("Vendor Staff not found!");
         }
     }
 }

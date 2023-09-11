@@ -63,7 +63,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "vendor_id")
-    private Vendor vendor_user;
+    private VendorStaff vendor_user;
 
     @ManyToOne
     @JoinColumn(name = "internal_staff_id")

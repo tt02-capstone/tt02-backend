@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.services.VendorStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -69,5 +70,10 @@ public class VendorStaffController {
     @PutMapping("/editVendorStaffPassword/{staffId}/{oldPassword}/{newPassword}")
     public void editVendorStaffPassword(@PathVariable Long staffId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
         vendorStaffService.editVendorStaffPassword(staffId, oldPassword, newPassword);
+    }
+
+    @PutMapping("/toggleBlock/{vendorStaffId}")
+    public void vendorStaffLogin(@PathVariable Long vendorStaffId) throws NotFoundException, ToggleBlockException {
+        vendorStaffService.toggleBlock(vendorStaffId);
     }
 }

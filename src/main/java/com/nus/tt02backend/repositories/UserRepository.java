@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    @Query("SELECT u.user_id FROM User u WHERE u.email = ?1")
-    Long getUserIdByEmail(String email);
+//    @Query("SELECT u.user_id FROM User u WHERE u.email = ?1")
+//    Long getUserIdByEmail(String email);
 }

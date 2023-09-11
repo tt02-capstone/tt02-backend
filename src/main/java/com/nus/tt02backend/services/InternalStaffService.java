@@ -2,6 +2,7 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
+import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.repositories.InternalStaffRepository;
 
 import org.hibernate.Internal;
@@ -64,10 +65,10 @@ public class InternalStaffService {
     }
 
     public Long createStaff(InternalStaff internalStaffToCreate) throws BadRequestException {
-        InternalStaff internalStaff = internalStaffRepository.getInternalStaffByEmail(internalStaffToCreate.getEmail());
 
-        if (internalStaff != null) {
-            throw new BadRequestException("Email is in used, please enter another email!");
+        Long existingId = internalStaffRepository.getAdminByEmail(internalStaffToCreate.getEmail());
+        if (existingId != null && existingId != internalStaffToCreate.getUser_id()) { // but there is an existing email
+            throw new BadRequestException("Email currently in use. Please use a different email!");
         }
 
         Long latestStaffNum = internalStaffRepository.getLatestStaffNum();
@@ -132,11 +133,9 @@ public class InternalStaffService {
             if (internalStaffOptional.isPresent()) {
                 InternalStaff internalStaff = internalStaffOptional.get();
 
-                if (!internalStaff.getEmail().equals(staffToEdit.getEmail())) { // user wants to change email
-                    Long existingId = internalStaffRepository.getAdminByEmail(staffToEdit.getEmail());
-                    if (existingId != null) { // but there is an existing email
-                        throw new EditAdminException("Email currently in use. Please use a different email!");
-                    }
+                Long existingId = internalStaffRepository.getAdminByEmail(staffToEdit.getEmail());
+                if (existingId != null && existingId != staffToEdit.getUser_id()) { // but there is an existing email
+                    throw new EditAdminException("Email currently in use. Please use a different email!");
                 }
 
                 internalStaff.setEmail(staffToEdit.getEmail());
@@ -153,7 +152,7 @@ public class InternalStaffService {
         }
     }
 
-    public void editStaffPassword(Long id, String oldPassword, String newPassword) throws EditPasswordException {
+    public void editInternalStaffPassword(Long id, String oldPassword, String newPassword) throws EditPasswordException {
         try {
             Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(id);
 
@@ -161,7 +160,7 @@ public class InternalStaffService {
                 InternalStaff internalStaff = internalStaffOptional.get();
 
                 if (oldPassword.equals(newPassword)) {
-                    throw new EditAdminException("New password must be different from old password!");
+                    throw new EditPasswordException("New password must be different from old password!");
 
                 } else if (encoder.matches(oldPassword, internalStaff.getPassword())) {
                     internalStaff.setPassword(encoder.encode(newPassword));
@@ -172,7 +171,7 @@ public class InternalStaffService {
                 }
 
             } else {
-                throw new EditAdminException("Admin staff not found!");
+                throw new EditUserException("User not found!");
             }
         } catch (Exception ex) {
             throw new EditPasswordException(ex.getMessage());
