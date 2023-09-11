@@ -23,7 +23,7 @@ public class InternalStaffController {
     }
 
     @PutMapping ("/updateStaff")
-    public ResponseEntity<Void> staffLogin(@RequestBody InternalStaff internalStaffToUpdate) throws NotFoundException {
+    public ResponseEntity<Void> updateStaff(@RequestBody InternalStaff internalStaffToUpdate) throws NotFoundException {
         internalStaffService.updateStaff(internalStaffToUpdate);
         return ResponseEntity.noContent().build();
     }

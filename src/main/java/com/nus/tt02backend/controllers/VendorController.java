@@ -23,7 +23,7 @@ public class VendorController {
     }
 
     @PutMapping ("/updateVendor")
-    public ResponseEntity<Void> vendorLogin(@RequestBody VendorStaff vendorStaffToUpdate) throws NotFoundException {
+    public ResponseEntity<Void> updateVendor(@RequestBody VendorStaff vendorStaffToUpdate) throws NotFoundException {
         vendorService.updateVendor(vendorStaffToUpdate);
         return ResponseEntity.noContent().build();
     }
