@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 //import com.nus.tt02backend.services.PaymentService;
 import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.nus.tt02backend.services.PaymentService;
 import com.stripe.model.Customer;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentMethodCollection;
@@ -25,6 +26,9 @@ import java.util.Map;
 @CrossOrigin
 @RequestMapping("/payment")
 public class PaymentController {
+
+    @Autowired
+    PaymentService paymentService;
 
     @PostMapping("/createStripeCustomer/{tourist_email}/{tourist_name}")
     public String createCustomer(@PathVariable String tourist_email, @PathVariable String tourist_name) {
