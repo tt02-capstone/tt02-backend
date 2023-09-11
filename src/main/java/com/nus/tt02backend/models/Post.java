@@ -53,8 +53,8 @@ public class Post {
     private Local local_user;
 
     @ManyToOne
-    @JoinColumn(name = "vendor_id")
-    private Vendor vendor_user;
+    @JoinColumn(name = "vendor_staff_id")
+    private VendorStaff vendor_staff_user;
 
     @ManyToOne
     @JoinColumn(name = "internal_staff_id")

@@ -45,8 +45,8 @@ public class VendorService {
                 && vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
             vendorStaff.getVendor().setWithdrawal_list(null);
             vendorStaff.getVendor().setVendor_staff_list(null);
-            vendorStaff.getVendor().setComment_list(null);
-            vendorStaff.getVendor().setPost_list(null);
+//            vendorStaff.getVendor().setComment_list(null);
+//            vendorStaff.getVendor().setPost_list(null);
             vendorStaff.getVendor().setAttraction_list(null);
             vendorStaff.getVendor().setAccommodation_list(null);
             vendorStaff.getVendor().setRestaurant_list(null);
