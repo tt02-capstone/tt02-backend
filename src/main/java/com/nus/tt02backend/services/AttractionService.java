@@ -3,6 +3,8 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
+import com.nus.tt02backend.models.enums.PriceTierEnum;
+import com.nus.tt02backend.models.enums.TicketEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.aspectj.weaver.ast.Not;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Attr;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.List;
 
@@ -136,6 +139,50 @@ public class AttractionService {
         throw new NotFoundException("Attraction not found!"); // if the attraction is not part of vendor's listing
     }
 
+    public PriceTierEnum priceTierEstimation(List<Price> price_list) {
+        // do an avg pricing by using 2 adult + 1 child + 1 senior for attractions
+        // based on tourist pricing for now + logic can check in the future
+        // tier 1 = 0 - 50 , tier 2 = 51 - 100 , tier 3 = 101 - 200, tier 4 > 200
+
+        BigDecimal total = new BigDecimal("0");
+        TicketEnum child = TicketEnum.CHILD;
+        TicketEnum adult = TicketEnum.ADULT;
+        TicketEnum senior = TicketEnum.SENIOR;
+
+        for (Price price : price_list) {
+            if (price.getTicket_type().equals(child)) {
+                BigDecimal amt = price.getTourist_amount();
+                total = total.add(amt);
+            } else if (price.getTicket_type().equals(senior)) {
+                BigDecimal amt = price.getTourist_amount();
+                total = total.add(amt);
+            } else if (price.getTicket_type().equals(adult)) {
+                BigDecimal amt = price.getTourist_amount();
+                BigDecimal two = new BigDecimal("2");
+                BigDecimal amt2 = amt.multiply(two);
+                total = total.add(amt2);
+            }
+        }
+
+        BigDecimal tier1Min = new BigDecimal("0");
+        BigDecimal tier1 = new BigDecimal("50");
+        BigDecimal tier2 = new BigDecimal("100");
+        BigDecimal tier3 = new BigDecimal("150");
+        BigDecimal tier4 = new BigDecimal("200");
+
+        if (total.compareTo(tier1Min) >= 0 && total.compareTo(tier1) <= 0) {
+            return PriceTierEnum.TIER_1;
+        } else if (total.compareTo(tier1) >= 0 && total.compareTo(tier2) <= 0 ) {
+            return PriceTierEnum.TIER_2;
+        } else if (total.compareTo(tier2) >= 0 && total.compareTo(tier3) <= 0) {
+            return PriceTierEnum.TIER_3;
+        } else if (total.compareTo(tier3) >= 0 && total.compareTo(tier4) <= 0) {
+            return PriceTierEnum.TIER_4;
+        } else {
+            return PriceTierEnum.TIER_5;
+        }
+    }
+
     public List<Price> createPriceList(List<Price> price_list) {
         List<Price> create_price_list = new ArrayList<Price>();
 
@@ -178,8 +225,10 @@ public class AttractionService {
 
         List<Price> price_list = attractionToCreate.getPrice_list(); // get the price list and process them as price obj
         List<Price> persisted_price_list = createPriceList(price_list);
+        PriceTierEnum priceTier = priceTierEstimation(persisted_price_list);
 
         attractionToCreate.setPrice_list(persisted_price_list); // set the price list w the newly created price objs
+        attractionToCreate.setEstimated_price_tier(priceTier);
         Attraction newAttraction = attractionRepository.save(attractionToCreate);
 
         Vendor vendor = vendorStaff.getVendor();
@@ -205,7 +254,6 @@ public class AttractionService {
     public void updateAttraction(VendorStaff vendorStaff, Attraction attractionToUpdate) throws NotFoundException {
         Attraction attraction = attractionRepository.findById(attractionToUpdate.getAttraction_id())
                 .orElseThrow(() -> new NotFoundException("Attraction Not Found!"));
-
         if (attractionToUpdate.getOpening_hours() != null && attractionToUpdate.getContact_num() != null &&
                 attractionToUpdate.getIs_published() != null && !attractionToUpdate.getPrice_list().isEmpty()) {
 
@@ -214,7 +262,10 @@ public class AttractionService {
             attraction.setIs_published(attractionToUpdate.getIs_published());
 
             List<Price> updatedPriceList = updatePriceList(attractionToUpdate.getPrice_list());
+            PriceTierEnum updatedTier = priceTierEstimation(updatedPriceList);
+
             attraction.setPrice_list(updatedPriceList);
+            attraction.setEstimated_price_tier(updatedTier);
         }
 
         attractionRepository.save(attraction);
