@@ -98,7 +98,7 @@ public class InternalStaffService {
         }
 
         internalStaff.setPassword_reset_token(passwordResetToken);
-        internalStaff.setToken_date(LocalDateTime.now());
+        internalStaff.setPassword_token_date(LocalDateTime.now());
         internalStaffRepository.save(internalStaff);
         String passwordResetLink = "http://localhost:3000/passwordreset?token=" + internalStaff.getPassword_reset_token();
         try {
@@ -128,13 +128,13 @@ public class InternalStaffService {
             throw new BadRequestException("Invalid token");
         }
 
-        if (Duration.between(internalStaff.getToken_date(), LocalDateTime.now()).toMinutes() > 60) {
+        if (Duration.between(internalStaff.getPassword_token_date(), LocalDateTime.now()).toMinutes() > 60) {
             throw new BadRequestException("Your token has expired, please request for a new password reset link");
         }
 
         internalStaff.setPassword(encoder.encode(password));
         internalStaff.setPassword_reset_token(null);
-        internalStaff.setToken_date(null);
+        internalStaff.setPassword_token_date(null);
         internalStaffRepository.save(internalStaff);
 
         try {

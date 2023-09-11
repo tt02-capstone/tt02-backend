@@ -30,8 +30,14 @@ public class User {
     private Boolean is_blocked;
 
     @Column
+    private String email_verification_token;
+
+    @Column
+    private Boolean email_verified;
+
+    @Column
     private String password_reset_token;
 
     @Column
-    private LocalDateTime token_date;
+    private LocalDateTime password_token_date;
 }
