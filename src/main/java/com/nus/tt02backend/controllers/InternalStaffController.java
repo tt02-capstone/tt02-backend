@@ -3,10 +3,14 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.InternalStaff;
+import com.nus.tt02backend.models.Vendor;
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.services.InternalStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -44,6 +48,20 @@ public class InternalStaffController {
     public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token, @PathVariable String password)
             throws BadRequestException {
         String successMessage = internalStaffService.passwordResetStageTwo(token, password);
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @GetMapping ("/retrievePendingApplications")
+    public ResponseEntity<List<Vendor>> retrievePendingApplications() {
+        List<Vendor> vendors = internalStaffService.retrievePendingApplications();
+        return ResponseEntity.ok(vendors);
+    }
+
+    @PutMapping ("/updateApplicationStatus/{vendorId}/{applicationStatus}")
+    public ResponseEntity<String> updateApplicationStatus(@PathVariable Long vendorId,
+                                                          @PathVariable ApplicationStatusEnum applicationStatus)
+            throws NotFoundException {
+        String successMessage = internalStaffService.updateApplicationStatus(vendorId, applicationStatus);
         return ResponseEntity.ok(successMessage);
     }
 }
