@@ -34,23 +34,4 @@ public class LocalController {
         return ResponseEntity.ok(localId);
     }
 
-    @PostMapping ("/passwordResetStageOne/{email}")
-    public ResponseEntity<String> passwordResetStageOne(@PathVariable String email) throws BadRequestException {
-        String successMessage = localService.passwordResetStageOne(email);
-        return ResponseEntity.ok(successMessage);
-    }
-
-    @PostMapping ("/passwordResetStageTwo/{token}")
-    public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token)
-            throws BadRequestException {
-        String successMessage = localService.passwordResetStageTwo(token);
-        return ResponseEntity.ok(successMessage);
-    }
-
-    @PostMapping ("/passwordResetStageThree/{token}/{password}")
-    public ResponseEntity<String> passwordResetStageThree(@PathVariable String token, @PathVariable String password)
-            throws BadRequestException {
-        String successMessage = localService.passwordResetStageThree(token, password);
-        return ResponseEntity.ok(successMessage);
-    }
 }
