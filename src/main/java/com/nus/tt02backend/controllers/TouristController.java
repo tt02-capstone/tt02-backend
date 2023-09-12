@@ -23,7 +23,7 @@ public class TouristController {
     }
 
     @PutMapping ("/update")
-    public ResponseEntity<Void> touristLogin(@RequestBody Tourist touristToUpdate) throws NotFoundException {
+    public ResponseEntity<Void> updateTourist(@RequestBody Tourist touristToUpdate) throws NotFoundException {
         touristService.updateTourist(touristToUpdate);
         return ResponseEntity.noContent().build();
     }

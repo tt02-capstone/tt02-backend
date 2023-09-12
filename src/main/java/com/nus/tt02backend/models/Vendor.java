@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.models.enums.VendorEnum;
 import jakarta.persistence.*;
@@ -14,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
 public class Vendor {
 
     @Id

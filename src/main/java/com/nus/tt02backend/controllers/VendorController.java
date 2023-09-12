@@ -23,7 +23,7 @@ public class VendorController {
     }
 
     @PutMapping ("/updateVendor")
-    public ResponseEntity<Void> vendorLogin(@RequestBody VendorStaff vendorStaffToUpdate) throws NotFoundException {
+    public ResponseEntity<Void> updateVendor(@RequestBody VendorStaff vendorStaffToUpdate) throws NotFoundException {
         vendorService.updateVendor(vendorStaffToUpdate);
         return ResponseEntity.noContent().build();
     }
@@ -32,5 +32,25 @@ public class VendorController {
     public ResponseEntity<Long> createVendor(@RequestBody VendorStaff vendorStaffToCreate) throws BadRequestException {
         Long vendorId = vendorService.createVendor(vendorStaffToCreate);
         return ResponseEntity.ok(vendorId);
+    }
+
+    @PostMapping ("/passwordResetStageOne/{email}")
+    public ResponseEntity<String> passwordResetStageOne(@PathVariable String email) throws BadRequestException {
+        String successMessage = vendorService.passwordResetStageOne(email);
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @PostMapping ("/passwordResetStageTwo/{token}/{password}")
+    public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token, @PathVariable String password)
+            throws BadRequestException {
+        String successMessage = vendorService.passwordResetStageTwo(token, password);
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @GetMapping ("/verifyEmail/{token}")
+    public ResponseEntity<String> verifyEmail(@PathVariable String token)
+            throws BadRequestException {
+        String successMessage = vendorService.verifyEmail(token);
+        return ResponseEntity.ok(successMessage);
     }
 }

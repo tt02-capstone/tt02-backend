@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
 public class VendorStaff extends User {
 
     @Column(nullable = false)

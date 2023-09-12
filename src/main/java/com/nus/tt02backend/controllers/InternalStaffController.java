@@ -23,7 +23,7 @@ public class InternalStaffController {
     }
 
     @PutMapping ("/updateStaff")
-    public ResponseEntity<Void> staffLogin(@RequestBody InternalStaff internalStaffToUpdate) throws NotFoundException {
+    public ResponseEntity<Void> updateStaff(@RequestBody InternalStaff internalStaffToUpdate) throws NotFoundException {
         internalStaffService.updateStaff(internalStaffToUpdate);
         return ResponseEntity.noContent().build();
     }
@@ -32,5 +32,18 @@ public class InternalStaffController {
     public ResponseEntity<Long> createStaff(@RequestBody InternalStaff internalStaffToCreate) throws BadRequestException {
         Long staffId = internalStaffService.createStaff(internalStaffToCreate);
         return ResponseEntity.ok(staffId);
+    }
+
+    @PostMapping ("/passwordResetStageOne/{email}")
+    public ResponseEntity<String> passwordResetStageOne(@PathVariable String email) throws BadRequestException {
+        String successMessage = internalStaffService.passwordResetStageOne(email);
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @PostMapping ("/passwordResetStageTwo/{token}/{password}")
+    public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token, @PathVariable String password)
+            throws BadRequestException {
+        String successMessage = internalStaffService.passwordResetStageTwo(token, password);
+        return ResponseEntity.ok(successMessage);
     }
 }
