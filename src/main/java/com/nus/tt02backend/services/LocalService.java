@@ -3,6 +3,7 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Local;
+import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.repositories.LocalRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -109,26 +110,26 @@ public class LocalService {
     }
 
     public String passwordResetStageOne(String email) throws BadRequestException {
-        String passwordResetToken = UUID.randomUUID().toString();
+        UUID uuid = UUID.randomUUID();
+        long otpValue = Math.abs(uuid.getLeastSignificantBits() % 10000); // Get the last 4 digits
+        String passwordResetOTP =  String.format("%04d", otpValue);
         Local local = localRepository.retrieveLocalByEmail(email);
 
         if (local == null) {
             throw new BadRequestException("There is no account associated with this email address");
         }
 
-        local.setPassword_reset_token(passwordResetToken);
+        local.setPassword_reset_token(passwordResetOTP);
         local.setToken_date(LocalDateTime.now());
         localRepository.save(local);
-        String passwordResetLink = "http://localhost:3000/passwordreset?token=" + local.getPassword_reset_token();
         try {
             String subject = "[WithinSG] Your Password Reset Instructions";
             String content = "<p>Dear " + local.getName() + ",</p>" +
                     "<p>A request was received to reset the password for your account." +
-                    "<p>You can reset your password by clicking on the button below: </p>" +
-                    "<a href=\"" + passwordResetLink +"\" target=\"_blank\">" +
-                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
-                    "Reset Password</button></a>" +
-                    "<p>Note that the link will expire after 60 minutes.</p>" +
+                    "<p>Please enter your vertification code into the WithinSG application: </p>" +
+                    "<a href=\"" + passwordResetOTP +"\" target=\"_blank\">" +
+                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" + passwordResetOTP + "</button></a>" +
+                    "<p>Note that the code will expire after 60 minutes.</p>" +
                     "<p>If you did not initiate this request, please let us know immediately by replying to this email</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
             sendEmail(local.getEmail(), subject, content);
@@ -139,7 +140,21 @@ public class LocalService {
         return "You will receive an email containing the instructions to reset your password.";
     }
 
-    public String passwordResetStageTwo(String token, String password) throws BadRequestException {
+    public String passwordResetStageTwo(String token) throws BadRequestException {
+        System.out.println(token);
+        Local local = localRepository.retrieveLocalByToken(token);
+
+        if (local == null) {
+            throw new BadRequestException("Invalid token");
+        }
+
+        if (Duration.between(local.getToken_date(), LocalDateTime.now()).toMinutes() > 60) {
+            throw new BadRequestException("Your token has expired, please request for a new password reset link");
+        }
+
+        return "The code is verified correctly";
+    }
+    public String passwordResetStageThree(String token, String password) throws BadRequestException {
         System.out.println(token);
         Local local = localRepository.retrieveLocalByToken(token);
 
