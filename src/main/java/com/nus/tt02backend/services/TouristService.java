@@ -109,26 +109,28 @@ public class TouristService {
     }
 
     public String passwordResetStageOne(String email) throws BadRequestException {
-        String passwordResetToken = UUID.randomUUID().toString();
+        UUID uuid = UUID.randomUUID();
+        long otpValue = Math.abs(uuid.getLeastSignificantBits() % 10000); // Get the last 4 digits
+        String passwordResetOTP =  String.format("%04d", otpValue);
+
         Tourist tourist = touristRepository.retrieveTouristByEmail(email);
 
         if (tourist == null) {
             throw new BadRequestException("There is no account associated with this email address");
         }
 
-        tourist.setPassword_reset_token(passwordResetToken);
+        tourist.setPassword_reset_token(passwordResetOTP);
         tourist.setToken_date(LocalDateTime.now());
         touristRepository.save(tourist);
-        String passwordResetLink = "http://localhost:3000/passwordreset?token=" + tourist.getPassword_reset_token();
+
         try {
             String subject = "[WithinSG] Your Password Reset Instructions";
             String content = "<p>Dear " + tourist.getName() + ",</p>" +
                     "<p>A request was received to reset the password for your account." +
-                    "<p>You can reset your password by clicking on the button below: </p>" +
-                    "<a href=\"" + passwordResetLink +"\" target=\"_blank\">" +
-                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
-                    "Reset Password</button></a>" +
-                    "<p>Note that the link will expire after 60 minutes.</p>" +
+                    "<p>Please enter your vertification code into the WithinSG application: </p>" +
+                    "<a href=\"" + passwordResetOTP +"\" target=\"_blank\">" +
+                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" + passwordResetOTP + "</button></a>" +
+                    "<p>Note that the code will expire after 60 minutes.</p>" +
                     "<p>If you did not initiate this request, please let us know immediately by replying to this email</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
             sendEmail(tourist.getEmail(), subject, content);
@@ -139,7 +141,22 @@ public class TouristService {
         return "You will receive an email containing the instructions to reset your password.";
     }
 
-    public String passwordResetStageTwo(String token, String password) throws BadRequestException {
+    public String passwordResetStageTwo(String token) throws BadRequestException {
+        System.out.println(token);
+        Tourist tourist = touristRepository.retrieveTouristByToken(token);
+
+        if (tourist == null) {
+            throw new BadRequestException("Invalid token");
+        }
+
+        if (Duration.between(tourist.getToken_date(), LocalDateTime.now()).toMinutes() > 60) {
+            throw new BadRequestException("Your token has expired, please request for a new password reset link");
+        }
+
+        return "The code is verified correctly";
+    }
+
+    public String passwordResetStageThree(String token, String password) throws BadRequestException {
         System.out.println(token);
         Tourist tourist = touristRepository.retrieveTouristByToken(token);
 
