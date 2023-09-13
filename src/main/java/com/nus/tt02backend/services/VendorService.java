@@ -65,11 +65,11 @@ public class VendorService {
         } else if (vendorStaff.getIs_blocked()) {
             throw new BadRequestException("Your staff account is disabled, please contact your administrator");
         }
-        else if (vendorStaff.getVendor().getApplication_status() != ApplicationStatusEnum.APPROVED) {
-            throw new BadRequestException("Your application is still pending review");
+        else if (!encoder.matches(password, vendorStaff.getPassword())) {
+            throw new BadRequestException("Incorrect password");
         }
         else {
-            throw new BadRequestException("Incorrect password");
+            throw new BadRequestException("Your application is still pending review");
         }
     }
 
