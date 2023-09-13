@@ -25,7 +25,4 @@ public class VendorStaff extends User {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<SupportTicket> support_ticket_list;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendor_user")
-    private List<Comment> comment_list;
 }

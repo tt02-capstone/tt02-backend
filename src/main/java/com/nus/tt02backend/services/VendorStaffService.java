@@ -49,7 +49,6 @@ public class VendorStaffService {
                 && vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
             vendorStaff.getVendor().setWithdrawal_list(null);
             vendorStaff.getVendor().setVendor_staff_list(null);
-            vendorStaff.setComment_list(null);
             vendorStaff.getVendor().setPost_list(null);
             vendorStaff.getVendor().setAttraction_list(null);
             vendorStaff.getVendor().setAccommodation_list(null);
