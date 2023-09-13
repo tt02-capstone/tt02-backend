@@ -1,13 +1,11 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.*;
-
-import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.VendorStaff;
-import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.UserRepository;
+import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import jakarta.mail.MessagingException;
@@ -19,8 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.*;
 
 @Service
@@ -145,7 +142,7 @@ public class VendorStaffService {
         VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(email);
 
         if (vendorStaff == null) {
-            throw new BadRequestException("There is no account associated with this email address");
+            throw new BadRequestException("There is no vendor staff account associated with this email address");
         }
 
         vendorStaff.setPassword_reset_token(passwordResetToken);

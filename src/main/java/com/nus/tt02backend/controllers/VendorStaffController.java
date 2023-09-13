@@ -3,6 +3,8 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.User;
+import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.services.VendorService;
 import com.nus.tt02backend.services.VendorStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -42,13 +44,13 @@ public class VendorStaffController {
         return ResponseEntity.ok(vendorStaffs);
     }
 
-    @PutMapping ("/passwordResetStageOne/{email}")
+    @PostMapping("/passwordResetStageOne/{email}")
     public ResponseEntity<String> passwordResetStageOne(@PathVariable String email) throws BadRequestException {
         String successMessage = vendorStaffService.passwordResetStageOne(email);
         return ResponseEntity.ok(successMessage);
     }
 
-    @PutMapping ("/passwordResetStageTwo/{token}/{password}")
+    @PostMapping ("/passwordResetStageTwo/{token}/{password}")
     public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token, @PathVariable String password)
             throws BadRequestException {
         String successMessage = vendorStaffService.passwordResetStageTwo(token, password);
@@ -78,5 +80,12 @@ public class VendorStaffController {
     @PutMapping("/toggleBlock/{vendorStaffId}")
     public void vendorStaffLogin(@PathVariable Long vendorStaffId) throws NotFoundException, ToggleBlockException {
         vendorStaffService.toggleBlock(vendorStaffId);
+    }
+
+    @GetMapping ("/verifyEmail/{token}")
+    public ResponseEntity<String> verifyEmail(@PathVariable String token)
+            throws BadRequestException {
+        String successMessage = vendorStaffService.verifyEmail(token);
+        return ResponseEntity.ok(successMessage);
     }
 }

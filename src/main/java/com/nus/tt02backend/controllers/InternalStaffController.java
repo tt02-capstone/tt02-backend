@@ -2,6 +2,8 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
+import com.nus.tt02backend.models.Vendor;
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.services.InternalStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +70,20 @@ public class InternalStaffController {
     public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token, @PathVariable String password)
             throws BadRequestException {
         String successMessage = internalStaffService.passwordResetStageTwo(token, password);
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @GetMapping ("/getPendingApplications")
+    public ResponseEntity<List<Vendor>> getPendingApplications() {
+        List<Vendor> vendors = internalStaffService.getPendingApplications();
+        return ResponseEntity.ok(vendors);
+    }
+
+    @PutMapping ("/updateApplicationStatus/{vendorId}/{applicationStatus}")
+    public ResponseEntity<String> updateApplicationStatus(@PathVariable Long vendorId,
+                                                          @PathVariable ApplicationStatusEnum applicationStatus)
+            throws NotFoundException {
+        String successMessage = internalStaffService.updateApplicationStatus(vendorId, applicationStatus);
         return ResponseEntity.ok(successMessage);
     }
 }

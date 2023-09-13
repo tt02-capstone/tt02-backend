@@ -19,6 +19,9 @@ public interface InternalStaffRepository extends JpaRepository<InternalStaff, Lo
     @Query("SELECT MAX(s.staff_num) FROM InternalStaff s")
     Long getLatestStaffNum();
 
-//    @Query(SELECT )
-//    List<InternalStaff> getListOfInternalStaffSortedById(String order)
+    @Query("SELECT ins FROM InternalStaff ins WHERE ins.email=?1")
+    InternalStaff retrieveInternalStaffByEmail(String email);
+
+    @Query("SELECT ins FROM InternalStaff ins WHERE ins.password_reset_token=?1")
+    InternalStaff retrieveInternalStaffByToken(String token);
 }
