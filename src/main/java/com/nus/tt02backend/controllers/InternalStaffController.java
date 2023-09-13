@@ -51,9 +51,9 @@ public class InternalStaffController {
         return ResponseEntity.ok(successMessage);
     }
 
-    @GetMapping ("/retrievePendingApplications")
-    public ResponseEntity<List<Vendor>> retrievePendingApplications() {
-        List<Vendor> vendors = internalStaffService.retrievePendingApplications();
+    @GetMapping ("/getPendingApplications")
+    public ResponseEntity<List<Vendor>> getPendingApplications() {
+        List<Vendor> vendors = internalStaffService.getPendingApplications();
         return ResponseEntity.ok(vendors);
     }
 

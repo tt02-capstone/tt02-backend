@@ -156,7 +156,7 @@ public class InternalStaffService {
         return "Your password has been changed successfully";
     }
 
-    public List<Vendor> retrievePendingApplications() {
+    public List<Vendor> getPendingApplications() {
         List<Vendor> vendors = vendorRepository.retrievePendingVendorApplications(ApplicationStatusEnum.PENDING);
         for (Vendor vendor : vendors) {
             vendor.setVendor_staff_list(null);
