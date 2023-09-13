@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.Attraction;
+import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.services.AttractionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,8 +78,9 @@ public class AttractionController {
     }
 
     @PutMapping("/updateSavedAttractionListForTouristAndLocal/{userId}/{currentAttractionId}")
-    public ResponseEntity<Void> updateSavedAttractionListForTouristAndLocal(@PathVariable Long userId , @PathVariable Long currentAttractionId) throws BadRequestException, NotFoundException{
-        attractionService.saveAttractionForTouristAndLocal(userId,currentAttractionId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<User> updateSavedAttractionListForTouristAndLocal(@PathVariable Long userId , @PathVariable Long currentAttractionId) throws BadRequestException, NotFoundException {
+        User user = attractionService.saveAttractionForTouristAndLocal(userId, currentAttractionId);
+        return ResponseEntity.ok(user);
+        // return ResponseEntity.noContent().build();
     }
 }

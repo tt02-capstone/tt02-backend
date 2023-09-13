@@ -313,7 +313,7 @@ public class AttractionService {
         }
     }
 
-    public void saveAttractionForTouristAndLocal (Long userId, Long currentAttractionId) throws BadRequestException, NotFoundException {
+    public User saveAttractionForTouristAndLocal (Long userId, Long currentAttractionId) throws BadRequestException, NotFoundException {
         Attraction attractionToSave = retrieveAttraction(currentAttractionId);
         if (attractionToSave.getIs_published() == Boolean.FALSE) {
             throw new BadRequestException("Can't save a hidden attraction!"); // shouldn't trigger if thr is a frontend
@@ -336,6 +336,8 @@ public class AttractionService {
             currentTouristSavedAttractions.add(attractionToSave);
             touristRepository.save(tourist); // update the list of saved attractions
 
+            return currentUser;
+
         } else if (currentUser.getUserTypeEnum().equals(localType)) {
             Local local = findLocal(userId);
             List<Attraction> currentLocalSavedAttractions = local.getAttraction_list();
@@ -348,6 +350,8 @@ public class AttractionService {
 
             currentLocalSavedAttractions.add(attractionToSave);
             localRepository.save(local);
+
+            return currentUser;
         } else {
             throw new BadRequestException("Invalid User Type! Only Local or Tourist can save an attraction!");
         }
