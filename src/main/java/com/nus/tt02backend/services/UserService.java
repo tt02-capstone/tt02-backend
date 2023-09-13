@@ -3,6 +3,9 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.User;
+import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -40,6 +43,51 @@ public class UserService {
             //can check and initialise here foreign keys here
             return checkUser;
 
+        } else if (checkUser.getIs_blocked()) {
+            throw new BadRequestException("Your account is disabled, please contact our help desk");
+        } else {
+            throw new BadRequestException("Incorrect password");
+        }
+    }
+
+    public User userWebLogin(String email, String password) throws NotFoundException, BadRequestException {
+        User checkUser = userRepository.retrieveVendorStaffOrLocalByEmail(email);
+
+        if (checkUser == null) {
+            throw new NotFoundException("There is no account associated with this email address");
+        }
+
+        if (encoder.matches(password, checkUser.getPassword())
+                && !checkUser.getIs_blocked()) {
+            if (checkUser.getUser_type() == UserTypeEnum.VENDOR_STAFF) {
+                VendorStaff vendorStaff = (VendorStaff) checkUser;
+
+                if (checkUser.getEmail_verified() &&
+                        vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
+                    return checkUser;
+                } else if (!checkUser.getEmail_verified()) {
+                    String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + checkUser.getEmail_verification_token();
+                    try {
+                        String subject = "[WithinSG] Email Verification Required";
+                        String content = "<p>Dear " + checkUser.getName() + ",</p>" +
+                                "<p>You have not verified your email address.</p>" +
+                                "<p>Please verify your email address by clicking on the button below.</p>" +
+                                "<a href=\"" + emailVerificationLink +"\" target=\"_blank\">" +
+                                "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
+                                "Verify Email</button></a>" +
+                                "<p>Kind Regards,<br> WithinSG</p>";
+                        sendEmail(checkUser.getEmail(), subject, content);
+                    } catch (MessagingException ex) {
+                        throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+                    }
+
+                    throw new BadRequestException("Your email has not been verified, a new email verification email has been sent to you");
+                } else {
+                    throw new BadRequestException("Your application is still pending review");
+                }
+            }
+
+            return checkUser;
         } else if (checkUser.getIs_blocked()) {
             throw new BadRequestException("Your account is disabled, please contact our help desk");
         } else {
