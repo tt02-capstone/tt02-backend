@@ -22,6 +22,13 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @PostMapping("/webLogin/{email}/{password}")
+    public ResponseEntity<User> userWebLogin(@PathVariable String email, @PathVariable String password)
+            throws NotFoundException, BadRequestException {
+        User user = userService.userWebLogin(email, password);
+        return ResponseEntity.ok(user);
+    }
+
     @PutMapping ("/update")
     public ResponseEntity<Void> updateUser(@RequestBody User userToUpdate) throws NotFoundException {
         userService.updateUser(userToUpdate);

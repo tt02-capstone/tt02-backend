@@ -3,7 +3,10 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.InternalStaff;
+import com.nus.tt02backend.models.Vendor;
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.InternalStaffRepository;
+import com.nus.tt02backend.repositories.VendorRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +19,15 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class InternalStaffService {
     @Autowired
     InternalStaffRepository internalStaffRepository;
+    @Autowired
+    VendorRepository vendorRepository;
     @Autowired
     JavaMailSender javaMailSender;
     PasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -121,7 +127,6 @@ public class InternalStaffService {
     }
 
     public String passwordResetStageTwo(String token, String password) throws BadRequestException {
-        System.out.println(token);
         InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByToken(token);
 
         if (internalStaff == null) {
@@ -149,6 +154,28 @@ public class InternalStaffService {
         }
 
         return "Your password has been changed successfully";
+    }
+
+    public List<Vendor> getPendingApplications() {
+        List<Vendor> vendors = vendorRepository.retrievePendingVendorApplications(ApplicationStatusEnum.PENDING);
+        for (Vendor vendor : vendors) {
+            vendor.setVendor_staff_list(null);
+        }
+
+        return vendors;
+    }
+
+    public String updateApplicationStatus(Long vendorId, ApplicationStatusEnum applicationStatus) throws NotFoundException {
+        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
+        if (vendorOptional.isEmpty()) {
+            throw new NotFoundException("Invalid Vendor ID");
+        }
+
+        Vendor vendor = vendorOptional.get();
+        vendor.setApplication_status(applicationStatus);
+        vendorRepository.save(vendor);
+
+        return "Application status updated successfully";
     }
 
     public void sendEmail(String email, String subject, String content) throws MessagingException {
