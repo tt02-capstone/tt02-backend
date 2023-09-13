@@ -28,7 +28,7 @@ public class UserService {
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public User userLogin(String email, String password) throws NotFoundException, BadRequestException {
+    public User userMobileLogin(String email, String password) throws NotFoundException, BadRequestException {
         User checkUser = userRepository.retrieveTouristOrLocalByEmail(email);
         System.out.println(checkUser);
         if (checkUser == null) {

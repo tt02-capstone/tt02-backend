@@ -15,10 +15,10 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @PostMapping("/login/{email}/{password}")
+    @PostMapping("/mobileLogin/{email}/{password}")
     public ResponseEntity<User> userLogin(@PathVariable String email, @PathVariable String password)
             throws NotFoundException, BadRequestException {
-        User user = userService.userLogin(email, password);
+        User user = userService.userMobileLogin(email, password);
         return ResponseEntity.ok(user);
     }
 
