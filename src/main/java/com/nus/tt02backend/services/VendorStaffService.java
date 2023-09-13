@@ -39,24 +39,16 @@ public class VendorStaffService {
     public VendorStaff vendorStaffLogin(String email, String password) throws NotFoundException, BadRequestException {
         VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(email);
 
+        // Local
         if (vendorStaff == null) {
             throw new NotFoundException("There is no staff account associated with this email address");
         }
 
         if (encoder.matches(password, vendorStaff.getPassword())
                 && !vendorStaff.getIs_blocked()
-                && vendorStaff.getEmail_verified()
-                && vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
-            vendorStaff.getVendor().setWithdrawal_list(null);
-            vendorStaff.getVendor().setVendor_staff_list(null);
-            vendorStaff.getVendor().setPost_list(null);
-            vendorStaff.getVendor().setAttraction_list(null);
-            vendorStaff.getVendor().setAccommodation_list(null);
-            vendorStaff.getVendor().setRestaurant_list(null);
-            vendorStaff.getVendor().setTelecom_list(null);
-            vendorStaff.getVendor().setDeals_list(null);
+                && vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED
+                && vendorStaff.getEmail_verified()) {
             return vendorStaff;
-
         } else if (!vendorStaff.getEmail_verified()) {
             String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + vendorStaff.getEmail_verification_token();
             try {
@@ -75,13 +67,13 @@ public class VendorStaffService {
 
             throw new BadRequestException("Your email has not been verified, a new email verification email has been sent to you");
         } else if (vendorStaff.getIs_blocked()) {
-            throw new BadRequestException("Your staff account is disabled, please contact your administrator!");
+            throw new BadRequestException("Your staff account is disabled, please contact your administrator");
         }
         else if (vendorStaff.getVendor().getApplication_status() != ApplicationStatusEnum.APPROVED) {
-            throw new BadRequestException("Your application is still pending review!");
+            throw new BadRequestException("Your application is still pending review");
         }
         else {
-            throw new BadRequestException("Incorrect password!");
+            throw new BadRequestException("Incorrect password");
         }
     }
 
@@ -268,8 +260,10 @@ public class VendorStaffService {
 
             Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(vendorStaffToEdit.getUser_id());
 
+
             if (vendorStaffOptional.isPresent()) {
                 VendorStaff vendorStaff = vendorStaffOptional.get();
+                System.out.println("tanweekek:" + vendorStaff.getUser_id());
 
                 Long existingId = vendorStaffRepository.getVendorStaffIdByEmail(vendorStaffToEdit.getEmail());
                 if (existingId != null && existingId != vendorStaffToEdit.getUser_id()) { // but there is an existing email
@@ -279,6 +273,7 @@ public class VendorStaffService {
                 vendorStaff.setEmail(vendorStaffToEdit.getEmail());
                 vendorStaff.setName(vendorStaffToEdit.getName());
                 vendorStaff.setPosition(vendorStaffToEdit.getPosition());
+                // fetch vendor id, edit attributes and save
                 vendorStaffRepository.save(vendorStaff);
                 vendorStaff.setPassword(null);
                 vendorStaff.getVendor().setVendor_staff_list(null);

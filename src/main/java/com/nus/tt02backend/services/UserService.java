@@ -66,42 +66,41 @@ public class UserService {
 //    }
 //
 //    // for all 4 inheritance type
-//    public User getUserProfile(Long id) throws IllegalArgumentException, UserNotFoundException {
-//        try {
-//            Optional<User> userOptional = userRepository.findById(id);
-//
-//            if (userOptional.isPresent()) {
-//                User user = userOptional.get();
-//                user.setPassword(null);
-//
-//                if (user instanceof VendorStaff) {
-//                    VendorStaff vendorStaff = (VendorStaff) user;
-//                    vendorStaff.getVendor().setVendor_staff_list(null);
-//                    vendorStaff.setComment_list(null);
-//                    return vendorStaff;
-//                } else if (user instanceof Tourist) {
-//                    Tourist tourist = (Tourist) user;
-//                    tourist.setBooking_list(null);
-//                    tourist.setComment_list(null);
-//                } else if (user instanceof Local) {
-//                    Local local = (Local) user;
-//                    local.setBooking_list(null);
-//                    local.setComment_list(null);
-//                } else if (user instanceof InternalStaff) {
-//                    InternalStaff internalStaff = (InternalStaff) user;
-//                    internalStaff.setComment_list(null);
-//                }
-//
-//                return user;
-//
-//            } else {
-//                throw new UserNotFoundException("User not found!");
-//            }
-//
-//        } catch(Exception ex) {
-//            throw new UserNotFoundException(ex.getMessage());
-//        }
-//    }
+    public User getUserProfile(Long id) throws IllegalArgumentException, UserNotFoundException {
+        try {
+            Optional<User> userOptional = userRepository.findById(id);
+
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                user.setPassword(null);
+
+                if (user instanceof VendorStaff) {
+                    VendorStaff vendorStaff = (VendorStaff) user;
+                    vendorStaff.getVendor().setVendor_staff_list(null);
+                    return vendorStaff;
+                } else if (user instanceof Tourist) {
+                    Tourist tourist = (Tourist) user;
+                    tourist.setBooking_list(null);
+                    tourist.setComment_list(null);
+                } else if (user instanceof Local) {
+                    Local local = (Local) user;
+                    local.setBooking_list(null);
+                    local.setComment_list(null);
+                } else if (user instanceof InternalStaff) {
+                    InternalStaff internalStaff = (InternalStaff) user;
+                    internalStaff.setComment_list(null);
+                }
+
+                return user;
+
+            } else {
+                throw new UserNotFoundException("User not found!");
+            }
+
+        } catch(Exception ex) {
+            throw new UserNotFoundException(ex.getMessage());
+        }
+    }
 //
 //    // only for vendor, locals and tourist
 //    public User editUserProfile(User userToEdit) throws EditUserException {

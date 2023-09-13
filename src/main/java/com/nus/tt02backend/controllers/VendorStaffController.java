@@ -63,6 +63,9 @@ public class VendorStaffController {
 
     @PutMapping("/editVendorStaffProfile")
     public ResponseEntity<VendorStaff> editVendorStaffProfile(@RequestBody VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
+        System.out.println("tanweekek");
+        System.out.println(vendorStaffToEdit);
+        System.out.print(vendorStaffToEdit.getUser_id());
         VendorStaff vendorStaff = vendorStaffService.editVendorStaffProfile(vendorStaffToEdit);
         return ResponseEntity.ok(vendorStaff);
     }

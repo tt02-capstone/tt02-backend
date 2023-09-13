@@ -23,11 +23,11 @@ public class UserController {
 //        return ResponseEntity.ok(user);
 //    }
 //
-//    @GetMapping("/getUserProfile/{userId}")
-//    public ResponseEntity<User> getUserProfile(@PathVariable Long userId) throws UserNotFoundException {
-//        User user = userService.getUserProfile(userId);
-//        return ResponseEntity.ok(user);
-//    }
+    @GetMapping("/getUserProfile/{userId}")
+    public ResponseEntity<User> getUserProfile(@PathVariable Long userId) throws UserNotFoundException {
+        User user = userService.getUserProfile(userId);
+        return ResponseEntity.ok(user);
+    }
 //
 //    @PutMapping("/editUserProfile")
 //    public ResponseEntity<User> editUserProfile(@RequestBody User userToEdit) throws EditUserException {
