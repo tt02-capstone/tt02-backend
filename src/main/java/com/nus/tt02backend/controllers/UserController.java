@@ -41,6 +41,12 @@ public class UserController {
         return ResponseEntity.ok(successMessage);
     }
 
+    @PostMapping ("/webPasswordResetStageOne/{email}")
+    public ResponseEntity<String> webPasswordResetStageOne(@PathVariable String email) throws BadRequestException {
+        String successMessage = userService.webPasswordResetStageOne(email);
+        return ResponseEntity.ok(successMessage);
+    }
+
     @PostMapping ("/passwordResetStageTwo/{token}")
     public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token)
             throws BadRequestException {
@@ -48,10 +54,24 @@ public class UserController {
         return ResponseEntity.ok(successMessage);
     }
 
+    @PostMapping ("/webPasswordResetStageTwo/{email}/{token}")
+    public ResponseEntity<String> webPasswordResetStageTwo(@PathVariable String email, @PathVariable String token)
+            throws BadRequestException {
+        String successMessage = userService.webPasswordResetStageTwo(email, token);
+        return ResponseEntity.ok(successMessage);
+    }
+
     @PostMapping ("/passwordResetStageThree/{token}/{password}")
     public ResponseEntity<String> passwordResetStageThree(@PathVariable String token, @PathVariable String password)
             throws BadRequestException {
         String successMessage = userService.passwordResetStageThree(token, password);
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @PostMapping ("/webPasswordResetStageThree/{email}/{password}")
+    public ResponseEntity<String> webPasswordResetStageThree(@PathVariable String email, @PathVariable String password)
+            throws BadRequestException {
+        String successMessage = userService.webPasswordResetStageThree(email, password);
         return ResponseEntity.ok(successMessage);
     }
 }
