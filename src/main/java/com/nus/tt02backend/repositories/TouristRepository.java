@@ -10,4 +10,5 @@ public interface TouristRepository extends JpaRepository<Tourist, Long> {
 
     @Query("SELECT ts FROM Tourist ts WHERE ts.password_reset_token=?1")
     Tourist retrieveTouristByToken(String token);
+
 }

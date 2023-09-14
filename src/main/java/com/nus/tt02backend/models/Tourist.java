@@ -27,6 +27,9 @@ public class Tourist extends User {
     @Column(nullable = false, unique = true, length = 13)
     private String mobile_num;
 
+    @Column
+    private String stripe_account_id;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Card> card_list;
 
