@@ -44,10 +44,17 @@ public class InternalStaffController {
         return ResponseEntity.ok(successMessage);
     }
 
-    @PostMapping ("/passwordResetStageTwo/{token}/{password}")
-    public ResponseEntity<String> passwordResetStageTwo(@PathVariable String token, @PathVariable String password)
+    @PostMapping ("/passwordResetStageTwo/{email}/{token}")
+    public ResponseEntity<String> passwordResetStageTwo(@PathVariable String email, @PathVariable String token)
             throws BadRequestException {
-        String successMessage = internalStaffService.passwordResetStageTwo(token, password);
+        String successMessage = internalStaffService.passwordResetStageTwo(email, token);
+        return ResponseEntity.ok(successMessage);
+    }
+
+    @PostMapping ("/passwordResetStageThree/{email}/{password}")
+    public ResponseEntity<String> passwordResetStageThree(@PathVariable String email, @PathVariable String password)
+            throws BadRequestException {
+        String successMessage = internalStaffService.passwordResetStageThree(email, password);
         return ResponseEntity.ok(successMessage);
     }
 

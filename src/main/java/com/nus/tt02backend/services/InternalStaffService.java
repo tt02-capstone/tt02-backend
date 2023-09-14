@@ -3,6 +3,7 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.InternalStaff;
+import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.InternalStaffRepository;
@@ -96,26 +97,29 @@ public class InternalStaffService {
     }
 
     public String passwordResetStageOne(String email) throws BadRequestException {
-        String passwordResetToken = UUID.randomUUID().toString();
+        UUID uuid = UUID.randomUUID();
+        long otpValue = Math.abs(uuid.getLeastSignificantBits() % 10000); // Get the last 4 digits
+        String passwordResetOTP =  String.format("%04d", otpValue);
+
         InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(email);
 
         if (internalStaff == null) {
             throw new BadRequestException("There is no account associated with this email address");
         }
 
-        internalStaff.setPassword_reset_token(passwordResetToken);
+        internalStaff.setPassword_reset_token(passwordResetOTP);
         internalStaff.setPassword_token_date(LocalDateTime.now());
         internalStaffRepository.save(internalStaff);
-        String passwordResetLink = "http://localhost:3000/passwordreset?token=" + internalStaff.getPassword_reset_token();
+
+        String passwordResetLink = "http://localhost:3000/passwordreset";
         try {
-            String subject = "[WithinSG] Password Reset Instructions";
+            String subject = "[WithinSG] Your Password Reset Instructions";
             String content = "<p>Dear " + internalStaff.getName() + ",</p>" +
                     "<p>A request was received to reset the password for your account." +
-                    "<p>You can reset your password by clicking on the button below: </p>" +
+                    "<p>Please enter your verification code <b>" + internalStaff.getPassword_reset_token() + "</b> into the WithinSG platform: </p>" +
                     "<a href=\"" + passwordResetLink +"\" target=\"_blank\">" +
-                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
-                    "Reset Password</button></a>" +
-                    "<p>Note that the link will expire after 60 minutes.</p>" +
+                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">Reset Password</button></a>" +
+                    "<p>Note that the code will expire after 60 minutes.</p>" +
                     "<p>If you did not initiate this request, please let us know immediately by replying to this email</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
             sendEmail(internalStaff.getEmail(), subject, content);
@@ -126,15 +130,53 @@ public class InternalStaffService {
         return "You will receive an email containing the instructions to reset your password.";
     }
 
-    public String passwordResetStageTwo(String token, String password) throws BadRequestException {
-        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByToken(token);
+    public String passwordResetStageTwo(String email, String token) throws BadRequestException {
+        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(email);
 
         if (internalStaff == null) {
-            throw new BadRequestException("Invalid token");
+            throw new BadRequestException("Invalid email");
+        }
+
+        if (!internalStaff.getPassword_reset_token().equals(token)) {
+            throw new BadRequestException("Invalid OTP");
         }
 
         if (Duration.between(internalStaff.getPassword_token_date(), LocalDateTime.now()).toMinutes() > 60) {
-            throw new BadRequestException("Your token has expired, please request for a new password reset link");
+            UUID uuid = UUID.randomUUID();
+            long otpValue = Math.abs(uuid.getLeastSignificantBits() % 10000); // Get the last 4 digits
+            String passwordResetOTP =  String.format("%04d", otpValue);
+
+            internalStaff.setPassword_reset_token(passwordResetOTP);
+            internalStaff.setPassword_token_date(LocalDateTime.now());
+            internalStaffRepository.save(internalStaff);
+
+            String passwordResetLink = "http://localhost:3000/passwordreset";
+            try {
+                String subject = "[WithinSG] Your Password Reset Instructions";
+                String content = "<p>Dear " + internalStaff.getName() + ",</p>" +
+                        "<p>A request was received to reset the password for your account." +
+                        "<p>Please enter your verification code <b>" + internalStaff.getPassword_reset_token() + "</b> into the WithinSG platform: </p>" +
+                        "<a href=\"" + passwordResetLink +"\" target=\"_blank\">" +
+                        "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">Reset Password</button></a>" +
+                        "<p>Note that the code will expire after 60 minutes.</p>" +
+                        "<p>If you did not initiate this request, please let us know immediately by replying to this email</p>" +
+                        "<p>Kind Regards,<br> WithinSG</p>";
+                sendEmail(internalStaff.getEmail(), subject, content);
+            } catch (MessagingException ex) {
+                throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+            }
+
+            throw new BadRequestException("Your OTP has expired, a new OTP has been sent to your email");
+        }
+
+        return "The code is verified correctly";
+    }
+
+    public String passwordResetStageThree(String email, String password) throws BadRequestException {
+        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(email);
+
+        if (internalStaff == null) {
+            throw new BadRequestException("Invalid email");
         }
 
         internalStaff.setPassword(encoder.encode(password));
@@ -143,7 +185,7 @@ public class InternalStaffService {
         internalStaffRepository.save(internalStaff);
 
         try {
-            String subject = "[WithinSG] Password Reset Successfully";
+            String subject = "[WithinSG] Your Password was reset Successfully";
             String content = "<p>Dear " + internalStaff.getName() + ",</p>" +
                     "<p>Your password has been reset successfully." +
                     "<p>If you did not perform this action, please let us know immediately by replying to this email</p>" +
