@@ -315,46 +315,58 @@ public class AttractionService {
 
     public User saveAttractionForTouristAndLocal (Long userId, Long currentAttractionId) throws BadRequestException, NotFoundException {
         Attraction attractionToSave = retrieveAttraction(currentAttractionId);
-        if (attractionToSave.getIs_published() == Boolean.FALSE) {
+        User currentUser = findUser(userId);
+        List<Attraction> currentSavedAttractions = new ArrayList<Attraction>();
+
+        if (!attractionToSave.getIs_published()) {
             throw new BadRequestException("Can't save a hidden attraction!"); // shouldn't trigger if thr is a frontend
         }
 
-        UserTypeEnum touristType = UserTypeEnum.TOURIST;
-        UserTypeEnum localType = UserTypeEnum.LOCAL;
-
-        User currentUser = findUser(userId);
-        if (currentUser.getUserTypeEnum().equals(touristType)) {
-            Tourist tourist = findTourist(userId);
-            List<Attraction> currentTouristSavedAttractions = tourist.getAttraction_list();
-
-            for (Attraction a : currentTouristSavedAttractions) {
-                if (a.getAttraction_id().equals(currentAttractionId)) {
-                    throw new BadRequestException("You have already saved this attraction!");
-                }
-            }
-
-            currentTouristSavedAttractions.add(attractionToSave);
-            touristRepository.save(tourist); // update the list of saved attractions
-
-            return currentUser;
-
-        } else if (currentUser.getUserTypeEnum().equals(localType)) {
-            Local local = findLocal(userId);
-            List<Attraction> currentLocalSavedAttractions = local.getAttraction_list();
-
-            for (Attraction a : currentLocalSavedAttractions) {
-                if (a.getAttraction_id().equals(currentAttractionId)) {
-                    throw new BadRequestException("You have already saved this attraction!");
-                }
-            }
-
-            currentLocalSavedAttractions.add(attractionToSave);
-            localRepository.save(local);
-
-            return currentUser;
+        if (currentUser.getUserTypeEnum().equals(UserTypeEnum.TOURIST)) {
+            currentSavedAttractions = ((Tourist) currentUser).getAttraction_list();
+        } else if (currentUser.getUserTypeEnum().equals(UserTypeEnum.LOCAL)) {
+            currentSavedAttractions = ((Local) currentUser).getAttraction_list();
         } else {
             throw new BadRequestException("Invalid User Type! Only Local or Tourist can save an attraction!");
         }
+
+        for (Attraction a : currentSavedAttractions) {
+            if (a.getAttraction_id().equals(currentAttractionId)) {
+                throw new BadRequestException("You have already saved this attraction!");
+            }
+        }
+
+        currentSavedAttractions.add(attractionToSave);
+        userRepository.save(currentUser);
+
+        return currentUser;
+    }
+
+    public User removeSavedAttractionForTouristAndLocal (Long userId, Long currentAttractionId) throws NotFoundException {
+        User currentUser = findUser(userId);
+        List<Attraction> currentSavedAttractions = new ArrayList<Attraction>();
+
+        if (currentUser.getUserTypeEnum() == UserTypeEnum.TOURIST) {
+            Tourist tourist = findTourist(userId);
+            currentSavedAttractions = tourist.getAttraction_list();
+        } else if (currentUser.getUserTypeEnum() == UserTypeEnum.LOCAL) {
+            Local local = findLocal(userId);
+            currentSavedAttractions = local.getAttraction_list();
+        }
+
+        for (Attraction a : currentSavedAttractions) {
+            if (a.getAttraction_id().equals(currentAttractionId)) {
+                currentSavedAttractions.remove(a);
+                if (currentUser.getUserTypeEnum() == UserTypeEnum.TOURIST) {
+                    touristRepository.save((Tourist) currentUser);
+                } else if (currentUser.getUserTypeEnum() == UserTypeEnum.LOCAL) {
+                    localRepository.save((Local) currentUser);
+                }
+                return currentUser;
+            }
+        }
+
+        throw new NotFoundException("Attraction not found in the saved list!");
     }
 
 }

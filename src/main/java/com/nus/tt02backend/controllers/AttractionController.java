@@ -77,10 +77,15 @@ public class AttractionController {
         return ResponseEntity.ok(savedAttractionList);
     }
 
-    @PutMapping("/updateSavedAttractionListForTouristAndLocal/{userId}/{currentAttractionId}")
+    @PutMapping("/saveAttractionForTouristAndLocal/{userId}/{currentAttractionId}")
     public ResponseEntity<User> updateSavedAttractionListForTouristAndLocal(@PathVariable Long userId , @PathVariable Long currentAttractionId) throws BadRequestException, NotFoundException {
         User user = attractionService.saveAttractionForTouristAndLocal(userId, currentAttractionId);
         return ResponseEntity.ok(user);
-        // return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/removeSavedAttractionForTouristAndLocal/{userId}/{currentAttractionId}")
+    public ResponseEntity<User> removeSavedAttractionListForTouristAndLocal(@PathVariable Long userId , @PathVariable Long currentAttractionId) throws NotFoundException {
+        User user = attractionService.removeSavedAttractionForTouristAndLocal(userId, currentAttractionId);
+        return ResponseEntity.ok(user);
     }
 }
