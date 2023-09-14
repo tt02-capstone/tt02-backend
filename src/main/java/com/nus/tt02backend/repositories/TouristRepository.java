@@ -5,13 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface TouristRepository extends JpaRepository<Tourist, Long> {
-
     @Query("SELECT ts FROM Tourist ts WHERE ts.email=?1")
     Tourist retrieveTouristByEmail(String email);
 
     @Query("SELECT ts FROM Tourist ts WHERE ts.password_reset_token=?1")
     Tourist retrieveTouristByToken(String token);
-
-    @Query("SELECT t.stripe_id FROM Tourist t WHERE t.email=?1")
-    String getStripeIdByEmail(String email);
 }

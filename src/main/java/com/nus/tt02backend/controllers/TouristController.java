@@ -3,6 +3,7 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Tourist;
+import com.nus.tt02backend.services.TouristService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/tourist")
 public class TouristController {
     @Autowired
-    TouristServiceImpl touristService;
+    TouristService touristService;
 
     @PostMapping("/login/{email}/{password}")
     public ResponseEntity<Tourist> touristLogin(@PathVariable String email, @PathVariable String password)
@@ -22,7 +23,7 @@ public class TouristController {
     }
 
     @PutMapping ("/update")
-    public ResponseEntity<Void> touristLogin(@RequestBody Tourist touristToUpdate) throws NotFoundException {
+    public ResponseEntity<Void> updateTourist(@RequestBody Tourist touristToUpdate) throws NotFoundException {
         touristService.updateTourist(touristToUpdate);
         return ResponseEntity.noContent().build();
     }
