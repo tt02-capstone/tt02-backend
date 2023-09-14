@@ -1,7 +1,10 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -26,4 +29,19 @@ public class User {
 
     @Column(nullable = false)
     private Boolean is_blocked;
+
+    @Enumerated(EnumType.STRING)
+    private UserTypeEnum user_type;
+
+    @Column
+    private String email_verification_token;
+
+    @Column
+    private Boolean email_verified;
+
+    @Column
+    private String password_reset_token;
+
+    @Column
+    private LocalDateTime password_token_date;
 }

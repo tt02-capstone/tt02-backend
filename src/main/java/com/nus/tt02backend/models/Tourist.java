@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class Tourist extends User {
     private String passport_num;
 
     @Column(nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date date_of_birth;
 
     @Column(nullable = false, length = 4)
