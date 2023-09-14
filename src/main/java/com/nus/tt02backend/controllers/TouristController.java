@@ -3,12 +3,9 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Tourist;
-import com.nus.tt02backend.services.impl.TouristServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.stripe.model.Customer;
-import com.stripe.param.CustomerCreateParams;
 
 @CrossOrigin
 @RestController
