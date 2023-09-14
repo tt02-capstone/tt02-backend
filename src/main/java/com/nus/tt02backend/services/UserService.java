@@ -136,9 +136,43 @@ public class UserService {
             String subject = "[WithinSG] Your Password Reset Instructions";
             String content = "<p>Dear " + user.getName() + ",</p>" +
                     "<p>A request was received to reset the password for your account." +
-                    "<p>Please enter your vertification code into the WithinSG application: </p>" +
+                    "<p>Please enter your verification code into the WithinSG application: </p>" +
                     "<a href=\"" + passwordResetOTP +"\" target=\"_blank\">" +
                     "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" + passwordResetOTP + "</button></a>" +
+                    "<p>Note that the code will expire after 60 minutes.</p>" +
+                    "<p>If you did not initiate this request, please let us know immediately by replying to this email</p>" +
+                    "<p>Kind Regards,<br> WithinSG</p>";
+            sendEmail(user.getEmail(), subject, content);
+        } catch (MessagingException ex) {
+            throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+        }
+
+        return "You will receive an email containing the instructions to reset your password.";
+    }
+
+    public String webPasswordResetStageOne(String email) throws BadRequestException {
+        UUID uuid = UUID.randomUUID();
+        long otpValue = Math.abs(uuid.getLeastSignificantBits() % 10000); // Get the last 4 digits
+        String passwordResetOTP =  String.format("%04d", otpValue);
+
+        User user = userRepository.retrieveVendorStaffOrLocalByEmail(email);
+
+        if (user == null) {
+            throw new BadRequestException("There is no account associated with this email address");
+        }
+
+        user.setPassword_reset_token(passwordResetOTP);
+        user.setPassword_token_date(LocalDateTime.now());
+        userRepository.save(user);
+
+        String passwordResetLink = "http://localhost:3000/passwordreset";
+        try {
+            String subject = "[WithinSG] Your Password Reset Instructions";
+            String content = "<p>Dear " + user.getName() + ",</p>" +
+                    "<p>A request was received to reset the password for your account." +
+                    "<p>Please enter your verification code <b>" + user.getPassword_reset_token() + "</b> into the WithinSG platform: </p>" +
+                    "<a href=\"" + passwordResetLink +"\" target=\"_blank\">" +
+                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">Reset Password</button></a>" +
                     "<p>Note that the code will expire after 60 minutes.</p>" +
                     "<p>If you did not initiate this request, please let us know immediately by replying to this email</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
@@ -165,6 +199,48 @@ public class UserService {
         return "The code is verified correctly";
     }
 
+    public String webPasswordResetStageTwo(String email, String token) throws BadRequestException {
+        User user = userRepository.retrieveVendorStaffOrLocalByEmail(email);
+
+        if (user == null) {
+            throw new BadRequestException("Invalid email");
+        }
+
+        if (!user.getPassword_reset_token().equals(token)) {
+            throw new BadRequestException("Invalid OTP");
+        }
+
+        if (Duration.between(user.getPassword_token_date(), LocalDateTime.now()).toMinutes() > 60) {
+            UUID uuid = UUID.randomUUID();
+            long otpValue = Math.abs(uuid.getLeastSignificantBits() % 10000); // Get the last 4 digits
+            String passwordResetOTP =  String.format("%04d", otpValue);
+
+            user.setPassword_reset_token(passwordResetOTP);
+            user.setPassword_token_date(LocalDateTime.now());
+            userRepository.save(user);
+
+            String passwordResetLink = "http://localhost:3000/passwordreset";
+            try {
+                String subject = "[WithinSG] Your Password Reset Instructions";
+                String content = "<p>Dear " + user.getName() + ",</p>" +
+                        "<p>A request was received to reset the password for your account." +
+                        "<p>Please enter your verification code <b>" + user.getPassword_reset_token() + "</b> into the WithinSG platform: </p>" +
+                        "<a href=\"" + passwordResetLink +"\" target=\"_blank\">" +
+                        "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">Reset Password</button></a>" +
+                        "<p>Note that the code will expire after 60 minutes.</p>" +
+                        "<p>If you did not initiate this request, please let us know immediately by replying to this email</p>" +
+                        "<p>Kind Regards,<br> WithinSG</p>";
+                sendEmail(user.getEmail(), subject, content);
+            } catch (MessagingException ex) {
+                throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+            }
+
+            throw new BadRequestException("Your OTP has expired, a new OTP has been sent to your email");
+        }
+
+        return "The code is verified correctly";
+    }
+
     public String passwordResetStageThree(String token, String password) throws BadRequestException {
         System.out.println(token);
         User user = userRepository.retrieveTouristOrLocalByToken(token);
@@ -175,6 +251,32 @@ public class UserService {
 
         if (Duration.between(user.getPassword_token_date(), LocalDateTime.now()).toMinutes() > 60) {
             throw new BadRequestException("Your token has expired, please request for a new password reset link");
+        }
+
+        user.setPassword(encoder.encode(password));
+        user.setPassword_reset_token(null);
+        user.setPassword_token_date(null);
+        userRepository.save(user);
+
+        try {
+            String subject = "[WithinSG] Your Password was reset Successfully";
+            String content = "<p>Dear " + user.getName() + ",</p>" +
+                    "<p>Your password has been reset successfully." +
+                    "<p>If you did not perform this action, please let us know immediately by replying to this email</p>" +
+                    "<p>Kind Regards,<br> WithinSG</p>";
+            sendEmail(user.getEmail(), subject, content);
+        } catch (MessagingException ex) {
+            throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+        }
+
+        return "Your password has been changed successfully";
+    }
+
+    public String webPasswordResetStageThree(String email, String password) throws BadRequestException {
+        User user = userRepository.retrieveVendorStaffOrLocalByEmail(email);
+
+        if (user == null) {
+            throw new BadRequestException("Invalid email");
         }
 
         user.setPassword(encoder.encode(password));
