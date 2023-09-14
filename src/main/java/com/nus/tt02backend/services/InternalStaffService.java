@@ -6,6 +6,7 @@ import com.nus.tt02backend.repositories.InternalStaffRepository;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.InternalStaffRepository;
+import com.nus.tt02backend.repositories.UserRepository;
 import com.nus.tt02backend.repositories.VendorRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -22,33 +23,14 @@ import java.time.*;
 @Service
 public class InternalStaffService {
     @Autowired
+    UserRepository userRepository;
+    @Autowired
     InternalStaffRepository internalStaffRepository;
     @Autowired
     VendorRepository vendorRepository;
     @Autowired
     JavaMailSender javaMailSender;
     PasswordEncoder encoder = new BCryptPasswordEncoder();
-
-    public InternalStaff staffLogin(String email, String password) throws NotFoundException, BadRequestException {
-        InternalStaff internalStaff = internalStaffRepository.getInternalStaffByEmail(email);
-
-        if (internalStaff == null) {
-            throw new NotFoundException("There is no staff account associated with this email address");
-        }
-
-        if (encoder.matches(password, internalStaff.getPassword())
-                && !internalStaff.getIs_blocked()) {
-            internalStaff.setComment_list(null);
-            internalStaff.setPost_list(null);
-            internalStaff.setBadge_list(null);
-            internalStaff.setSupport_ticket_list(null);
-            return internalStaff;
-        } else if (internalStaff.getIs_blocked()) {
-            throw new BadRequestException("Your staff account is disabled, please contact your administrator");
-        } else {
-            throw new BadRequestException("Incorrect password");
-        }
-    }
 
     public void updateStaff(InternalStaff internalStaffToUpdate) throws NotFoundException {
         InternalStaff internalStaff = internalStaffRepository.findById((internalStaffToUpdate.getUser_id()))
@@ -96,7 +78,7 @@ public class InternalStaffService {
         return internalStaffToCreate.getUser_id();
     }
 
-    public List<InternalStaff> retrieveAllStaff() {
+    public List<InternalStaff> retrieveAllAdmin() {
         List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
 
         for (InternalStaff i : internalStaffList) {
@@ -104,77 +86,6 @@ public class InternalStaffService {
         }
 
         return internalStaffList;
-    }
-
-    public InternalStaff getStaffProfile(Long staffId) throws IllegalArgumentException, AdminNotFoundException {
-        try {
-            Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(staffId);
-
-            if (internalStaffOptional.isPresent()) {
-                InternalStaff internalStaff = internalStaffOptional.get();
-                internalStaff.setPassword(null);
-                return internalStaff;
-
-            } else {
-                 throw new AdminNotFoundException("Admin staff not found!");
-            }
-
-        } catch(Exception ex) {
-            throw new AdminNotFoundException(ex.getMessage());
-        }
-    }
-
-    public InternalStaff editStaffProfile(InternalStaff staffToEdit) throws EditAdminException {
-        try {
-
-            Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(staffToEdit.getUser_id());
-
-            if (internalStaffOptional.isPresent()) {
-                InternalStaff internalStaff = internalStaffOptional.get();
-
-                Long existingId = internalStaffRepository.getAdminByEmail(staffToEdit.getEmail());
-                if (existingId != null && existingId != staffToEdit.getUser_id()) { // but there is an existing email
-                    throw new EditAdminException("Email currently in use. Please use a different email!");
-                }
-
-                internalStaff.setEmail(staffToEdit.getEmail());
-                internalStaff.setName(staffToEdit.getName());
-                internalStaffRepository.save(internalStaff);
-                internalStaff.setPassword(null);
-                return internalStaff;
-
-            } else {
-                throw new EditAdminException("Admin staff not found!");
-            }
-        } catch (Exception ex) {
-            throw new EditAdminException(ex.getMessage());
-        }
-    }
-
-    public void editInternalStaffPassword(Long id, String oldPassword, String newPassword) throws EditPasswordException {
-        try {
-            Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(id);
-
-            if (internalStaffOptional.isPresent()) {
-                InternalStaff internalStaff = internalStaffOptional.get();
-
-                if (oldPassword.equals(newPassword)) {
-                    throw new EditPasswordException("New password must be different from old password!");
-
-                } else if (encoder.matches(oldPassword, internalStaff.getPassword())) {
-                    internalStaff.setPassword(encoder.encode(newPassword));
-                    internalStaffRepository.save(internalStaff);
-
-                } else {
-                    throw new EditPasswordException("Incorrect old password!");
-                }
-
-            } else {
-                throw new EditUserException("User not found!");
-            }
-        } catch (Exception ex) {
-            throw new EditPasswordException(ex.getMessage());
-        }
     }
 
     public String passwordResetStageOne(String email) throws BadRequestException {
@@ -267,5 +178,32 @@ public class InternalStaffService {
         mimeMessageHelper.setSubject(subject);
         mimeMessageHelper.setText(content, true);
         javaMailSender.send(mimeMessage);
+    }
+
+    public InternalStaff editProfile(InternalStaff staffToEdit) throws EditAdminException {
+        try {
+
+            Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(staffToEdit.getUser_id());
+
+            if (internalStaffOptional.isPresent()) {
+                InternalStaff internalStaff = internalStaffOptional.get();
+
+                Long existingId = userRepository.retrieveIdByUserEmail(staffToEdit.getEmail());
+                if (existingId != null && existingId != staffToEdit.getUser_id()) { // but there is an existing email
+                    throw new EditAdminException("Email currently in use. Please use a different email!");
+                }
+
+                internalStaff.setEmail(staffToEdit.getEmail());
+                internalStaff.setName(staffToEdit.getName());
+                internalStaffRepository.save(internalStaff);
+                internalStaff.setPassword(null);
+                return internalStaff;
+
+            } else {
+                throw new EditAdminException("Admin staff not found!");
+            }
+        } catch (Exception ex) {
+            throw new EditAdminException(ex.getMessage());
+        }
     }
 }

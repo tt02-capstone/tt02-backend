@@ -18,30 +18,6 @@ public class UserController {
     @Autowired
     UserService userService;
 
-//    @PutMapping("/vendorPortalLogin/{email}/{password}")
-//    public ResponseEntity<User> vendorPortalLogin(@PathVariable String email, @PathVariable String password)
-//            throws NotFoundException, BadRequestException {
-//        User user = userService.vendorPortalLogin(email, password);
-//        return ResponseEntity.ok(user);
-//    }
-//
-    @GetMapping("/getUserProfile/{userId}")
-    public ResponseEntity<User> getUserProfile(@PathVariable Long userId) throws UserNotFoundException {
-        User user = userService.getUserProfile(userId);
-        return ResponseEntity.ok(user);
-    }
-//
-//    @PutMapping("/editUserProfile")
-//    public ResponseEntity<User> editUserProfile(@RequestBody User userToEdit) throws EditUserException {
-//        User user = userService.editUserProfile(userToEdit);
-//        return ResponseEntity.ok(user);
-//    }
-//
-//    @PutMapping("/editUserPassword/{userId}/{oldPassword}/{newPassword}")
-//    public void editUserPassword(@PathVariable Long userId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
-//        userService.editUserPassword(userId, oldPassword, newPassword);
-//    }
-
     @PostMapping("/mobileLogin/{email}/{password}")
     public ResponseEntity<User> userLogin(@PathVariable String email, @PathVariable String password)
             throws NotFoundException, BadRequestException {
@@ -80,5 +56,16 @@ public class UserController {
             throws BadRequestException {
         String successMessage = userService.passwordResetStageThree(token, password);
         return ResponseEntity.ok(successMessage);
+    }
+
+    @PutMapping("/editPassword/{userId}/{oldPassword}/{newPassword}")
+    public void editPassword(@PathVariable Long userId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
+        userService.editPassword(userId, oldPassword, newPassword);
+    }
+
+    // only for admin portal, not vendor portal
+    @PutMapping("/toggleBlock/{userId}")
+    public void toggleBlock(@PathVariable Long userId) throws NotFoundException, ToggleBlockException {
+        userService.toggleBlock(userId);
     }
 }

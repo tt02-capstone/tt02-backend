@@ -1,9 +1,11 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.*;
+import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.TouristRepository;
+import com.nus.tt02backend.repositories.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,39 +25,6 @@ public class TouristService {
     JavaMailSender javaMailSender;
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
-
-    public Tourist touristLogin(String email, String password) throws NotFoundException, BadRequestException {
-        Tourist checkTourist = touristRepository.retrieveTouristByEmail(email);
-
-        if (checkTourist == null) {
-            throw new NotFoundException("There is no account associated with this email address");
-        }
-
-        if (encoder.matches(password, checkTourist.getPassword())
-                && !checkTourist.getIs_blocked()) {
-            checkTourist.setComment_list(new ArrayList<>());
-            checkTourist.setPost_list(null);
-            checkTourist.setBadge_list(null);
-            checkTourist.setSupport_ticket_list(null);
-            checkTourist.setAttraction_list(null);
-            checkTourist.setPost_list(null);
-            checkTourist.setAccommodation_list(null);
-            checkTourist.setCard_list(null);
-            checkTourist.setCart_list(null);
-            checkTourist.setDeal_list(null);
-            checkTourist.setRestaurant_list(null);
-            checkTourist.setTelecom_list(null);
-            checkTourist.setTour_type_list(null);
-            checkTourist.setItinerary(null);
-            return checkTourist;
-
-        } else if (checkTourist.getIs_blocked()) {
-            throw new BadRequestException("Your account is disabled, please contact our help desk");
-        } else {
-            throw new BadRequestException("Incorrect password");
-        }
-
-    }
 
     public void updateTourist(Tourist touristToUpdate) throws NotFoundException {
         Tourist tourist = touristRepository.findById((touristToUpdate.getUser_id()))
@@ -106,26 +75,6 @@ public class TouristService {
         javaMailSender.send(mimeMessage);
     }
 
-    public List<Tourist> retrieveAllTourist() {
-        return touristRepository.findAll();
-    }
-
-    public Tourist getTouristProfile(Long touristId) throws TouristNotFoundException {
-        try {
-            Tourist tourist = touristRepository.findById(touristId).get();
-
-            if (tourist == null) {
-                throw new TouristNotFoundException("Tourist not found!");
-            }
-
-            tourist.setPassword(null);
-
-            return tourist;
-        } catch(Exception ex) {
-            throw new TouristNotFoundException(ex.getMessage());
-        }
-    }
-
     public Tourist editTouristProfile(Tourist touristToEdit) throws EditUserException {
         try {
 
@@ -166,29 +115,13 @@ public class TouristService {
         }
     }
 
-    public void editTouristPassword(Long id, String oldPassword, String newPassword) throws EditPasswordException {
-        try {
-            Optional<Tourist> touristOptional = touristRepository.findById(id);
+    public List<Tourist> retrieveAllTourist() {
+        List<Tourist> touristList = touristRepository.findAll();
 
-            if (touristOptional.isPresent()) {
-                Tourist tourist = touristOptional.get();
-
-                if (oldPassword.equals(newPassword)) {
-                    throw new EditPasswordException("New password must be different from old password!");
-
-                } else if (encoder.matches(oldPassword, tourist.getPassword())) {
-                    tourist.setPassword(encoder.encode(newPassword));
-                    touristRepository.save(tourist);
-
-                } else {
-                    throw new EditPasswordException("Incorrect old password!");
-                }
-
-            } else {
-                throw new EditUserException("Tourist not found!");
-            }
-        } catch (Exception ex) {
-            throw new EditPasswordException(ex.getMessage());
+        for (Tourist i : touristList) {
+            i.setPassword(null);
         }
+
+        return touristList;
     }
 }

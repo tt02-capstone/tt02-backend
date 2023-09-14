@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface VendorRepository extends JpaRepository<Vendor, Long> {
-
     @Query("SELECT v FROM Vendor v WHERE v.application_status=?1")
     List<Vendor> retrievePendingVendorApplications(ApplicationStatusEnum applicationStatus);
 }

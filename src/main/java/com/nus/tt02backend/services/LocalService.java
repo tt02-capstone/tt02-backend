@@ -1,6 +1,7 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.*;
+import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.UserRepository;
@@ -30,38 +31,6 @@ public class LocalService {
     JavaMailSender javaMailSender;
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
-
-    public Local localLogin(String email, String password) throws NotFoundException, BadRequestException {
-        Local checkLocal = localRepository.retrieveLocalByEmail(email);
-
-        if (checkLocal == null) {
-            throw new NotFoundException("There is no account associated with this email address");
-        }
-
-        if (encoder.matches(password, checkLocal.getPassword())
-                && !checkLocal.getIs_blocked()) {
-            //still need to add more
-            checkLocal.setComment_list(new ArrayList<>());
-            checkLocal.setPost_list(null);
-            checkLocal.setBadge_list(null);
-            checkLocal.setSupport_ticket_list(null);
-            checkLocal.setAttraction_list(null);
-            checkLocal.setPost_list(null);
-            checkLocal.setAccommodation_list(null);
-            checkLocal.setCard_list(null);
-            checkLocal.setCart_list(null);
-            checkLocal.setRestaurant_list(null);
-            checkLocal.setTelecom_list(null);
-            checkLocal.setTour_type_list(null);
-            checkLocal.setItinerary(null);
-            return checkLocal;
-
-        } else if (checkLocal.getIs_blocked()) {
-            throw new BadRequestException("Your account is disabled, please contact our help desk");
-        } else {
-            throw new BadRequestException("Incorrect password");
-        }
-    }
 
     public void updateLocal(Local localToUpdate) throws NotFoundException {
         Local local = localRepository.findById(localToUpdate.getUser_id()).orElseThrow(() ->
@@ -111,25 +80,6 @@ public class LocalService {
         mimeMessageHelper.setText(content, true);
         javaMailSender.send(mimeMessage);
     }
-    public List<Local> retrieveAllLocal() {
-        return localRepository.findAll();
-    }
-
-    public Local getLocalProfile(Long localId) throws LocalNotFoundException {
-        try {
-            Local local = localRepository.findById(localId).get();
-
-            if (local == null) {
-                throw new LocalNotFoundException("Local not found!");
-            }
-
-            local.setPassword(null);
-
-            return local;
-        } catch(Exception ex) {
-            throw new LocalNotFoundException(ex.getMessage());
-        }
-    }
 
     public Local editLocalProfile(Local localToEdit) throws EditUserException {
         try {
@@ -171,29 +121,13 @@ public class LocalService {
         }
     }
 
-    public void editLocalPassword(Long id, String oldPassword, String newPassword) throws EditPasswordException {
-        try {
-            Optional<Local> localOptional = localRepository.findById(id);
+    public List<Local> retrieveAllLocal() {
+        List<Local> localList = localRepository.findAll();
 
-            if (localOptional.isPresent()) {
-                Local local = localOptional.get();
-
-                if (oldPassword.equals(newPassword)) {
-                    throw new EditPasswordException("New password must be different from old password!");
-
-                } else if (encoder.matches(oldPassword, local.getPassword())) {
-                    local.setPassword(encoder.encode(newPassword));
-                    localRepository.save(local);
-
-                } else {
-                    throw new EditPasswordException("Incorrect old password!");
-                }
-
-            } else {
-                throw new EditUserException("Local not found!");
-            }
-        } catch (Exception ex) {
-            throw new EditPasswordException(ex.getMessage());
+        for (Local i : localList) {
+            i.setPassword(null);
         }
+
+        return localList;
     }
 }

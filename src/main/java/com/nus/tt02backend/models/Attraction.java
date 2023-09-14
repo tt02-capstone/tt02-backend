@@ -77,6 +77,10 @@ public class Attraction {
     @JoinColumn(nullable = true)
     private List<TourType> tour_type_list = new ArrayList<>();
 
+    @OneToMany
+    @JoinColumn(nullable = true)
+    private List<RemainingTicketPerDay> remaining_ticket_per_day_list = new ArrayList<>();
+
     public Attraction(String name, String description, String opening_hours,
                       String age_group, String contact_num, Boolean is_published,
                       Integer suggested_duration, AttractionCategoryEnum attraction_category,

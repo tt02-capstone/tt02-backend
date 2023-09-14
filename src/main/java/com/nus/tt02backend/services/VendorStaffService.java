@@ -1,6 +1,7 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.*;
+import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
@@ -33,47 +34,6 @@ public class VendorStaffService {
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public VendorStaff vendorStaffLogin(String email, String password) throws NotFoundException, BadRequestException {
-        VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(email);
-
-        // Local
-        if (vendorStaff == null) {
-            throw new NotFoundException("There is no staff account associated with this email address");
-        }
-
-        if (encoder.matches(password, vendorStaff.getPassword())
-                && !vendorStaff.getIs_blocked()
-                && vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED
-                && vendorStaff.getEmail_verified()) {
-            return vendorStaff;
-        } else if (!vendorStaff.getEmail_verified()) {
-            String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + vendorStaff.getEmail_verification_token();
-            try {
-                String subject = "[WithinSG] Email Verification Required";
-                String content = "<p>Dear " + vendorStaff.getName() + ",</p>" +
-                        "<p>You have not verified your email address.</p>" +
-                        "<p>Please verify your email address by clicking on the button below.</p>" +
-                        "<a href=\"" + emailVerificationLink +"\" target=\"_blank\">" +
-                        "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
-                        "Verify Email</button></a>" +
-                        "<p>Kind Regards,<br> WithinSG</p>";
-                sendEmail(vendorStaff.getEmail(), subject, content);
-            } catch (MessagingException ex) {
-                throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
-            }
-
-            throw new BadRequestException("Your email has not been verified, a new email verification email has been sent to you");
-        } else if (vendorStaff.getIs_blocked()) {
-            throw new BadRequestException("Your staff account is disabled, please contact your administrator");
-        }
-        else if (vendorStaff.getVendor().getApplication_status() != ApplicationStatusEnum.APPROVED) {
-            throw new BadRequestException("Your application is still pending review");
-        }
-        else {
-            throw new BadRequestException("Incorrect password");
-        }
-    }
-
     public void updateVendorStaff(VendorStaff vendorStaffToUpdate) throws NotFoundException {
         VendorStaff vendorStaff = vendorStaffRepository.findById((vendorStaffToUpdate.getUser_id()))
                 .orElseThrow(() -> new NotFoundException("VendorStaff not found"));
@@ -87,44 +47,48 @@ public class VendorStaffService {
         vendorStaffRepository.save(vendorStaff);
     }
 
+    // not intial signup vendor staff, is subsequent one
     public Long createVendorStaff(VendorStaff vendorStaffToCreate) throws BadRequestException  {
 
-        Long existingId = vendorStaffRepository.getVendorStaffIdByEmail(vendorStaffToCreate.getEmail());
-        if (existingId != null && existingId != vendorStaffToCreate.getUser_id()) { // but there is an existing email
+        Long existingId = userRepository.retrieveIdByUserEmail(vendorStaffToCreate.getEmail());
+        if (existingId != null) { // but there is an existing email
             throw new BadRequestException("Email currently in use. Please use a different email!");
         }
 
-        Vendor vendorToCreate = vendorStaffToCreate.getVendor();
-        vendorRepository.save(vendorToCreate);
+        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorStaffToCreate.getVendor().getVendor_id());
 
-        vendorStaffToCreate.setPassword(encoder.encode(vendorStaffToCreate.getPassword()));
-        String emailVerificationToken = UUID.randomUUID().toString();
-        vendorStaffToCreate.setEmail_verification_token(emailVerificationToken);
-        vendorStaffRepository.save(vendorStaffToCreate);
+        if (vendorOptional.isPresent()) {
+            Vendor vendor = vendorOptional.get();
+            vendor.getVendor_staff_list().add(vendorStaffToCreate);
+            vendorStaffToCreate.setVendor(vendor);
+            vendorStaffToCreate.setPassword(encoder.encode(vendorStaffToCreate.getPassword()));
+            String emailVerificationToken = UUID.randomUUID().toString();
+            vendorStaffToCreate.setEmail_verification_token(emailVerificationToken);
+            vendorStaffToCreate.setEmail_verified(false);
+            vendorStaffRepository.save(vendorStaffToCreate);
 
-        String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + vendorStaffToCreate.getEmail_verification_token();
-        try {
-            String subject = "[WithinSG] Account Application Processing";
-            String content = "<p>Dear " + vendorStaffToCreate.getName() + ",</p>" +
-                    "<p>Thank you for registering for a vendor account with WithinSG. " +
-                    "We are glad that you have chosen us as your service provider!</p>" +
-                    "<p>We have received your application and it is in the midst of processing. " +
-                    "Please verify your email address by clicking on the button below.</p>" +
-                    "<a href=\"" + emailVerificationLink +"\" target=\"_blank\">" +
-                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
-                    "Verify Email</button></a>" +
-                    "<p>An email will be sent to you once your account has been activated.</p>" +
-                    "<p>Kind Regards,<br> WithinSG</p>";
-            sendEmail(vendorStaffToCreate.getEmail(), subject, content);
-        } catch (MessagingException ex) {
-            throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+            String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + vendorStaffToCreate.getEmail_verification_token();
+            try {
+                String subject = "[WithinSG] Account Application Processing";
+                String content = "<p>Dear " + vendorStaffToCreate.getName() + ",</p>" +
+                        "<p>Thank you for registering for a vendor account with WithinSG. " +
+                        "We are glad that you have chosen us as your service provider!</p>" +
+                        "<p>We have received your application and it is in the midst of processing. " +
+                        "Please verify your email address by clicking on the button below.</p>" +
+                        "<a href=\"" + emailVerificationLink +"\" target=\"_blank\">" +
+                        "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
+                        "Verify Email</button></a>" +
+                        "<p>An email will be sent to you once your account has been activated.</p>" +
+                        "<p>Kind Regards,<br> WithinSG</p>";
+                sendEmail(vendorStaffToCreate.getEmail(), subject, content);
+                return vendorStaffToCreate.getUser_id();
+
+            } catch (MessagingException ex) {
+                throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+            }
+        } else {
+            throw new BadRequestException("Vendor is null!");
         }
-
-        return vendorStaffToCreate.getUser_id();
-    }
-
-    public List<VendorStaff> getAllVendorStaff() {
-        return vendorStaffRepository.findAll();
     }
 
     public List<VendorStaff> getAllAssociatedVendorStaff(Long vendorId) {
@@ -204,6 +168,7 @@ public class VendorStaffService {
         if (vendorStaff == null) {
             throw new BadRequestException("Invalid token");
         }
+        System.out.println("tan: " + vendorStaff.getEmail_verified());
 
         if (!vendorStaff.getEmail_verified()) {
             vendorStaff.setEmail_verified(true);
@@ -233,34 +198,13 @@ public class VendorStaffService {
         javaMailSender.send(mimeMessage);
     }
 
-    public VendorStaff getVendorStaffProfile(Long vendorStaffId) throws IllegalArgumentException, VendorStaffNotFoundException {
-        try {
-            Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(vendorStaffId);
-
-            if (vendorStaffOptional.isPresent()) {
-                VendorStaff vendorStaff = vendorStaffOptional.get();
-                vendorStaff.setPassword(null);
-                vendorStaff.setVendor(null);
-                return vendorStaff;
-
-            } else {
-                throw new VendorStaffNotFoundException("Vendor staff not found!");
-            }
-
-        } catch(Exception ex) {
-            throw new VendorStaffNotFoundException(ex.getMessage());
-        }
-    }
-
     public VendorStaff editVendorStaffProfile(VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
         try {
 
             Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(vendorStaffToEdit.getUser_id());
 
-
             if (vendorStaffOptional.isPresent()) {
                 VendorStaff vendorStaff = vendorStaffOptional.get();
-                System.out.println("tanweekek:" + vendorStaff.getUser_id());
 
                 Long existingId = vendorStaffRepository.getVendorStaffIdByEmail(vendorStaffToEdit.getEmail());
                 if (existingId != null && existingId != vendorStaffToEdit.getUser_id()) { // but there is an existing email
@@ -270,8 +214,19 @@ public class VendorStaffService {
                 vendorStaff.setEmail(vendorStaffToEdit.getEmail());
                 vendorStaff.setName(vendorStaffToEdit.getName());
                 vendorStaff.setPosition(vendorStaffToEdit.getPosition());
-                // fetch vendor id, edit attributes and save
                 vendorStaffRepository.save(vendorStaff);
+
+                if (vendorStaff.getIs_master_account()) {
+                    Vendor vendor = vendorStaff.getVendor();
+                    vendor.setBusiness_name(vendorStaffToEdit.getVendor().getBusiness_name());
+                    vendor.setPoc_name(vendorStaffToEdit.getVendor().getPoc_name());
+                    vendor.setPoc_position(vendorStaffToEdit.getVendor().getPoc_position());
+                    vendor.setCountry_code(vendorStaffToEdit.getVendor().getCountry_code());
+                    vendor.setPoc_mobile_num(vendorStaffToEdit.getVendor().getPoc_mobile_num());
+                    vendor.setService_description(vendorStaffToEdit.getVendor().getService_description());
+                    vendorRepository.save(vendor);
+                }
+
                 vendorStaff.setPassword(null);
                 vendorStaff.getVendor().setVendor_staff_list(null);
                 return vendorStaff;
@@ -281,32 +236,6 @@ public class VendorStaffService {
             }
         } catch (Exception ex) {
             throw new EditVendorStaffException(ex.getMessage());
-        }
-    }
-
-    public void editVendorStaffPassword(Long id, String oldPassword, String newPassword) throws EditPasswordException {
-        try {
-            Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(id);
-
-            if (vendorStaffOptional.isPresent()) {
-                VendorStaff vendorStaff = vendorStaffOptional.get();
-
-                if (oldPassword.equals(newPassword)) {
-                    throw new EditPasswordException("New password must be different from old password!");
-
-                } else if (encoder.matches(oldPassword, vendorStaff.getPassword())) {
-                    vendorStaff.setPassword(encoder.encode(newPassword));
-                    vendorStaffRepository.save(vendorStaff);
-
-                } else {
-                    throw new EditPasswordException("Incorrect old password!");
-                }
-
-            } else {
-                throw new EditVendorStaffException("Vendor staff not found!");
-            }
-        } catch (Exception ex) {
-            throw new EditPasswordException(ex.getMessage());
         }
     }
 
@@ -326,5 +255,15 @@ public class VendorStaffService {
         } else {
             throw new NotFoundException("Vendor Staff not found!");
         }
+    }
+
+    public List<VendorStaff> retrieveAllVendorStaff() {
+        List<VendorStaff> vendorStaffList = vendorStaffRepository.findAll();
+
+        for (VendorStaff i : vendorStaffList) {
+            i.setPassword(null);
+        }
+
+        return vendorStaffList;
     }
 }
