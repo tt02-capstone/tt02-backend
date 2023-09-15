@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +83,7 @@ public class BookingService {
 
         User currentUser = findUser(userId);
         List<Booking> bookings = new ArrayList<Booking>();
+        List<Booking> bookingsToReturn = new ArrayList<Booking>();
 
         if (currentUser.getUser_type().equals(touristType)) {
             Tourist tourist = findTourist(userId);
@@ -94,12 +96,26 @@ public class BookingService {
         }
 
         for (Booking booking : bookings) {
+            if (booking.getStatus() != BookingStatusEnum.CANCELLED) {
+                if (booking.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
+                    booking.setStatus(BookingStatusEnum.ONGOING);
+                } else if (booking.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
+                    booking.setStatus(BookingStatusEnum.COMPLETED);
+                } else {
+                    booking.setStatus(BookingStatusEnum.UPCOMING);
+                }
+            }
+            bookingRepository.save(booking);
+            bookingsToReturn.add(booking);
+        }
+
+        for (Booking booking : bookingsToReturn) {
             booking.setLocal_user(null);
             booking.setTourist_user(null);
             booking.getPayment().setBooking(null);
         }
 
-        return bookings;
+        return bookingsToReturn;
     }
 
     public Booking getBookingByBookingId(Long bookingId) throws NotFoundException {
@@ -107,7 +123,11 @@ public class BookingService {
             Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
 
             if (bookingOptional.isPresent()) {
-                return bookingOptional.get();
+                Booking booking = bookingOptional.get();
+                booking.setLocal_user(null);
+                booking.setTourist_user(null);
+                booking.getPayment().setBooking(null);
+                return booking;
             } else {
                 throw new NotFoundException("Booking not found");
             }
@@ -116,8 +136,16 @@ public class BookingService {
         }
     }
 
-    public String cancelBooking(Long bookingId) throws NotFoundException {
-        Booking booking = getBookingByBookingId(bookingId);
+    public String cancelBooking(Long bookingId) throws NotFoundException, BadRequestException {
+        Booking booking = bookingRepository.getBookingByBookingId(bookingId);
+
+        if (booking == null) {
+            throw new NotFoundException("Booking not found");
+        }
+
+        if (booking.getStatus() == BookingStatusEnum.CANCELLED) {
+            throw new BadRequestException("Booking has already been cancelled!");
+        }
 
         // refund
         if (Duration.between(booking.getStart_datetime(), LocalDateTime.now()).toDays() >= 3) {
@@ -126,7 +154,6 @@ public class BookingService {
             // refund 0%
         }
         booking.setStatus(BookingStatusEnum.CANCELLED);
-
         bookingRepository.save(booking);
 
         return "Booking successfully cancelled";
@@ -149,7 +176,7 @@ public class BookingService {
     // To be deleted - for testing purposes
     public String tempCreateBooking() throws NotFoundException {
         Booking booking = new Booking();
-        booking.setStart_datetime(LocalDateTime.now().plusDays(5l));
+        booking.setStart_datetime(LocalDateTime.now().plusDays(2l));
         booking.setEnd_datetime(LocalDateTime.now().plusDays(5l));
         booking.setLast_update(LocalDateTime.now());
         booking.setStatus(BookingStatusEnum.UPCOMING);

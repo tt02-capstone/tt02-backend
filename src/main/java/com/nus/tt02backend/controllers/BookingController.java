@@ -32,7 +32,7 @@ public class BookingController {
     }
 
     @PutMapping("/cancelBooking/{bookingId}")
-    public ResponseEntity<String> cancelBooking(@PathVariable Long bookingId) throws NotFoundException {
+    public ResponseEntity<String> cancelBooking(@PathVariable Long bookingId) throws NotFoundException, BadRequestException {
         String responseMessage = bookingService.cancelBooking(bookingId);
         return ResponseEntity.ok(responseMessage);
     }
