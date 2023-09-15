@@ -17,4 +17,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u.user_id FROM User u WHERE u.email = ?1")
     Long retrieveIdByUserEmail(String email);
+
+    @Query("SELECT u FROM User u WHERE u.password_reset_token=?1 and (u.user_type = 'VENDOR_STAFF' or u.user_type = 'LOCAL')")
+    User retrieveVendorStaffOrLocalByToken(String token);
 }

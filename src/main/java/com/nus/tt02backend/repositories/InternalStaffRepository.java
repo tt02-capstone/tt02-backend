@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface InternalStaffRepository extends JpaRepository<InternalStaff, Long> {
 
     @Query("SELECT ins FROM InternalStaff ins WHERE ins.email=?1")
-    InternalStaff getInternalStaffByEmail(String email);
+    InternalStaff retrieveInternalStaffByEmail(String email);
 
     @Query("SELECT u.user_id FROM User u WHERE u.email = ?1")
     Long getAdminByEmail(String email);
