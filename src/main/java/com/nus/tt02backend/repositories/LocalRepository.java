@@ -10,4 +10,7 @@ public interface LocalRepository extends JpaRepository<Local, Long> {
 
     @Query("SELECT ls FROM Local ls WHERE ls.password_reset_token=?1")
     Local retrieveLocalByToken(String token);
+
+    @Query("SELECT ls.stripe_account_id FROM Local ls WHERE ls.email=?1")
+    String getStripeIdByEmail(String email);
 }

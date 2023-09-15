@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 //import com.nus.tt02backend.services.PaymentService;
 import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.services.PaymentService;
 import com.stripe.model.Customer;
 import com.stripe.model.PaymentIntent;
@@ -11,6 +12,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.exception.StripeException;
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.stripe.model.PaymentMethod;
@@ -50,34 +52,35 @@ public class PaymentController {
         }
     }
 
-    @GetMapping("/getPaymentMethods/{tourist_email}")
-    public List<PaymentMethod> getPaymentMethods(@PathVariable String tourist_email) throws StripeException {
-        //String stripeCustomerId = get from Tourist based on tourist_email
-        System.out.println("Checkmate");
-        Map<String, Object> params = new HashMap<>();
-        params.put("customer", "cus_OalsHOTNEwycEX");
-        params.put("type", "card");
-        PaymentMethodCollection paymentMethods =
-                PaymentMethod.list(params);
+    @GetMapping("/getPaymentMethods/{user_type}/{tourist_email}")
+    public ResponseEntity<List<PaymentMethod>> getPaymentMethods(@PathVariable String user_type,
+                                                                 @PathVariable String tourist_email
+                                                                 ) throws StripeException {
 
-        return paymentMethods.getData();
+        List<PaymentMethod> paymentMethods = paymentService.getPaymentMethods(user_type, tourist_email);
+
+
+        return ResponseEntity.ok(paymentMethods);
     }
 
-    @PostMapping("/addPaymentMethod/{tourist_email}/{payment_method_id}")
-    public static void addPaymentMethod(@PathVariable String tourist_email, @PathVariable String payment_method_id) throws StripeException {
-        //System.out.println(parser);
-        PaymentMethod paymentMethod =
-                PaymentMethod.retrieve(
-                        payment_method_id
-                );
+    @PostMapping("/addPaymentMethod/{user_type}/{tourist_email}/{payment_method_id}")
+    public ResponseEntity<String> addPaymentMethod(@PathVariable String user_type, @PathVariable String tourist_email,
+                                        @PathVariable String payment_method_id) throws StripeException {
 
-        Map<String, Object> params = new HashMap<>();
-        //To get user based on user_email and get their stripe_account_id
-        String stripe_account_id = "cus_OalsHOTNEwycEX";
+        String paymentMethodId = paymentService.addPaymentMethod(user_type, tourist_email,  payment_method_id);
 
-        params.put("customer", stripe_account_id);
 
-        PaymentMethod updatedPaymentMethod =
-                paymentMethod.attach(params);
+        return ResponseEntity.ok(paymentMethodId);
     }
+
+    @PutMapping("/deletePaymentMethod/{user_type}/{tourist_email}/{payment_method_id}")
+    public ResponseEntity<String> deletePaymentMethod(@PathVariable String user_type, @PathVariable String tourist_email,
+                                                   @PathVariable String payment_method_id) throws StripeException {
+
+        String paymentMethodId = paymentService.deletePaymentMethod(user_type, tourist_email,  payment_method_id);
+
+
+        return ResponseEntity.ok(paymentMethodId);
+    }
+
 }

@@ -5,6 +5,8 @@ import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.LocalRepository;
+import com.stripe.model.Customer;
+import com.stripe.param.CustomerCreateParams;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class LocalService {
@@ -26,6 +26,9 @@ public class LocalService {
     LocalRepository localRepository;
     @Autowired
     JavaMailSender javaMailSender;
+
+    @Autowired
+    PaymentService paymentService;
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -82,6 +85,12 @@ public class LocalService {
         }
 
         localToCreate.setPassword(encoder.encode(localToCreate.getPassword()));
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", localToCreate.getEmail());
+        customer_parameters.put("name", localToCreate.getName());
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        System.out.println(stripe_account_id);
+        localToCreate.setStripe_account_id(stripe_account_id);
         localToCreate.setUser_type(UserTypeEnum.LOCAL);
         localRepository.save(localToCreate);
 
