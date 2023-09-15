@@ -1,6 +1,7 @@
 package com.nus.tt02backend.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,7 @@ import com.nus.tt02backend.models.enums.PriceTierEnum;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
 public class Attraction {
 
     @Id
