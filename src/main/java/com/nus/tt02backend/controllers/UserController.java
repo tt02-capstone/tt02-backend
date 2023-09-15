@@ -89,4 +89,9 @@ public class UserController {
         String successMessage = userService.webPasswordResetStageThree(email, password);
         return ResponseEntity.ok(successMessage);
     }
+    @GetMapping("/viewUserProfile/{userId}")
+    public ResponseEntity<User> viewUserProfile(@PathVariable Long userId) throws UserNotFoundException {
+        User user = userService.viewUserProfile(userId);
+        return ResponseEntity.ok(user);
+    }
 }

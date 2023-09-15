@@ -348,6 +348,24 @@ public class UserService {
         return "Your password has been changed successfully";
     }
 
+    public User viewUserProfile(Long userId) throws UserNotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (user instanceof VendorStaff) {
+                VendorStaff vendorStaff = (VendorStaff) user;
+                vendorStaff.getVendor().setVendor_staff_list(null);
+            }
+
+            return user;
+        } else {
+            throw new UserNotFoundException("User not found!");
+        }
+    }
+
     public List<User> retrieveAllUser() {
         return userRepository.findAll();
     }

@@ -280,6 +280,7 @@ public class VendorStaffService {
 
         for (VendorStaff i : vendorStaffList) {
             i.setPassword(null);
+            i.getVendor().setVendor_staff_list(null);
         }
 
         return vendorStaffList;
