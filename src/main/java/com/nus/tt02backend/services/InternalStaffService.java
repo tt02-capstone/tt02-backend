@@ -81,13 +81,16 @@ public class InternalStaffService {
         }
 
         internalStaffToCreate.setStaff_num(latestStaffNum);
-        internalStaffToCreate.setPassword(encoder.encode(internalStaffToCreate.getPassword()));
+        String tempPassword = generateRandomPassword();
+        System.out.println("twk: " + tempPassword);
+        internalStaffToCreate.setPassword(encoder.encode(tempPassword));
         internalStaffRepository.save(internalStaffToCreate);
 
         try {
             String subject = "[WithinSG] Staff Account Created";
             String content = "<p>Dear " + internalStaffToCreate.getName() + ",</p>" +
                     "<p>A staff account has been created for you.</p>" +
+                    "<p>Your temporary password is " + tempPassword + "</p>" +
                     "<p>Please sign in using your staff number as the password. " +
                     "You will be prompted to change your password upon signing in for the first time.</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
@@ -97,6 +100,22 @@ public class InternalStaffService {
         }
 
         return internalStaffToCreate.getUser_id();
+    }
+
+    public String generateRandomPassword() { // length 8, 7 letters & number, 1 symbol
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 8;
+        Random random = new Random();
+
+        String generatedString = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        generatedString = generatedString + "!";
+        return generatedString;
     }
 
     public List<InternalStaff> retrieveAllAdmin() {

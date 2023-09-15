@@ -61,7 +61,8 @@ public class VendorStaffService {
             Vendor vendor = vendorOptional.get();
             vendor.getVendor_staff_list().add(vendorStaffToCreate);
             vendorStaffToCreate.setVendor(vendor);
-            vendorStaffToCreate.setPassword(encoder.encode(vendorStaffToCreate.getPassword()));
+            String tempPassword = generateRandomPassword();
+            vendorStaffToCreate.setPassword(encoder.encode(tempPassword));
             String emailVerificationToken = UUID.randomUUID().toString();
             vendorStaffToCreate.setEmail_verification_token(emailVerificationToken);
             vendorStaffToCreate.setEmail_verified(false);
@@ -73,6 +74,7 @@ public class VendorStaffService {
                 String content = "<p>Dear " + vendorStaffToCreate.getName() + ",</p>" +
                         "<p>Thank you for registering for a vendor account with WithinSG. " +
                         "We are glad that you have chosen us as your service provider!</p>" +
+                        "<p>Your temporary password is " + tempPassword + "</p>" +
                         "<p>We have received your application and it is in the midst of processing. " +
                         "Please verify your email address by clicking on the button below.</p>" +
                         "<a href=\"" + emailVerificationLink +"\" target=\"_blank\">" +
@@ -89,6 +91,22 @@ public class VendorStaffService {
         } else {
             throw new BadRequestException("Vendor is null!");
         }
+    }
+
+    public String generateRandomPassword() { // length 8, 7 letters & number, 1 symbol
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 8;
+        Random random = new Random();
+
+        String generatedString = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        generatedString = generatedString + "@";
+        return generatedString;
     }
 
     public List<VendorStaff> getAllAssociatedVendorStaff(Long vendorId) {
