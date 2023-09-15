@@ -1,10 +1,11 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.TicketEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
-import com.nus.tt02backend.models.enums.TicketEnum;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -12,19 +13,17 @@ import com.nus.tt02backend.models.enums.TicketEnum;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Price {
 
+public class TicketPerDay {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long price_id;
+    private Long ticket_per_day_id;
+
+    private LocalDate ticket_date;
 
     @Column(nullable = false)
-    private BigDecimal local_amount;
-
-    @Column(nullable = false)
-    private BigDecimal tourist_amount;
+    private Integer ticket_count;
 
     @Enumerated(EnumType.STRING)
     private TicketEnum ticket_type;
-
 }

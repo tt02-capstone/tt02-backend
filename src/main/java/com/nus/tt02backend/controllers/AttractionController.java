@@ -2,13 +2,17 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.Attraction;
+import com.nus.tt02backend.models.TicketPerDay;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.models.enums.TicketEnum;
 import com.nus.tt02backend.services.AttractionService;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
 
@@ -87,5 +91,44 @@ public class AttractionController {
     public ResponseEntity<User> removeSavedAttractionListForTouristAndLocal(@PathVariable Long userId , @PathVariable Long currentAttractionId) throws NotFoundException {
         User user = attractionService.removeSavedAttractionForTouristAndLocal(userId, currentAttractionId);
         return ResponseEntity.ok(user);
+    }
+
+    @PostMapping ("/createTicketsPerDay/{startDate}/{endDate}/{ticketType}/{ticketCount}/{attraction_id}")
+    public ResponseEntity<List<TicketPerDay>> createTicketsPerDayList(@PathVariable LocalDate startDate, @PathVariable LocalDate endDate,
+                                                          @PathVariable TicketEnum ticketType, @PathVariable int ticketCount,
+                                                          @PathVariable Long attraction_id ) throws NotFoundException  {
+        List<TicketPerDay> ticketList = attractionService.createTicketsPerDayList(startDate,endDate,ticketType,ticketCount,attraction_id);
+        return ResponseEntity.ok(ticketList);
+    }
+
+    @PutMapping ("/updateTicketsPerDay/{attraction_id}")
+    public ResponseEntity<List<TicketPerDay>> updateTicketsPerDay(@PathVariable Long attraction_id , @RequestBody TicketPerDay ticket_to_update) throws NotFoundException  {
+        List<TicketPerDay> ticketList = attractionService.updateTicketsPerDay(attraction_id,ticket_to_update);
+        return ResponseEntity.ok(ticketList);
+    }
+
+    @GetMapping("/getAllTicketListed")
+    public ResponseEntity<List<TicketPerDay>> getAllTicketListed() {
+        List<TicketPerDay> ticketList = attractionService.getAllTickets();
+        return ResponseEntity.ok(ticketList);
+    }
+
+    @GetMapping("/getAllTicketListedByAttraction/{attraction_id}")
+    public ResponseEntity<List<TicketPerDay>> getAllTicketListedByAttraction(@PathVariable Long attraction_id) throws NotFoundException {
+        List<TicketPerDay> ticketList = attractionService.getAllTicketListedByAttraction(attraction_id);
+        return ResponseEntity.ok(ticketList);
+    }
+
+    // for customer side
+    @GetMapping("/getAllTicketListedByAttractionAndDate/{attraction_id}/{date_selected}")
+    public ResponseEntity<List<TicketPerDay>> getAllTicketListedByAttractionAndDate(@PathVariable Long attraction_id, @PathVariable LocalDate date_selected) throws NotFoundException {
+        List<TicketPerDay> ticketList = attractionService.getAllTicketListedByAttractionAndDate(attraction_id,date_selected);
+        return ResponseEntity.ok(ticketList);
+    }
+
+    @GetMapping("/getTicketEnumByAttraction/{attraction_id}")
+    public ResponseEntity<List<TicketEnum>> getTicketEnumByAttraction(@PathVariable Long attraction_id) throws NotFoundException {
+        List<TicketEnum> ticketTypes = attractionService.getTicketEnumByAttraction(attraction_id);
+        return ResponseEntity.ok(ticketTypes);
     }
 }

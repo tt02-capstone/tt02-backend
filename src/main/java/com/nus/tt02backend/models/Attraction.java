@@ -75,4 +75,7 @@ public class Attraction {
     @OneToMany(fetch = FetchType.LAZY)
     private List<TourType> tour_type_list;
 
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<TicketPerDay> ticket_per_day_list;
+
 }

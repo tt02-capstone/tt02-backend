@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.w3c.dom.Attr;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 
@@ -35,6 +38,9 @@ public class AttractionService {
 
     @Autowired
     LocalRepository localRepository;
+
+    @Autowired
+    TicketPerDayRepository ticketPerDayRepository;
 
     public User findUser(Long userId) throws NotFoundException {
         try {
@@ -370,4 +376,110 @@ public class AttractionService {
         throw new NotFoundException("Attraction not found in the saved list!");
     }
 
+    public List<TicketPerDay> createTicketsPerDayList(LocalDate startDate, LocalDate endDate, TicketEnum ticketType, int ticketCount, Long attraction_id) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction not found when saving ticket per day!"));
+
+        List<TicketPerDay> createdTickets = new ArrayList<>();
+        List<TicketPerDay> previouslyCreated = new ArrayList<>();
+
+        if (!attraction.getTicket_per_day_list().isEmpty()) {
+            previouslyCreated = attraction.getTicket_per_day_list();
+        }
+
+        long duration = ChronoUnit.DAYS.between(startDate, endDate);
+
+        for (int i = 0; i <= duration; i++) {
+            LocalDate ticketDate = startDate.plusDays(i);
+            TicketPerDay ticketPerDay = new TicketPerDay();
+            ticketPerDay.setTicket_count(ticketCount);
+            ticketPerDay.setTicket_date(ticketDate);
+            ticketPerDay.setTicket_type(ticketType);
+
+            ticketPerDayRepository.save(ticketPerDay);
+
+            createdTickets.add(ticketPerDay);
+        }
+
+        if (!previouslyCreated.isEmpty()) {
+            previouslyCreated.addAll(createdTickets);
+            attraction.setTicket_per_day_list(previouslyCreated);
+        } else {
+            attraction.setTicket_per_day_list(createdTickets);
+        }
+
+        attractionRepository.save(attraction);
+        return createdTickets;
+    }
+
+    public List<TicketPerDay> updateTicketsPerDay(Long attraction_id, TicketPerDay toUpdateTicket) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction not found when saving ticket per day!"));
+
+        List<TicketPerDay> exisitingTicketList = attraction.getTicket_per_day_list();
+        List<TicketPerDay> updatedList = new ArrayList<TicketPerDay>();
+
+        for (TicketPerDay t : exisitingTicketList) {
+            if (t.getTicket_per_day_id().equals(toUpdateTicket.getTicket_per_day_id())) {
+                t.setTicket_count(toUpdateTicket.getTicket_count());
+                ticketPerDayRepository.save(t);
+                updatedList.add(t);
+            } else {
+                updatedList.add(t);
+            }
+        }
+
+        attraction.setTicket_per_day_list(updatedList);
+
+        return updatedList;
+    }
+
+    public List<TicketPerDay> getAllTickets() {
+        return ticketPerDayRepository.findAll();
+    }
+
+    public List<TicketPerDay> getAllTicketListedByAttraction(Long attraction_id) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction not found when getting list of tickets per day!"));
+
+        if (attraction.getTicket_per_day_list().isEmpty()) {
+            throw new NotFoundException("No tickets created for this attraction listing!");
+        }
+
+        return attraction.getTicket_per_day_list();
+    }
+
+    public List<TicketPerDay> getAllTicketListedByAttractionAndDate(Long attraction_id,LocalDate inputDate) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction not found when getting list of tickets per day!"));
+
+        List<TicketPerDay> ticketList = attraction.getTicket_per_day_list();
+        List<TicketPerDay> selectedTicketList = new ArrayList<TicketPerDay>();
+
+        if (ticketList.isEmpty()) {
+            throw new NotFoundException("No tickets created for this attraction listing!");
+        } else {
+            for (TicketPerDay t : ticketList) {
+                if (t.getTicket_date().equals(inputDate)) {
+                    selectedTicketList.add(t);
+                }
+            }
+        }
+
+        return selectedTicketList;
+    }
+
+    public List<TicketEnum> getTicketEnumByAttraction(Long attraction_id) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction to find price list not found!"));
+
+        List<TicketEnum> ticketTypes = new ArrayList<TicketEnum>();
+        if (!attraction.getPrice_list().isEmpty()) {
+            for (Price p : attraction.getPrice_list()) {
+                ticketTypes.add(p.getTicket_type());
+            }
+        }
+
+        return ticketTypes;
+    }
 }
