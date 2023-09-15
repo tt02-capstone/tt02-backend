@@ -302,10 +302,10 @@ public class AttractionService {
 
         User currentUser = findUser(userId);
 
-        if (currentUser.getUserTypeEnum().equals(touristType)) {
+        if (currentUser.getUser_type().equals(touristType)) {
             Tourist tourist = findTourist(userId);
             return tourist.getAttraction_list();
-        } else if (currentUser.getUserTypeEnum().equals(localType)) {
+        } else if (currentUser.getUser_type().equals(localType)) {
             Local local = findLocal(userId);
             return local.getAttraction_list();
         } else {
@@ -322,9 +322,9 @@ public class AttractionService {
             throw new BadRequestException("Can't save a hidden attraction!"); // shouldn't trigger if thr is a frontend
         }
 
-        if (currentUser.getUserTypeEnum().equals(UserTypeEnum.TOURIST)) {
+        if (currentUser.getUser_type().equals(UserTypeEnum.TOURIST)) {
             currentSavedAttractions = ((Tourist) currentUser).getAttraction_list();
-        } else if (currentUser.getUserTypeEnum().equals(UserTypeEnum.LOCAL)) {
+        } else if (currentUser.getUser_type().equals(UserTypeEnum.LOCAL)) {
             currentSavedAttractions = ((Local) currentUser).getAttraction_list();
         } else {
             throw new BadRequestException("Invalid User Type! Only Local or Tourist can save an attraction!");
@@ -346,10 +346,10 @@ public class AttractionService {
         User currentUser = findUser(userId);
         List<Attraction> currentSavedAttractions = new ArrayList<Attraction>();
 
-        if (currentUser.getUserTypeEnum() == UserTypeEnum.TOURIST) {
+        if (currentUser.getUser_type() == UserTypeEnum.TOURIST) {
             Tourist tourist = findTourist(userId);
             currentSavedAttractions = tourist.getAttraction_list();
-        } else if (currentUser.getUserTypeEnum() == UserTypeEnum.LOCAL) {
+        } else if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
             Local local = findLocal(userId);
             currentSavedAttractions = local.getAttraction_list();
         }
@@ -357,9 +357,9 @@ public class AttractionService {
         for (Attraction a : currentSavedAttractions) {
             if (a.getAttraction_id().equals(currentAttractionId)) {
                 currentSavedAttractions.remove(a);
-                if (currentUser.getUserTypeEnum() == UserTypeEnum.TOURIST) {
+                if (currentUser.getUser_type() == UserTypeEnum.TOURIST) {
                     touristRepository.save((Tourist) currentUser);
-                } else if (currentUser.getUserTypeEnum() == UserTypeEnum.LOCAL) {
+                } else if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
                     localRepository.save((Local) currentUser);
                 }
                 return currentUser;
