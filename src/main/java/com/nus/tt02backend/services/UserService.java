@@ -281,6 +281,7 @@ public class UserService {
 
     public void editPassword(Long userId, String oldPassword, String newPassword) throws EditPasswordException {
         try {
+            System.out.println(userId + ", " + oldPassword + ", " + newPassword);
             Optional<User> userOptional = userRepository.findById(userId);
 
             if (userOptional.isPresent()) {

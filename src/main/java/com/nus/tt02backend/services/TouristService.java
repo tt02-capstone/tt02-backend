@@ -55,8 +55,6 @@ public class TouristService {
             String content = "<p>Dear " + touristToCreate.getName() + ",</p>" +
                     "<p>Thank you for registering for an account with WithinSG. " +
                     "We are glad that you have chosen us to help you explore Singapore!</p>" +
-                    "<p>We have received your application and it is in the midst of processing.</p>" +
-                    "<p>An email will be sent to you once your account has been activated.</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
             sendEmail(touristToCreate.getEmail(), subject, content);
         } catch (MessagingException ex) {
@@ -102,7 +100,7 @@ public class TouristService {
                 tourist.setName(touristToEdit.getName());
                 tourist.setDate_of_birth(touristToEdit.getDate_of_birth());
                 tourist.setCountry_code(touristToEdit.getCountry_code());
-                tourist.setMobile_num(tourist.getMobile_num());
+                tourist.setMobile_num(touristToEdit.getMobile_num());
                 touristRepository.save(tourist);
                 tourist.setPassword(null);
                 return tourist;

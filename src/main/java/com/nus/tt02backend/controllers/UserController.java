@@ -73,6 +73,7 @@ public class UserController {
 
     @PutMapping("/editPassword/{userId}/{oldPassword}/{newPassword}")
     public void editPassword(@PathVariable Long userId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
+        System.out.println("edit pass");
         userService.editPassword(userId, oldPassword, newPassword);
     }
 
