@@ -18,6 +18,13 @@ public class InternalStaffController {
     @Autowired
     InternalStaffService internalStaffService;
 
+    @PostMapping("/staffLogin/{email}/{password}")
+    public ResponseEntity<InternalStaff> staffLogin(@PathVariable String email, @PathVariable String password)
+            throws NotFoundException, BadRequestException {
+        InternalStaff internalStaff = internalStaffService.staffLogin(email, password);
+        return ResponseEntity.ok(internalStaff);
+    }
+
     @PutMapping ("/updateStaff")
     public ResponseEntity<Void> updateStaff(@RequestBody InternalStaff internalStaffToUpdate) throws NotFoundException {
         internalStaffService.updateStaff(internalStaffToUpdate);

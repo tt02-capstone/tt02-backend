@@ -32,6 +32,27 @@ public class InternalStaffService {
     JavaMailSender javaMailSender;
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    public InternalStaff staffLogin(String email, String password) throws NotFoundException, BadRequestException {
+        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(email);
+
+        if (internalStaff == null) {
+            throw new NotFoundException("There is no staff account associated with this email address");
+        }
+
+        if (encoder.matches(password, internalStaff.getPassword())
+                && !internalStaff.getIs_blocked()) {
+            internalStaff.setComment_list(null);
+            internalStaff.setPost_list(null);
+            internalStaff.setBadge_list(null);
+            internalStaff.setSupport_ticket_list(null);
+            return internalStaff;
+        } else if (internalStaff.getIs_blocked()) {
+            throw new BadRequestException("Your staff account is disabled, please contact your administrator");
+        } else {
+            throw new BadRequestException("Incorrect password");
+        }
+    }
+
     public void updateStaff(InternalStaff internalStaffToUpdate) throws NotFoundException {
         InternalStaff internalStaff = internalStaffRepository.findById((internalStaffToUpdate.getUser_id()))
                 .orElseThrow(() -> new NotFoundException("InternalStaff not found"));
