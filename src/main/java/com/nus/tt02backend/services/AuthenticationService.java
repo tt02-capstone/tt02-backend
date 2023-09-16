@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
+    private final UserDetailsImpl userDetailsImpl;
     private final UserService userService;
     private final InternalStaffService internalStaffService;
     private final JwtService jwtService;
@@ -38,7 +39,7 @@ public class AuthenticationService {
                     new UsernamePasswordAuthenticationToken(email, password));
             System.out.println("Authentication manager " + authentication);
             InternalStaff internalStaff = internalStaffService.staffLogin(email, password);
-            UserDetails details = userService.userDetailsService().loadUserByUsername(email);
+            UserDetails details = userDetailsImpl.loadUserByUsername(email);
             System.out.println(details);
             System.out.println(details.getAuthorities());
             String jwt = jwtService.generateToken(details);
@@ -55,7 +56,7 @@ public class AuthenticationService {
                     new UsernamePasswordAuthenticationToken(email, password));
             System.out.println("Authentication manager " + authentication);
             User user = userService.userMobileLogin(email, password);
-            UserDetails ud = userService.userDetailsService().loadUserByUsername(email);
+            UserDetails ud = userDetailsImpl.loadUserByUsername(email);
             System.out.println("Get auth" + ud.getAuthorities());
             String jwt = jwtService.generateToken(ud);
             return new JwtAuthenticationResponse(jwt, user);

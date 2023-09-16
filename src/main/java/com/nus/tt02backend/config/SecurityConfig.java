@@ -1,5 +1,6 @@
 package com.nus.tt02backend.config;
 
+import com.nus.tt02backend.services.UserDetailsImpl;
 import com.nus.tt02backend.services.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,13 +27,13 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
-  private final UserService userService;
+  private final UserDetailsImpl userService;
   private final PasswordEncoder passwordEncoder;
 
   @Bean
   public AuthenticationProvider authenticationProvider() {
       DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-      authProvider.setUserDetailsService(userService.userDetailsService());
+      authProvider.setUserDetailsService(userService);
       authProvider.setPasswordEncoder(passwordEncoder);
       return authProvider;
   }

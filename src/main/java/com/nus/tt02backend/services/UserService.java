@@ -358,19 +358,19 @@ public class UserService {
 
         return "Your password has been changed successfully";
     }
-
-    public List<User> retrieveAllUser() {
-        return userRepository.findAll();
-    }
-
-    public UserDetailsService userDetailsService() {
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String email) {
-                return userRepository.retrieveUserEmail(email)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            }
-        };
-    }
+//
+//    public List<User> retrieveAllUser() {
+//        return userRepository.findAll();
+//    }
+//
+//    public UserDetailsService userDetailsService() {
+//        return new UserDetailsService() {
+//            @Override
+//            public UserDetails loadUserByUsername(String email) {
+//                return userRepository.retrieveUserEmail(email)
+//                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//            }
+//        };
+//    }
 
 }

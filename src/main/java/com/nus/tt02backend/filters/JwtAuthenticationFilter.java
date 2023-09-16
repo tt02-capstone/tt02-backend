@@ -1,5 +1,6 @@
 package com.nus.tt02backend.filters;
 
+import com.nus.tt02backend.services.UserDetailsImpl;
 import org.apache.commons.lang3.StringUtils;
 import com.nus.tt02backend.services.JwtService;
 import com.nus.tt02backend.services.UserService;
@@ -27,7 +28,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserService userService;
+    private final UserDetailsImpl userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -45,12 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.debug("JWT - {}", jwt.toString());
         userEmail = jwtService.extractUserName(jwt);
         if (StringUtils.isNotEmpty(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userEmail);
+            UserDetails userDetails = userService.loadUserByUsername(userEmail);
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 System.out.println("User - {}" + userDetails.getAuthorities());
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                        userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 context.setAuthentication(authToken);
                 SecurityContextHolder.setContext(context);
