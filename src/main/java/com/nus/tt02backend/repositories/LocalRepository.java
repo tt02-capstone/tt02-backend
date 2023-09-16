@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface LocalRepository extends JpaRepository<Local, Long> {
 
+    @Query("SELECT l FROM Local l WHERE l.user_id=?1")
+    Local getLocalByUserId(Long userId);
+
     @Query("SELECT l.user_id FROM Local l WHERE l.email = ?1")
     Long getLocalIdByEmail(String email);
 

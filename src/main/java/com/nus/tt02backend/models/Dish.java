@@ -38,8 +38,8 @@ public class Dish {
     private Boolean is_chef_recommendation;
 
     @ElementCollection
-    @CollectionTable(name="image_list")
-    private ArrayList<String> image_list = new ArrayList<>();;
+    @CollectionTable(name="dish_image_list")
+    private ArrayList<String> dish_image_list;
 
 
 }

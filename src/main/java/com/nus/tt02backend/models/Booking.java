@@ -26,7 +26,7 @@ public class Booking {
 
     private LocalDateTime end_datetime;
 
-    private Date last_update;
+    private LocalDateTime last_update;
 
     @Enumerated(EnumType.STRING)
     private BookingStatusEnum status;

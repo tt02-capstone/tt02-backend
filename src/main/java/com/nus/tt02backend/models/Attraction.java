@@ -24,7 +24,7 @@ public class Attraction {
     @Column(nullable = false, length = 128)
     private String name;
 
-    @Column(nullable = false, length = 400)
+    @Column(nullable = false, length = 800)
     private String description;
 
     @Column(nullable = false)
@@ -40,8 +40,8 @@ public class Attraction {
     private String contact_num;
 
     @ElementCollection
-    @CollectionTable(name="image_list")
-    private List<String> image_list = new ArrayList<>();
+    @CollectionTable(name="attraction_image_list")
+    private List<String> attraction_image_list;
 
     @Column(nullable = false)
     private Boolean is_published;
@@ -50,7 +50,7 @@ public class Attraction {
     private Integer suggested_duration;
 
     @Column(nullable = false)
-    private Double avg_rating_tier = 0.0;
+    private Double avg_rating_tier;
 
     @Enumerated(EnumType.STRING)
     private AttractionCategoryEnum attraction_category;
@@ -61,20 +61,15 @@ public class Attraction {
     @Enumerated(EnumType.STRING)
     private PriceTierEnum estimated_price_tier;
 
-    @OneToMany
-    @JoinColumn(nullable = true)
-    private List<SeasonalActivity> seasonal_activity_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<SeasonalActivity> seasonal_activity_list;
 
-    @OneToMany
-    @JoinColumn(nullable = false)
-    private List<Price> price_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Price> price_list;
 
-    @OneToMany
-    @JoinColumn(nullable = true)
-    private List<Review> review_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Review> review_list;
 
-    @OneToMany
-    @JoinColumn(nullable = true)
-    private List<TourType> tour_type_list = new ArrayList<>();
-
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<TourType> tour_type_list;
 }

@@ -25,8 +25,8 @@ public class Post {
     private String content;
 
     @ElementCollection
-    @CollectionTable(name="image_list")
-    private ArrayList<String> image_list = new ArrayList<>();
+    @CollectionTable(name="post_image_list")
+    private ArrayList<String> post_image_list;
 
     @Column(nullable = false)
     private LocalDateTime publish_time;
@@ -53,8 +53,8 @@ public class Post {
     private Local local_user;
 
     @ManyToOne
-    @JoinColumn(name = "vendor_id")
-    private Vendor vendor_user;
+    @JoinColumn(name = "vendor_staff_id")
+    private VendorStaff vendor_staff_user;
 
     @ManyToOne
     @JoinColumn(name = "internal_staff_id")

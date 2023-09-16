@@ -30,6 +30,9 @@ public class User {
     @Column(nullable = false)
     private Boolean is_blocked;
 
+    @Enumerated(EnumType.STRING)
+    private UserTypeEnum userTypeEnum;
+
     @Column
     private String email_verification_token;
 
