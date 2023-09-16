@@ -1,10 +1,12 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.JwtAuthenticationResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +18,15 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     @Autowired
-    UserService userService;
+    AuthenticationService authenticationService;
 
-    @PostMapping("/mobileLogin/{email}/{password}")
-    public ResponseEntity<User> userLogin(@PathVariable String email, @PathVariable String password)
+    @Autowired
+    UserService userService;
+    @PostMapping("/auth/mobileLogin/{email}/{password}")
+    public ResponseEntity<JwtAuthenticationResponse> userMobileLogin(@PathVariable String email, @PathVariable String password)
             throws NotFoundException, BadRequestException {
-        User user = userService.userMobileLogin(email, password);
-        return ResponseEntity.ok(user);
+        JwtAuthenticationResponse userResponse = authenticationService.userMobileLogin(email, password);
+        return ResponseEntity.ok(userResponse);
     }
 
     @PostMapping("/webLogin/{email}/{password}")

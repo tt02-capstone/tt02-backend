@@ -3,10 +3,13 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
+import com.nus.tt02backend.models.enums.InternalRoleEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
+import com.nus.tt02backend.repositories.InternalStaffRepository;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.UserRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
@@ -17,6 +20,9 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,12 +31,17 @@ import java.util.*;
 import java.time.*;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     @Autowired
     UserRepository userRepository;
     @Autowired
     VendorStaffRepository vendorStaffRepository;
+
+    @Autowired
+    InternalStaffRepository internalStaffRepository;
+
     @Autowired
     LocalRepository localRepository;
     @Autowired
@@ -351,4 +362,15 @@ public class UserService {
     public List<User> retrieveAllUser() {
         return userRepository.findAll();
     }
+
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String email) {
+                return userRepository.retrieveUserEmail(email)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            }
+        };
+    }
+
 }
