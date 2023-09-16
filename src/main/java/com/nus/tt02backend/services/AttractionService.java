@@ -418,20 +418,25 @@ public class AttractionService {
 
         List<TicketPerDay> exisitingTicketList = attraction.getTicket_per_day_list();
         List<TicketPerDay> updatedList = new ArrayList<TicketPerDay>();
+        boolean checker = false;
 
         for (TicketPerDay t : exisitingTicketList) {
-            if (t.getTicket_per_day_id().equals(toUpdateTicket.getTicket_per_day_id())) {
+            if (t.getTicket_date().equals(toUpdateTicket.getTicket_date()) && t.getTicket_type().equals(toUpdateTicket.getTicket_type())) { // use date instead of id
                 t.setTicket_count(toUpdateTicket.getTicket_count());
                 ticketPerDayRepository.save(t);
                 updatedList.add(t);
+                checker = true;
             } else {
                 updatedList.add(t);
             }
         }
 
-        attraction.setTicket_per_day_list(updatedList);
-
-        return updatedList;
+        if (checker) {
+            attraction.setTicket_per_day_list(updatedList);
+            return updatedList;
+        } else {
+            throw new NotFoundException("Selected Date or Ticket Type not found!");
+        }
     }
 
     public List<TicketPerDay> getAllTickets() {
