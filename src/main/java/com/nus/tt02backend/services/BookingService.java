@@ -95,72 +95,72 @@ public class BookingService {
         }
     }
 
-    public List<Booking> getAllAttractionBookingsByVendor(Long vendorStaffId) throws NotFoundException {
+//    public List<Booking> getAllAttractionBookingsByVendor(Long vendorStaffId) throws NotFoundException {
 
-        VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
-        Vendor vendor = vendorStaff.getVendor();
+//        VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
+//        Vendor vendor = vendorStaff.getVendor();
+//
+//        List<Booking> bookingsToReturn = new ArrayList<Booking>();
+//        List<Attraction> attractionList = new ArrayList<Attraction>();
+//
+//        if (!vendor.getAttraction_list().isEmpty()) {
+//
+//            attractionList = vendor.getAttraction_list();
+//
+//            for (Attraction attraction : attractionList) {
+//
+//                if (!attraction.getBooking_list().isEmpty()) {
+//
+//                    List<Booking> attractionBookingList = attraction.getBooking_list();
+//
+//                    for (Booking booking : attractionBookingList) {
+//                        if (booking.getStatus() != BookingStatusEnum.CANCELLED) {
+//                            if (booking.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
+//                                booking.setStatus(BookingStatusEnum.ONGOING);
+//                            } else if (booking.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
+//                                booking.setStatus(BookingStatusEnum.COMPLETED);
+//                            } else {
+//                                booking.setStatus(BookingStatusEnum.UPCOMING);
+//                            }
+//                        }
+//                        bookingRepository.save(booking);
+//                        bookingsToReturn.add(booking);
+//                    }
+//
+//                }
+//
+//            }
+//        }
+//
+//        for (Booking booking : bookingsToReturn) {
+//            booking.setLocal_user(null);
+//            booking.setTourist_user(null);
+//            booking.getPayment().setBooking(null);
+//        }
+//
+//        return bookingsToReturn;
+  //  }
 
-        List<Booking> bookingsToReturn = new ArrayList<Booking>();
-        List<Attraction> attractionList = new ArrayList<Attraction>();
+//    public Booking getAttractionBookingByVendor(Long vendorStaffId, Long bookingId) throws NotFoundException {
 
-        if (!vendor.getAttraction_list().isEmpty()) {
-
-            attractionList = vendor.getAttraction_list();
-
-            for (Attraction attraction : attractionList) {
-
-                if (!attraction.getBooking_list().isEmpty()) {
-
-                    List<Booking> attractionBookingList = attraction.getBooking_list();
-
-                    for (Booking booking : attractionBookingList) {
-                        if (booking.getStatus() != BookingStatusEnum.CANCELLED) {
-                            if (booking.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
-                                booking.setStatus(BookingStatusEnum.ONGOING);
-                            } else if (booking.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
-                                booking.setStatus(BookingStatusEnum.COMPLETED);
-                            } else {
-                                booking.setStatus(BookingStatusEnum.UPCOMING);
-                            }
-                        }
-                        bookingRepository.save(booking);
-                        bookingsToReturn.add(booking);
-                    }
-
-                }
-
-            }
-        }
-
-        for (Booking booking : bookingsToReturn) {
-            booking.setLocal_user(null);
-            booking.setTourist_user(null);
-            booking.getPayment().setBooking(null);
-        }
-
-        return bookingsToReturn;
-    }
-
-    public Booking getAttractionBookingByVendor(Long vendorStaffId, Long bookingId) throws NotFoundException {
-
-        List<Booking> bookingList = getAllAttractionBookingsByVendor(vendorStaffId);
-
-        for (Booking b : bookingList) {
-            if (b.getBooking_id().equals(bookingId)) {
-                b.setLocal_user(null);
-                b.setTourist_user(null);
-                b.getPayment().setBooking(null);
-                return b;
-            }
-        }
-        throw new NotFoundException("Booking not found!"); // if the booking is not part of vendor's listing
-    }
+//        List<Booking> bookingList = getAllAttractionBookingsByVendor(vendorStaffId);
+//
+//        for (Booking b : bookingList) {
+//            if (b.getBooking_id().equals(bookingId)) {
+//                b.setLocal_user(null);
+//                b.setTourist_user(null);
+//                b.getPayment().setBooking(null);
+//                return b;
+//            }
+//        }
+//        throw new NotFoundException("Booking not found!"); // if the booking is not part of vendor's listing
+    //}
 
     // To be deleted - for testing purposes
     public String tempCreateBooking() throws NotFoundException {
         Booking booking = new Booking();
-        booking.setStart_datetime(LocalDateTime.now().plusDays(4l));
-        booking.setEnd_datetime(LocalDateTime.now().plusDays(9l));
+        booking.setStart_datetime(LocalDateTime.now().plusDays(3l));
+        booking.setEnd_datetime(LocalDateTime.now().plusDays(10l));
         booking.setLast_update(LocalDateTime.now());
         booking.setStatus(BookingStatusEnum.UPCOMING);
         booking.setType(BookingTypeEnum.ATTRACTION);
@@ -168,8 +168,8 @@ public class BookingService {
         Attraction attraction = attractionRepository.findById(1l).get();
         booking.setAttraction(attraction);
 
-        List<Booking> attractionBookingList = attraction.getBooking_list();
-        attractionBookingList.add(booking);
+//        List<Booking> attractionBookingList = attraction.getBooking_list();
+//        attractionBookingList.add(booking);
 
         bookingRepository.save(booking);
 

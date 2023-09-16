@@ -14,7 +14,7 @@ import java.util.List;
 public class InternalStaff extends User {
 
     @Column(nullable = false, unique = true, length = 8)
-    private String staff_num;
+    private Long staff_num;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

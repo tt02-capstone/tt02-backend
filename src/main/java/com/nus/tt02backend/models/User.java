@@ -1,6 +1,5 @@
 package com.nus.tt02backend.models;
 
-import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,8 +34,19 @@ public class User {
     private UserTypeEnum userTypeEnum;
 
     @Column
+    private String email_verification_token;
+
+    @Column
+    private Boolean email_verified;
+
+    @Column
     private String password_reset_token;
 
     @Column
     private LocalDateTime token_date;
+
+    @Enumerated(EnumType.STRING)
+    private UserTypeEnum user_type;
+
+    private LocalDateTime password_token_date;
 }

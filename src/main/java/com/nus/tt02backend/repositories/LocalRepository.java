@@ -5,6 +5,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface LocalRepository extends JpaRepository<Local, Long> {
+
     @Query("SELECT l FROM Local l WHERE l.user_id=?1")
     Local getLocalByUserId(Long userId);
+
+    @Query("SELECT l.user_id FROM Local l WHERE l.email = ?1")
+    Long getLocalIdByEmail(String email);
+
+    @Query("SELECT l.user_id FROM Local l WHERE l.nric_num = ?1")
+    Long getLocalIdByNRICNum(String nric);
+
+    @Query("SELECT l.user_id FROM Local l WHERE l.mobile_num = ?1")
+    Long getLocalIdByMobileNum(String mobileNum);
+    @Query("SELECT ls FROM Local ls WHERE ls.email=?1")
+    Local retrieveLocalByEmail(String email);
+
 }
