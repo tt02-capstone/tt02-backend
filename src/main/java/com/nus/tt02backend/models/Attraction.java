@@ -24,7 +24,7 @@ public class Attraction {
     @Column(nullable = false, length = 128)
     private String name;
 
-    @Column(nullable = false, length = 400)
+    @Column(nullable = false, length = 800)
     private String description;
 
     @Column(nullable = false)
@@ -64,7 +64,7 @@ public class Attraction {
     @OneToMany(fetch = FetchType.LAZY)
     private List<SeasonalActivity> seasonal_activity_list;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Price> price_list;
 
     @OneToMany(fetch = FetchType.LAZY)

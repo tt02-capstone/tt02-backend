@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/vendor")
+@RequestMapping("/vendorStaff")
 public class VendorController {
     @Autowired
     VendorService vendorService;
