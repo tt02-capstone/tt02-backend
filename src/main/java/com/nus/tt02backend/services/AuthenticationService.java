@@ -55,7 +55,9 @@ public class AuthenticationService {
                     new UsernamePasswordAuthenticationToken(email, password));
             System.out.println("Authentication manager " + authentication);
             User user = userService.userMobileLogin(email, password);
-            String jwt = jwtService.generateToken(user);
+            UserDetails ud = userService.userDetailsService().loadUserByUsername(email);
+            System.out.println("Get auth" + ud.getAuthorities());
+            String jwt = jwtService.generateToken(ud);
             return new JwtAuthenticationResponse(jwt, user);
 
         } catch (Exception e) {
