@@ -487,4 +487,27 @@ public class AttractionService {
 
         return ticketTypes;
     }
+
+    public void checkTicketInventory(Long attraction_id, LocalDate ticketDate, List<TicketPerDay> tickets_to_check) throws NotFoundException, BadRequestException {
+        List<TicketPerDay> currentList = getAllTicketListedByAttractionAndDate(attraction_id,ticketDate); // tickets listed based on the date selected
+        if (currentList.isEmpty()) {
+            throw new NotFoundException("No tickets found for this date!");
+        } else {
+            for (TicketPerDay ticketToCheck : tickets_to_check) {
+                TicketPerDay findTicketType = currentList.stream()
+                        .filter(t -> t.getTicket_type().equals(ticketToCheck.getTicket_type()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (findTicketType != null && ticketToCheck.getTicket_count() > findTicketType.getTicket_count()) {
+                    throw new BadRequestException("Insufficient Inventory for Ticket Type: " + ticketToCheck.getTicket_type());
+                }
+
+                if (findTicketType == null) {
+                    throw new BadRequestException("Ticket Type: " + ticketToCheck.getTicket_type() + " has been sold out!"); // when tickets r not listed for the particular day
+                }
+            }
+        }
+    }
+
 }

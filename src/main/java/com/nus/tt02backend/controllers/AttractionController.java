@@ -131,4 +131,9 @@ public class AttractionController {
         List<TicketEnum> ticketTypes = attractionService.getTicketEnumByAttraction(attraction_id);
         return ResponseEntity.ok(ticketTypes);
     }
+    @PostMapping("/checkTicketInventory/{attraction_id}/{ticket_date}")
+    public ResponseEntity<Void> checkTicketInventory(@PathVariable Long attraction_id, @PathVariable LocalDate ticket_date, @RequestBody List<TicketPerDay> tickets_to_check) throws BadRequestException ,NotFoundException {
+        attractionService.checkTicketInventory(attraction_id,ticket_date,tickets_to_check);
+        return ResponseEntity.noContent().build();
+    }
 }
