@@ -85,7 +85,12 @@ public class UserService {
 
                 if (checkUser.getEmail_verified() &&
                         vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
-                    return checkUser;
+                    vendorStaff.getVendor().setVendor_staff_list(null);
+                    vendorStaff.setSupport_ticket_list(null);
+                    vendorStaff.setComment_list(null);
+                    vendorStaff.setPost_list(null);
+
+                    return vendorStaff;
                 } else if (!checkUser.getEmail_verified()) {
                     String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + checkUser.getEmail_verification_token();
                     try {
@@ -106,9 +111,26 @@ public class UserService {
                 } else {
                     throw new BadRequestException("Your application is still pending review");
                 }
-            }
+            } else {
+                Local local = (Local) checkUser;
+                local.setCard_list(null);
+                local.setWithdrawal_list(null);
+                local.setComment_list(null);
+                local.setPost_list(null);
+                local.setBadge_list(null);
+                local.setCart_list(null);
+                local.setSupport_ticket_list(null);
+                local.setBooking_list(null);
+                local.setTour_list(null);
+                local.setTour_type_list(null);
+                local.setAttraction_list(null);
+                local.setAccommodation_list(null);
+                local.setRestaurant_list(null);
+                local.setTelecom_list(null);
+                local.setDeals_list(null);
 
-            return checkUser;
+                return local;
+            }
         } else if (checkUser.getIs_blocked()) {
             throw new BadRequestException("Your account is disabled, please contact our help desk");
         } else {
