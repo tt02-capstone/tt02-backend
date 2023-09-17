@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -36,5 +37,11 @@ public class BookingController {
     public ResponseEntity<String> tempCreateBooking() throws NotFoundException {
         String responseMessage = bookingService.tempCreateBooking();
         return ResponseEntity.ok(responseMessage);
+    }
+
+    @GetMapping("/getVendorTotalEarnings/{vendorId}")
+    public ResponseEntity<BigDecimal> getVendorTotalEarnings(@PathVariable Long vendorId) throws BadRequestException {
+        BigDecimal sum = bookingService.getVendorTotalEarnings(vendorId);
+        return ResponseEntity.ok(sum);
     }
 }

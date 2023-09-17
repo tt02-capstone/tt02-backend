@@ -9,6 +9,7 @@ import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Attr;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -41,6 +42,9 @@ public class BookingService {
 
     @Autowired
     PaymentRepository paymentRepository;
+
+    @Autowired
+    VendorRepository vendorRepository;
 
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
@@ -164,27 +168,73 @@ public class BookingService {
         booking.setLast_update(LocalDateTime.now());
         booking.setStatus(BookingStatusEnum.UPCOMING);
         booking.setType(BookingTypeEnum.ATTRACTION);
+        bookingRepository.save(booking);
 
         Attraction attraction = attractionRepository.findById(1l).get();
         booking.setAttraction(attraction);
 
 //        List<Booking> attractionBookingList = attraction.getBooking_list();
 //        attractionBookingList.add(booking);
-
-        bookingRepository.save(booking);
+//        bookingRepository.save(booking);
 
         Payment payment = new Payment();
-        payment.setPayment_amount(new BigDecimal("123"));
+        payment.setPayment_amount(new BigDecimal("132"));
         payment.setIs_paid(true);
         payment.setBooking(booking);
         paymentRepository.save(payment);
 
-        Tourist tourist = findTourist(2l);
+        Tourist tourist = findTourist(1l);
         booking.setTourist_user(tourist);
         booking.setPayment(payment);
         tourist.getBooking_list().add(booking);
         touristRepository.save(tourist);
         bookingRepository.save(booking);
         return "Success";
+    }
+
+    public BigDecimal getVendorTotalEarnings(Long vendorId) throws BadRequestException {
+        BigDecimal sum = new BigDecimal(0);
+        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
+
+        if (vendorOptional.isPresent()) {
+            Vendor vendor = vendorOptional.get();
+            vendor.setVendor_staff_list(null);
+
+            // fetch attractions
+            List<Attraction> attractionList = vendor.getAttraction_list();
+            for (Attraction a : attractionList) {
+                Double tempSum = paymentRepository.retrieveSumOfBookingByAttractionId(a.getAttraction_id());
+                sum = sum.add(new BigDecimal(tempSum));
+            }
+
+            List<Telecom> telecomList = vendor.getTelecom_list();
+            for (Telecom t : telecomList) {
+                Double tempSum = paymentRepository.retrieveSumOfBookingByTelecomId(t.getTelecom_id());
+                sum = sum.add(new BigDecimal(tempSum));
+            }
+
+            List<Deal> dealList = vendor.getDeals_list();
+            for (Deal d : dealList) {
+                Double tempSum = paymentRepository.retrieveSumOfBookingByDealId(d.getDeal_id());
+                sum = sum.add(new BigDecimal(tempSum));
+            }
+
+            List<Accommodation> accommodationList = vendor.getAccommodation_list();
+            List<Room> roomList = new ArrayList<>();
+            for (Accommodation a : accommodationList) {
+                List<Room> tempRoom = a.getRoom_list();
+                roomList.addAll(tempRoom);
+            }
+
+            for (Room r : roomList) {
+                Double tempSum = paymentRepository.retrieveSumOfBookingByRoomId(r.getRoom_id());
+                sum = sum.add(new BigDecimal(tempSum));
+            }
+
+            sum = sum.multiply(new BigDecimal(0.9)); // 10% commission removal
+            return sum;
+        } else {
+            throw new BadRequestException("Vendor not found!");
+        }
     }
 }

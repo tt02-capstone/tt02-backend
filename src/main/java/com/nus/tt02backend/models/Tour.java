@@ -4,6 +4,7 @@ package com.nus.tt02backend.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,8 +25,6 @@ public class Tour {
     @Column(nullable = false)
     private LocalDateTime end_datetime;
 
-    public Tour(LocalDateTime start_datetime, LocalDateTime end_datetime) {
-        this.start_datetime = start_datetime;
-        this.end_datetime = end_datetime;
-    }
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal price;
 }
