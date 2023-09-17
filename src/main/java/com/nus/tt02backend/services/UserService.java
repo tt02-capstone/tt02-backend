@@ -40,15 +40,29 @@ public class UserService {
 
     public User userMobileLogin(String email, String password) throws NotFoundException, BadRequestException {
         User checkUser = userRepository.retrieveTouristOrLocalByEmail(email);
-        System.out.println(checkUser);
         if (checkUser == null) {
             throw new NotFoundException("There is no account associated with this email address");
         }
 
-        if (encoder.matches(password, checkUser.getPassword())
-                && !checkUser.getIs_blocked()) {
+        if (encoder.matches(password, checkUser.getPassword()) && !checkUser.getIs_blocked()) {
             //can check and initialise here foreign keys here
-            return checkUser;
+            if (checkUser instanceof Tourist) {
+                Tourist tourist = (Tourist) checkUser;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (checkUser instanceof Local) {
+                Local local = (Local) checkUser;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+
+            } else {
+                throw new NotFoundException("User is not a tourist or local!");
+            }
 
         } else if (checkUser.getIs_blocked()) {
             throw new BadRequestException("Your account is disabled, please contact our help desk");
