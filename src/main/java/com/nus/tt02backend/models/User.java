@@ -51,35 +51,14 @@ public class User {
     private UserTypeEnum user_type;
 
     private LocalDateTime password_token_date;
-//
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return List.of(new SimpleGrantedAuthority(user_type.name()));
-//    }
-//
-//    @Override
-//    public String getUsername() {
-//        // our "username" for security is the email field
-//        return email;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonLocked() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isCredentialsNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isEnabled() {
-//        return true;
-//    }
+
+    public User(String name, String email, String password, Boolean is_blocked, UserTypeEnum user_type){
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.is_blocked = is_blocked;
+        this.user_type = user_type;
+    }
+
+
 }

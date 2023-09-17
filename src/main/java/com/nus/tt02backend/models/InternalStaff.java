@@ -1,6 +1,7 @@
 package com.nus.tt02backend.models;
 
 import com.nus.tt02backend.models.enums.InternalRoleEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,4 +32,17 @@ public class InternalStaff extends User {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<SupportTicket> support_ticket_list;
+
+    @Builder
+    public InternalStaff(String name, String email, String password, Boolean is_blocked, UserTypeEnum user_type, Long staff_num, InternalRoleEnum role) {
+        super(name,  email,  password,  is_blocked, user_type);
+        this.staff_num = staff_num;
+        this.role = role;
+    }
+
+    public static class InternalStaffBuilder extends UserBuilder{
+        InternalStaffBuilder() {
+            super();
+        }
+    }
 }

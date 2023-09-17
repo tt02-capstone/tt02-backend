@@ -9,6 +9,7 @@ import com.nus.tt02backend.services.VendorService;
 import com.nus.tt02backend.services.VendorStaffService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -21,6 +22,7 @@ public class VendorStaffController {
     VendorStaffService vendorStaffService;
 
     @PutMapping ("/updateVendorStaff")
+    @PreAuthorize("hasRole('VENDOR_STAFF') ")
     public ResponseEntity<Void> vendorStaffLogin(@RequestBody VendorStaff vendorStaffToUpdate) throws NotFoundException {
         vendorStaffService.updateVendorStaff(vendorStaffToUpdate);
         return ResponseEntity.noContent().build();
@@ -33,6 +35,7 @@ public class VendorStaffController {
     }
 
     @GetMapping("/getAllAssociatedVendorStaff/{vendorId}")
+    @PreAuthorize("hasRole('VENDOR_STAFF') ")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff(@PathVariable Long vendorId) {
         List<VendorStaff> vendorStaffs = vendorStaffService.getAllAssociatedVendorStaff(vendorId);
         return ResponseEntity.ok(vendorStaffs);
@@ -52,6 +55,7 @@ public class VendorStaffController {
     }
 
     @PutMapping("/editVendorStaffProfile")
+    @PreAuthorize("hasRole('VENDOR_STAFF') ")
     public ResponseEntity<VendorStaff> editVendorStaffProfile(@RequestBody VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
         VendorStaff vendorStaff = vendorStaffService.editVendorStaffProfile(vendorStaffToEdit);
         return ResponseEntity.ok(vendorStaff);
@@ -70,6 +74,7 @@ public class VendorStaffController {
     }
 
     @GetMapping("/getAllVendorStaff")
+    @PreAuthorize("hasRole('VENDOR_STAFF') ")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff() {
         List<VendorStaff> vendorStaffList = vendorStaffService.retrieveAllVendorStaff();
         return ResponseEntity.ok(vendorStaffList);

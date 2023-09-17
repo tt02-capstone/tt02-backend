@@ -54,14 +54,22 @@ public class SecurityConfig {
     )
     .authorizeHttpRequests(authorize -> authorize
       .requestMatchers(HttpMethod.POST,
-              "/user/auth/mobileLogin/**",
-              "/user/auth/webLogin/**",
+              "/user/mobileLogin/**",
+              "/user/webLogin/**",
               "/local/create",
               "/tourist/create",
               "/admin/createStaff",
               "/admin/staffLogin/**",
+              "/admin/passwordResetStageOne/**",
+              "/admin/passwordResetStageTwo/**",
+              "/admin/passwordResetStageThree/**",
               "/vendorStaff/createVendorStaff",
-              "/api/v1/signin").permitAll()
+              "/user/passwordResetStageOne/**",
+              "/user/webPasswordResetStageOne/**",
+              "/user/passwordResetStageTwo/**",
+              "/user/webPasswordResetStageTwo/**",
+              "/user/passwordResetStageThree/**",
+              "/user/webPasswordResetStageThree/**").permitAll()
       .requestMatchers(HttpMethod.GET, "/api/v1/test/**").permitAll()
       .anyRequest().authenticated()
     )

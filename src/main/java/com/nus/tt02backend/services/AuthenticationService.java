@@ -66,4 +66,20 @@ public class AuthenticationService {
         }
     }
 
+    public JwtAuthenticationResponse userWebLogin(String email, String password) throws BadRequestException, NotFoundException {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password));
+            System.out.println("Authentication manager " + authentication);
+            User user = userService.userWebLogin(email, password);
+            UserDetails ud = userDetailsImpl.loadUserByUsername(email);
+            System.out.println("Get auth" + ud.getAuthorities());
+            String jwt = jwtService.generateToken(ud);
+            return new JwtAuthenticationResponse(jwt, user);
+
+        } catch (Exception e) {
+            throw new BadCredentialsException(e.getMessage());
+        }
+    }
+
 }
