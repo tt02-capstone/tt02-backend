@@ -285,10 +285,12 @@ public class VendorStaffService {
 
         for (VendorStaff i : vendorStaffList) {
             i.setPassword(null);
+            i.getVendor().setVendor_staff_list(null);
         }
 
         return vendorStaffList;
     }
+
 
     public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException {
 
@@ -352,3 +354,4 @@ public class VendorStaffService {
         }
     }
 }
+

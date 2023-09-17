@@ -49,4 +49,6 @@ public class User {
     private UserTypeEnum user_type;
 
     private LocalDateTime password_token_date;
+
+    private String profile_pic;
 }
