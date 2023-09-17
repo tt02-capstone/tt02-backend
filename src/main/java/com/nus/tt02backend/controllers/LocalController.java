@@ -41,7 +41,7 @@ public class LocalController {
     }
 
     @GetMapping("/getAllLocal")
-    @PreAuthorize("hasAuthority('ROLE_LOCAL')")
+    @PreAuthorize("hasRole('LOCAL')")
     public ResponseEntity<List<Local>> getAllLocal() {
         List<Local> locaList = localService.retrieveAllLocal();
         return ResponseEntity.ok(locaList);
