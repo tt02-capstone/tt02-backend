@@ -134,6 +134,8 @@ public class BookingService {
         }
 
         return bookingsToReturn;
+    }
+
     public List<Booking> retrieveAllBookings() {
         return bookingRepository.findAll();
     }
