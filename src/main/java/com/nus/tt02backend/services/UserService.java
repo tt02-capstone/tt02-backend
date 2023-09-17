@@ -10,6 +10,7 @@ import com.nus.tt02backend.repositories.VendorStaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.VendorStaff;
 import jakarta.mail.MessagingException;
@@ -342,6 +343,43 @@ public class UserService {
         }
     }
 
+    public User uploadNewProfilePic(Long userId, String img) throws UserNotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setProfile_pic(img);
+            userRepository.save(user);
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+
+            } else if (user instanceof VendorStaff) {
+                VendorStaff vendorStaff = (VendorStaff) user;
+                vendorStaff.getVendor().setVendor_staff_list(null);
+                return vendorStaff;
+
+            } else {
+                InternalStaff internalStaff = (InternalStaff) user;
+                return internalStaff;
+            }
+        } else {
+            throw new UserNotFoundException("User not found!");
+        }
+    }
+
     // admin blocking, cannot use on vendor portal
     public void toggleBlock(Long userId) throws NotFoundException, ToggleBlockException {
 
@@ -382,6 +420,39 @@ public class UserService {
         }
 
         return "Your password has been changed successfully";
+    }
+
+    public User viewUserProfile(Long userId) throws UserNotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (user instanceof VendorStaff) {
+                VendorStaff vendorStaff = (VendorStaff) user;
+                vendorStaff.getVendor().setVendor_staff_list(null);
+                return vendorStaff;
+
+            }  else if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+            }
+
+            return user; // internal staff
+        } else {
+            throw new UserNotFoundException("User not found!");
+        }
     }
 
     public List<User> retrieveAllUser() {

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.math.BigDecimal;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+<<<<<<< HEAD
 
     @Query("SELECT COALESCE(SUM(p.payment_amount), 0) FROM Payment p JOIN p.booking.attraction a WHERE a.attraction_id = ?1")
     Double retrieveSumOfBookingByAttractionId(Long id);
@@ -20,3 +21,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT COALESCE(SUM(p.payment_amount), 0) FROM Payment p JOIN p.booking.deal d WHERE d.deal_id = ?1")
     Double retrieveSumOfBookingByDealId(Long id);
 }
+=======
+}
+>>>>>>> c96b4c8589c297ec366ab8f9307b2f1af32c7987

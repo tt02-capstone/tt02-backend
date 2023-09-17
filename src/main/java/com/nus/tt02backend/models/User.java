@@ -31,7 +31,7 @@ public class User {
     private Boolean is_blocked;
 
     @Enumerated(EnumType.STRING)
-    private UserTypeEnum userTypeEnum;
+    private UserTypeEnum user_type;
 
     @Column
     private String email_verification_token;
@@ -45,8 +45,7 @@ public class User {
     @Column
     private LocalDateTime token_date;
 
-    @Enumerated(EnumType.STRING)
-    private UserTypeEnum user_type;
-
     private LocalDateTime password_token_date;
+
+    private String profile_pic;
 }

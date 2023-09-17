@@ -9,6 +9,11 @@ import com.nus.tt02backend.repositories.UserRepository;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Account;
+import com.stripe.model.BankAccount;
+import com.stripe.model.ExternalAccount;
+import com.stripe.model.ExternalAccountCollection;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -280,8 +285,73 @@ public class VendorStaffService {
 
         for (VendorStaff i : vendorStaffList) {
             i.setPassword(null);
+            i.getVendor().setVendor_staff_list(null);
         }
 
         return vendorStaffList;
     }
+
+
+    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException {
+
+        Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
+
+        if (vendorStaffOptional.isPresent()) {
+            VendorStaff vendorStaff = vendorStaffOptional.get();
+
+            Vendor vendor = vendorStaff.getVendor();
+
+            String stripe_account_id = vendor.getStripe_account_id();
+
+            Account account =
+                    Account.retrieve(stripe_account_id);
+
+            Map<String, Object> params = new HashMap<>();
+            params.put(
+                    "external_account",
+                    token
+            );
+
+            BankAccount bankAccount =
+                    (BankAccount) account
+                            .getExternalAccounts()
+                            .create(params);
+
+            return bankAccount.getId();
+
+        } else {
+            throw new NotFoundException("Vendor Staff not found!");
+        }
+
+    }
+
+    public List<ExternalAccount> getBankAccounts(Long userId) throws NotFoundException, StripeException {
+        Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
+
+        if (vendorStaffOptional.isPresent()) {
+            VendorStaff vendorStaff = vendorStaffOptional.get();
+
+            Vendor vendor = vendorStaff.getVendor();
+
+            String stripe_account_id = vendor.getStripe_account_id();
+
+            Account account =
+                    Account.retrieve(stripe_account_id);
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("object", "bank_account");
+            params.put("limit", 10);
+
+            ExternalAccountCollection bankAccountsCollection =
+                    account.getExternalAccounts().list(params);
+
+            List<ExternalAccount> bankAccounts = bankAccountsCollection.getData();
+
+            return bankAccounts;
+
+        } else {
+            throw new NotFoundException("Vendor Staff not found!");
+        }
+    }
 }
+

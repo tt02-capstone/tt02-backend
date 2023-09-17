@@ -17,27 +17,21 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Booking {
+public class CartBooking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long booking_id;
+    private Long cart_booking_id;
 
     private LocalDateTime start_datetime;
 
     private LocalDateTime end_datetime;
 
-    private LocalDateTime last_update;
-
-    @Enumerated(EnumType.STRING)
-    private BookingStatusEnum status;
 
     @Enumerated(EnumType.STRING)
     private BookingTypeEnum type;
 
     private String activity_name;
 
-    @OneToOne(mappedBy = "booking" , fetch = FetchType.LAZY)
-    private Payment payment;
 
     @ManyToOne
     @JoinColumn(name = "deal_id")
@@ -55,18 +49,10 @@ public class Booking {
     @JoinColumn(name = "room_id")
     private Room room;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "attraction_id")
     private Attraction attraction;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "tourist_id")
-    private Tourist tourist_user;
-
-    @ManyToOne
-    @JoinColumn(name = "local_id")
-    private Local local_user;
-
     @OneToMany(fetch = FetchType.LAZY)
-    private List<BookingItem> booking_item_list;
+    private List<CartItem> cart_item_list;
 }

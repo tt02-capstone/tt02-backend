@@ -25,6 +25,9 @@ public class Tour {
     @Column(nullable = false)
     private LocalDateTime end_datetime;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(nullable = false)
     private BigDecimal price;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal tour_guide_id;
 }

@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.w3c.dom.Attr;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 
@@ -35,6 +38,9 @@ public class AttractionService {
 
     @Autowired
     LocalRepository localRepository;
+
+    @Autowired
+    TicketPerDayRepository ticketPerDayRepository;
 
     public User findUser(Long userId) throws NotFoundException {
         try {
@@ -269,7 +275,7 @@ public class AttractionService {
     public void updateAttraction(VendorStaff vendorStaff, Attraction attractionToUpdate) throws NotFoundException {
         Attraction attraction = attractionRepository.findById(attractionToUpdate.getAttraction_id())
                 .orElseThrow(() -> new NotFoundException("Attraction Not Found!"));
-        if (attractionToUpdate.getOpening_hours() != null && attractionToUpdate.getContact_num() != null &&
+        if (attractionToUpdate.getName() != null && attractionToUpdate.getOpening_hours() != null && attractionToUpdate.getContact_num() != null &&
                 attractionToUpdate.getIs_published() != null && !attractionToUpdate.getPrice_list().isEmpty()) {
 
             attraction.setName(attractionToUpdate.getName());
@@ -324,10 +330,10 @@ public class AttractionService {
 
         User currentUser = findUser(userId);
 
-        if (currentUser.getUserTypeEnum().equals(touristType)) {
+        if (currentUser.getUser_type().equals(touristType)) {
             Tourist tourist = findTourist(userId);
             return tourist.getAttraction_list();
-        } else if (currentUser.getUserTypeEnum().equals(localType)) {
+        } else if (currentUser.getUser_type().equals(localType)) {
             Local local = findLocal(userId);
             return local.getAttraction_list();
         } else {
@@ -335,43 +341,193 @@ public class AttractionService {
         }
     }
 
-    public void saveAttractionForTouristAndLocal (Long userId, Long currentAttractionId) throws BadRequestException, NotFoundException {
+    public User saveAttractionForTouristAndLocal (Long userId, Long currentAttractionId) throws BadRequestException, NotFoundException {
         Attraction attractionToSave = retrieveAttraction(currentAttractionId);
-        if (attractionToSave.getIs_published() == Boolean.FALSE) {
+        User currentUser = findUser(userId);
+        List<Attraction> currentSavedAttractions = new ArrayList<Attraction>();
+
+        if (!attractionToSave.getIs_published()) {
             throw new BadRequestException("Can't save a hidden attraction!"); // shouldn't trigger if thr is a frontend
         }
 
-        UserTypeEnum touristType = UserTypeEnum.TOURIST;
-        UserTypeEnum localType = UserTypeEnum.LOCAL;
-
-        User currentUser = findUser(userId);
-        if (currentUser.getUserTypeEnum().equals(touristType)) {
-            Tourist tourist = findTourist(userId);
-            List<Attraction> currentTouristSavedAttractions = tourist.getAttraction_list();
-
-            for (Attraction a : currentTouristSavedAttractions) {
-                if (a.getAttraction_id().equals(currentAttractionId)) {
-                    throw new BadRequestException("You have already saved this attraction!");
-                }
-            }
-
-            currentTouristSavedAttractions.add(attractionToSave);
-            touristRepository.save(tourist); // update the list of saved attractions
-
-        } else if (currentUser.getUserTypeEnum().equals(localType)) {
-            Local local = findLocal(userId);
-            List<Attraction> currentLocalSavedAttractions = local.getAttraction_list();
-
-            for (Attraction a : currentLocalSavedAttractions) {
-                if (a.getAttraction_id().equals(currentAttractionId)) {
-                    throw new BadRequestException("You have already saved this attraction!");
-                }
-            }
-
-            currentLocalSavedAttractions.add(attractionToSave);
-            localRepository.save(local);
+        if (currentUser.getUser_type().equals(UserTypeEnum.TOURIST)) {
+            currentSavedAttractions = ((Tourist) currentUser).getAttraction_list();
+        } else if (currentUser.getUser_type().equals(UserTypeEnum.LOCAL)) {
+            currentSavedAttractions = ((Local) currentUser).getAttraction_list();
         } else {
             throw new BadRequestException("Invalid User Type! Only Local or Tourist can save an attraction!");
+        }
+
+        for (Attraction a : currentSavedAttractions) {
+            if (a.getAttraction_id().equals(currentAttractionId)) {
+                throw new BadRequestException("You have already saved this attraction!");
+            }
+        }
+
+        currentSavedAttractions.add(attractionToSave);
+        userRepository.save(currentUser);
+
+        return currentUser;
+    }
+
+    public User removeSavedAttractionForTouristAndLocal (Long userId, Long currentAttractionId) throws NotFoundException {
+        User currentUser = findUser(userId);
+        List<Attraction> currentSavedAttractions = new ArrayList<Attraction>();
+
+        if (currentUser.getUser_type() == UserTypeEnum.TOURIST) {
+            Tourist tourist = findTourist(userId);
+            currentSavedAttractions = tourist.getAttraction_list();
+        } else if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
+            Local local = findLocal(userId);
+            currentSavedAttractions = local.getAttraction_list();
+        }
+
+        for (Attraction a : currentSavedAttractions) {
+            if (a.getAttraction_id().equals(currentAttractionId)) {
+                currentSavedAttractions.remove(a);
+                if (currentUser.getUser_type() == UserTypeEnum.TOURIST) {
+                    touristRepository.save((Tourist) currentUser);
+                } else if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
+                    localRepository.save((Local) currentUser);
+                }
+                return currentUser;
+            }
+        }
+
+        throw new NotFoundException("Attraction not found in the saved list!");
+    }
+
+    public List<TicketPerDay> createTicketsPerDayList(LocalDate startDate, LocalDate endDate, TicketEnum ticketType, int ticketCount, Long attraction_id) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction not found when saving ticket per day!"));
+
+        List<TicketPerDay> createdTickets = new ArrayList<>();
+        List<TicketPerDay> previouslyCreated = new ArrayList<>();
+
+        if (!attraction.getTicket_per_day_list().isEmpty()) {
+            previouslyCreated = attraction.getTicket_per_day_list();
+        }
+
+        long duration = ChronoUnit.DAYS.between(startDate, endDate);
+
+        for (int i = 0; i <= duration; i++) {
+            LocalDate ticketDate = startDate.plusDays(i);
+            TicketPerDay ticketPerDay = new TicketPerDay();
+            ticketPerDay.setTicket_count(ticketCount);
+            ticketPerDay.setTicket_date(ticketDate);
+            ticketPerDay.setTicket_type(ticketType);
+
+            ticketPerDayRepository.save(ticketPerDay);
+
+            createdTickets.add(ticketPerDay);
+        }
+
+        if (!previouslyCreated.isEmpty()) {
+            previouslyCreated.addAll(createdTickets);
+            attraction.setTicket_per_day_list(previouslyCreated);
+        } else {
+            attraction.setTicket_per_day_list(createdTickets);
+        }
+
+        attractionRepository.save(attraction);
+        return createdTickets;
+    }
+
+    public List<TicketPerDay> updateTicketsPerDay(Long attraction_id, TicketPerDay toUpdateTicket) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction not found when saving ticket per day!"));
+
+        List<TicketPerDay> exisitingTicketList = attraction.getTicket_per_day_list();
+        List<TicketPerDay> updatedList = new ArrayList<TicketPerDay>();
+        boolean checker = false;
+
+        for (TicketPerDay t : exisitingTicketList) {
+            if (t.getTicket_date().equals(toUpdateTicket.getTicket_date()) && t.getTicket_type().equals(toUpdateTicket.getTicket_type())) { // use date instead of id
+                t.setTicket_count(toUpdateTicket.getTicket_count());
+                ticketPerDayRepository.save(t);
+                updatedList.add(t);
+                checker = true;
+            } else {
+                updatedList.add(t);
+            }
+        }
+
+        if (checker) {
+            attraction.setTicket_per_day_list(updatedList);
+            return updatedList;
+        } else {
+            throw new NotFoundException("Selected Date or Ticket Type not found!");
+        }
+    }
+
+    public List<TicketPerDay> getAllTickets() {
+        return ticketPerDayRepository.findAll();
+    }
+
+    public List<TicketPerDay> getAllTicketListedByAttraction(Long attraction_id) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction not found when getting list of tickets per day!"));
+
+        if (attraction.getTicket_per_day_list().isEmpty()) {
+            throw new NotFoundException("No tickets created for this attraction listing!");
+        }
+
+        return attraction.getTicket_per_day_list();
+    }
+
+    public List<TicketPerDay> getAllTicketListedByAttractionAndDate(Long attraction_id,LocalDate inputDate) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction not found when getting list of tickets per day!"));
+
+        List<TicketPerDay> ticketList = attraction.getTicket_per_day_list();
+        List<TicketPerDay> selectedTicketList = new ArrayList<TicketPerDay>();
+
+        if (ticketList.isEmpty()) {
+            throw new NotFoundException("No tickets created for this attraction listing!");
+        } else {
+            for (TicketPerDay t : ticketList) {
+                if (t.getTicket_date().equals(inputDate)) {
+                    selectedTicketList.add(t);
+                }
+            }
+        }
+
+        return selectedTicketList;
+    }
+
+    public List<TicketEnum> getTicketEnumByAttraction(Long attraction_id) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(attraction_id)
+                .orElseThrow(() -> new NotFoundException("Attraction to find price list not found!"));
+
+        List<TicketEnum> ticketTypes = new ArrayList<TicketEnum>();
+        if (!attraction.getPrice_list().isEmpty()) {
+            for (Price p : attraction.getPrice_list()) {
+                ticketTypes.add(p.getTicket_type());
+            }
+        }
+
+        return ticketTypes;
+    }
+
+    public void checkTicketInventory(Long attraction_id, LocalDate ticketDate, List<TicketPerDay> tickets_to_check) throws NotFoundException, BadRequestException {
+        List<TicketPerDay> currentList = getAllTicketListedByAttractionAndDate(attraction_id,ticketDate); // tickets listed based on the date selected
+        if (currentList.isEmpty()) {
+            throw new NotFoundException("No tickets found for this date!");
+        } else {
+            for (TicketPerDay ticketToCheck : tickets_to_check) {
+                TicketPerDay findTicketType = currentList.stream()
+                        .filter(t -> t.getTicket_type().equals(ticketToCheck.getTicket_type()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (findTicketType != null && ticketToCheck.getTicket_count() > findTicketType.getTicket_count()) {
+                    throw new BadRequestException("Insufficient Inventory for Ticket Type: " + ticketToCheck.getTicket_type());
+                }
+
+                if (findTicketType == null) {
+                    throw new BadRequestException("Ticket Type: " + ticketToCheck.getTicket_type() + " has been sold out!"); // when tickets r not listed for the particular day
+                }
+            }
         }
     }
 

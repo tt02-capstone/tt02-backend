@@ -43,12 +43,12 @@ public class Tourist extends User {
     private Itinerary itinerary;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<CartItem> cart_list;
+    private List<CartBooking> cart_list;
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<SupportTicket> support_ticket_list;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tourist_user")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tourist_user", cascade = CascadeType.ALL)
     private List<Booking> booking_list;
 
     @OneToMany(fetch = FetchType.LAZY)

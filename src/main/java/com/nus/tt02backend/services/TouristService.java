@@ -103,6 +103,9 @@ public class TouristService {
                 tourist.setMobile_num(touristToEdit.getMobile_num());
                 touristRepository.save(tourist);
                 tourist.setPassword(null);
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
                 return tourist;
 
             } else {
@@ -116,8 +119,11 @@ public class TouristService {
     public List<Tourist> retrieveAllTourist() {
         List<Tourist> touristList = touristRepository.findAll();
 
-        for (Tourist i : touristList) {
-            i.setPassword(null);
+        for (Tourist t : touristList) {
+            t.setPassword(null);
+            t.setBooking_list(null);
+            t.setPost_list(null);
+            t.setComment_list(null);
         }
 
         return touristList;
