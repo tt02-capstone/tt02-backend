@@ -46,8 +46,11 @@ public class Vendor {
     @Enumerated(EnumType.STRING)
     private VendorEnum vendor_type;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 300)
     private String service_description;
+
+    @Column
+    private String stripe_account_id;
 
     @OneToMany(mappedBy = "vendor")
     private List<VendorStaff> vendor_staff_list;
