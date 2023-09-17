@@ -43,7 +43,7 @@ public class Tourist extends User {
     private Itinerary itinerary;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<CartItem> cart_list;
+    private List<CartBooking> cart_list;
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<SupportTicket> support_ticket_list;

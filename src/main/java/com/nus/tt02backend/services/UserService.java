@@ -40,15 +40,29 @@ public class UserService {
 
     public User userMobileLogin(String email, String password) throws NotFoundException, BadRequestException {
         User checkUser = userRepository.retrieveTouristOrLocalByEmail(email);
-        System.out.println(checkUser);
         if (checkUser == null) {
             throw new NotFoundException("There is no account associated with this email address");
         }
 
-        if (encoder.matches(password, checkUser.getPassword())
-                && !checkUser.getIs_blocked()) {
+        if (encoder.matches(password, checkUser.getPassword()) && !checkUser.getIs_blocked()) {
             //can check and initialise here foreign keys here
-            return checkUser;
+            if (checkUser instanceof Tourist) {
+                Tourist tourist = (Tourist) checkUser;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (checkUser instanceof Local) {
+                Local local = (Local) checkUser;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+
+            } else {
+                throw new NotFoundException("User is not a tourist or local!");
+            }
 
         } else if (checkUser.getIs_blocked()) {
             throw new BadRequestException("Your account is disabled, please contact our help desk");
@@ -71,7 +85,12 @@ public class UserService {
 
                 if (checkUser.getEmail_verified() &&
                         vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
-                    return checkUser;
+                    vendorStaff.getVendor().setVendor_staff_list(null);
+                    vendorStaff.setSupport_ticket_list(null);
+                    vendorStaff.setComment_list(null);
+                    vendorStaff.setPost_list(null);
+
+                    return vendorStaff;
                 } else if (!checkUser.getEmail_verified()) {
                     String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + checkUser.getEmail_verification_token();
                     try {
@@ -92,9 +111,26 @@ public class UserService {
                 } else {
                     throw new BadRequestException("Your application is still pending review");
                 }
-            }
+            } else {
+                Local local = (Local) checkUser;
+                local.setCard_list(null);
+                local.setWithdrawal_list(null);
+                local.setComment_list(null);
+                local.setPost_list(null);
+                local.setBadge_list(null);
+                local.setCart_list(null);
+                local.setSupport_ticket_list(null);
+                local.setBooking_list(null);
+                local.setTour_list(null);
+                local.setTour_type_list(null);
+                local.setAttraction_list(null);
+                local.setAccommodation_list(null);
+                local.setRestaurant_list(null);
+                local.setTelecom_list(null);
+                local.setDeals_list(null);
 
-            return checkUser;
+                return local;
+            }
         } else if (checkUser.getIs_blocked()) {
             throw new BadRequestException("Your account is disabled, please contact our help desk");
         } else {
@@ -306,6 +342,43 @@ public class UserService {
         }
     }
 
+    public User uploadNewProfilePic(Long userId, String img) throws UserNotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setProfile_pic(img);
+            userRepository.save(user);
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+
+            } else if (user instanceof VendorStaff) {
+                VendorStaff vendorStaff = (VendorStaff) user;
+                vendorStaff.getVendor().setVendor_staff_list(null);
+                return vendorStaff;
+
+            } else {
+                InternalStaff internalStaff = (InternalStaff) user;
+                return internalStaff;
+            }
+        } else {
+            throw new UserNotFoundException("User not found!");
+        }
+    }
+
     // admin blocking, cannot use on vendor portal
     public void toggleBlock(Long userId) throws NotFoundException, ToggleBlockException {
 
@@ -346,6 +419,39 @@ public class UserService {
         }
 
         return "Your password has been changed successfully";
+    }
+
+    public User viewUserProfile(Long userId) throws UserNotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (user instanceof VendorStaff) {
+                VendorStaff vendorStaff = (VendorStaff) user;
+                vendorStaff.getVendor().setVendor_staff_list(null);
+                return vendorStaff;
+
+            }  else if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+            }
+
+            return user; // internal staff
+        } else {
+            throw new UserNotFoundException("User not found!");
+        }
     }
 
     public List<User> retrieveAllUser() {
