@@ -342,6 +342,43 @@ public class UserService {
         }
     }
 
+    public User uploadNewProfilePic(Long userId, String img) throws UserNotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setProfile_pic(img);
+            userRepository.save(user);
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+
+            } else if (user instanceof VendorStaff) {
+                VendorStaff vendorStaff = (VendorStaff) user;
+                vendorStaff.getVendor().setVendor_staff_list(null);
+                return vendorStaff;
+
+            } else {
+                InternalStaff internalStaff = (InternalStaff) user;
+                return internalStaff;
+            }
+        } else {
+            throw new UserNotFoundException("User not found!");
+        }
+    }
+
     // admin blocking, cannot use on vendor portal
     public void toggleBlock(Long userId) throws NotFoundException, ToggleBlockException {
 
@@ -394,9 +431,24 @@ public class UserService {
             if (user instanceof VendorStaff) {
                 VendorStaff vendorStaff = (VendorStaff) user;
                 vendorStaff.getVendor().setVendor_staff_list(null);
+                return vendorStaff;
+
+            }  else if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
             }
 
-            return user;
+            return user; // internal staff
         } else {
             throw new UserNotFoundException("User not found!");
         }

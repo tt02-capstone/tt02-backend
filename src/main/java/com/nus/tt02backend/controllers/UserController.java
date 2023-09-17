@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/user")
@@ -75,6 +77,12 @@ public class UserController {
     public void editPassword(@PathVariable Long userId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
         System.out.println("edit pass");
         userService.editPassword(userId, oldPassword, newPassword);
+    }
+
+    @PutMapping ("/uploadNewProfilePic")
+    public ResponseEntity<User> uploadNewProfilePic(@RequestBody User user) throws UserNotFoundException {
+        User newUser = userService.uploadNewProfilePic(user.getUser_id(), user.getProfile_pic());
+        return ResponseEntity.ok(newUser);
     }
 
     // only for admin portal, not vendor portal
