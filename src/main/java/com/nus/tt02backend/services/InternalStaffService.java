@@ -1,12 +1,12 @@
 package com.nus.tt02backend.services;
 
-import com.nus.tt02backend.exceptions.BadRequestException;
-import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
+import com.nus.tt02backend.repositories.InternalStaffRepository;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
-import com.nus.tt02backend.repositories.InternalStaffRepository;
+import com.nus.tt02backend.repositories.UserRepository;
 import com.nus.tt02backend.repositories.VendorRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -17,14 +17,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.time.*;
 
 @Service
 public class InternalStaffService {
+    @Autowired
+    UserRepository userRepository;
     @Autowired
     InternalStaffRepository internalStaffRepository;
     @Autowired
@@ -68,19 +67,30 @@ public class InternalStaffService {
     }
 
     public Long createStaff(InternalStaff internalStaffToCreate) throws BadRequestException {
-        InternalStaff internalStaff = internalStaffRepository.retrieveInternalStaffByEmail(internalStaffToCreate.getEmail());
 
-        if (internalStaff != null) {
-            throw new BadRequestException("The email address has been used, please enter another email");
+        Long existingId = internalStaffRepository.getAdminByEmail(internalStaffToCreate.getEmail());
+        if (existingId != null && existingId != internalStaffToCreate.getUser_id()) { // but there is an existing email
+            throw new BadRequestException("Email currently in use. Please use a different email!");
         }
 
-        internalStaffToCreate.setPassword(encoder.encode(internalStaffToCreate.getPassword()));
+        Long latestStaffNum = internalStaffRepository.getLatestStaffNum();
+        if (latestStaffNum == null || latestStaffNum < 1L) {
+            latestStaffNum = 1L;
+        } else {
+            latestStaffNum++;
+        }
+
+        internalStaffToCreate.setStaff_num(latestStaffNum);
+        String tempPassword = generateRandomPassword();
+        System.out.println("twk: " + tempPassword);
+        internalStaffToCreate.setPassword(encoder.encode(tempPassword));
         internalStaffRepository.save(internalStaffToCreate);
 
         try {
             String subject = "[WithinSG] Staff Account Created";
             String content = "<p>Dear " + internalStaffToCreate.getName() + ",</p>" +
                     "<p>A staff account has been created for you.</p>" +
+                    "<p>Your temporary password is " + tempPassword + "</p>" +
                     "<p>Please sign in using your staff number as the password. " +
                     "You will be prompted to change your password upon signing in for the first time.</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
@@ -92,8 +102,30 @@ public class InternalStaffService {
         return internalStaffToCreate.getUser_id();
     }
 
-    public List<InternalStaff> retrieveAllStaff() {
-        return internalStaffRepository.findAll();
+    public String generateRandomPassword() { // length 8, 7 letters & number, 1 symbol
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 8;
+        Random random = new Random();
+
+        String generatedString = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        generatedString = generatedString + "!";
+        return generatedString;
+    }
+
+    public List<InternalStaff> retrieveAllAdmin() {
+        List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
+
+        for (InternalStaff i : internalStaffList) {
+            i.setPassword(null);
+        }
+
+        return internalStaffList;
     }
 
     public String passwordResetStageOne(String email) throws BadRequestException {
@@ -227,5 +259,32 @@ public class InternalStaffService {
         mimeMessageHelper.setSubject(subject);
         mimeMessageHelper.setText(content, true);
         javaMailSender.send(mimeMessage);
+    }
+
+    public InternalStaff editProfile(InternalStaff staffToEdit) throws EditAdminException {
+        try {
+
+            Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(staffToEdit.getUser_id());
+
+            if (internalStaffOptional.isPresent()) {
+                InternalStaff internalStaff = internalStaffOptional.get();
+
+                Long existingId = userRepository.retrieveIdByUserEmail(staffToEdit.getEmail());
+                if (existingId != null && existingId != staffToEdit.getUser_id()) { // but there is an existing email
+                    throw new EditAdminException("Email currently in use. Please use a different email!");
+                }
+
+                internalStaff.setEmail(staffToEdit.getEmail());
+                internalStaff.setName(staffToEdit.getName());
+                internalStaffRepository.save(internalStaff);
+                internalStaff.setPassword(null);
+                return internalStaff;
+
+            } else {
+                throw new EditAdminException("Admin staff not found!");
+            }
+        } catch (Exception ex) {
+            throw new EditAdminException(ex.getMessage());
+        }
     }
 }

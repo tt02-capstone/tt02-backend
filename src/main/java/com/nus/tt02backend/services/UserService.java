@@ -1,13 +1,18 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.exceptions.*;
+import com.nus.tt02backend.models.*;
+import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
+import com.nus.tt02backend.repositories.LocalRepository;
+import com.nus.tt02backend.repositories.UserRepository;
+import com.nus.tt02backend.repositories.VendorStaffRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.VendorStaff;
-import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
-import com.nus.tt02backend.models.enums.UserTypeEnum;
-import com.nus.tt02backend.repositories.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +22,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.time.*;
 
 @Service
 public class UserService {
+
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    VendorStaffRepository vendorStaffRepository;
+    @Autowired
+    LocalRepository localRepository;
     @Autowired
     JavaMailSender javaMailSender;
 
@@ -34,15 +41,29 @@ public class UserService {
 
     public User userMobileLogin(String email, String password) throws NotFoundException, BadRequestException {
         User checkUser = userRepository.retrieveTouristOrLocalByEmail(email);
-        System.out.println(checkUser);
         if (checkUser == null) {
             throw new NotFoundException("There is no account associated with this email address");
         }
 
-        if (encoder.matches(password, checkUser.getPassword())
-                && !checkUser.getIs_blocked()) {
+        if (encoder.matches(password, checkUser.getPassword()) && !checkUser.getIs_blocked()) {
             //can check and initialise here foreign keys here
-            return checkUser;
+            if (checkUser instanceof Tourist) {
+                Tourist tourist = (Tourist) checkUser;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (checkUser instanceof Local) {
+                Local local = (Local) checkUser;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+
+            } else {
+                throw new NotFoundException("User is not a tourist or local!");
+            }
 
         } else if (checkUser.getIs_blocked()) {
             throw new BadRequestException("Your account is disabled, please contact our help desk");
@@ -295,6 +316,86 @@ public class UserService {
         return "Your password has been changed successfully";
     }
 
+    public void editPassword(Long userId, String oldPassword, String newPassword) throws EditPasswordException {
+        try {
+            System.out.println(userId + ", " + oldPassword + ", " + newPassword);
+            Optional<User> userOptional = userRepository.findById(userId);
+
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+
+                if (oldPassword.equals(newPassword)) {
+                    throw new EditPasswordException("New password must be different from old password!");
+
+                } else if (encoder.matches(oldPassword, user.getPassword())) {
+                    user.setPassword(encoder.encode(newPassword));
+                    userRepository.save(user);
+
+                } else {
+                    throw new EditPasswordException("Incorrect old password!");
+                }
+
+            } else {
+                throw new EditUserException("User not found!");
+            }
+        } catch (Exception ex) {
+            throw new EditPasswordException(ex.getMessage());
+        }
+    }
+
+    public User uploadNewProfilePic(Long userId, String img) throws UserNotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setProfile_pic(img);
+            userRepository.save(user);
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+
+            } else if (user instanceof VendorStaff) {
+                VendorStaff vendorStaff = (VendorStaff) user;
+                vendorStaff.getVendor().setVendor_staff_list(null);
+                return vendorStaff;
+
+            } else {
+                InternalStaff internalStaff = (InternalStaff) user;
+                return internalStaff;
+            }
+        } else {
+            throw new UserNotFoundException("User not found!");
+        }
+    }
+
+    // admin blocking, cannot use on vendor portal
+    public void toggleBlock(Long userId) throws NotFoundException, ToggleBlockException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            user.setIs_blocked(!user.getIs_blocked());
+            userRepository.save(user);
+
+        } else {
+            throw new NotFoundException("User not found!");
+        }
+    }
+
     public String webPasswordResetStageThree(String email, String password) throws BadRequestException {
         User user = userRepository.retrieveVendorStaffOrLocalByEmail(email);
 
@@ -319,6 +420,39 @@ public class UserService {
         }
 
         return "Your password has been changed successfully";
+    }
+
+    public User viewUserProfile(Long userId) throws UserNotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (user instanceof VendorStaff) {
+                VendorStaff vendorStaff = (VendorStaff) user;
+                vendorStaff.getVendor().setVendor_staff_list(null);
+                return vendorStaff;
+
+            }  else if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                return local;
+            }
+
+            return user; // internal staff
+        } else {
+            throw new UserNotFoundException("User not found!");
+        }
     }
 
     public List<User> retrieveAllUser() {

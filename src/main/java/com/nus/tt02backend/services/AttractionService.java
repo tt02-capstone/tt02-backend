@@ -208,17 +208,29 @@ public class AttractionService {
     public List<Price> updatePriceList(List<Price> price_list) throws NotFoundException {
         List<Price> update_price_list = new ArrayList<Price>();
 
-        for (Price input : price_list) {
-            Price price = priceRepository.findById(input.getPrice_id()).orElseThrow(() -> new NotFoundException("Pricing Not Found!"));
+        if (price_list != null) {
+            for (Price input : price_list) {
 
-            price.setLocal_amount(input.getLocal_amount());
-            price.setTourist_amount(input.getTourist_amount());
-            price.setTicket_type(input.getTicket_type());
-            priceRepository.save(price);
+                if (input.getPrice_id() == null) {
+                    Price price = new Price();
+                    price.setLocal_amount(input.getLocal_amount());
+                    price.setTourist_amount(input.getTourist_amount());
+                    price.setTicket_type(input.getTicket_type());
+                    priceRepository.save(price);
 
-            update_price_list.add(price);
+                    update_price_list.add(price);
+                } else {
+                    Price price = priceRepository.findById(input.getPrice_id()).orElseThrow(() -> new NotFoundException("Pricing Not Found!"));
+
+                    price.setLocal_amount(input.getLocal_amount());
+                    price.setTourist_amount(input.getTourist_amount());
+                    price.setTicket_type(input.getTicket_type());
+                    priceRepository.save(price);
+
+                    update_price_list.add(price);
+                }
+            }
         }
-
         return update_price_list;
     }
 
@@ -230,11 +242,14 @@ public class AttractionService {
         }
 
         List<Price> price_list = attractionToCreate.getPrice_list(); // get the price list and process them as price obj
-        List<Price> persisted_price_list = createPriceList(price_list);
-        PriceTierEnum priceTier = priceTierEstimation(persisted_price_list);
+        if (price_list != null) {
+            List<Price> persisted_price_list = createPriceList(price_list);
+            PriceTierEnum priceTier = priceTierEstimation(persisted_price_list);
 
-        attractionToCreate.setPrice_list(persisted_price_list); // set the price list w the newly created price objs
-        attractionToCreate.setEstimated_price_tier(priceTier);
+            attractionToCreate.setPrice_list(persisted_price_list); // set the price list w the newly created price objs
+            attractionToCreate.setEstimated_price_tier(priceTier);
+        }
+
         Attraction newAttraction = attractionRepository.save(attractionToCreate);
 
         Vendor vendor = vendorStaff.getVendor();
@@ -264,9 +279,15 @@ public class AttractionService {
                 attractionToUpdate.getIs_published() != null && !attractionToUpdate.getPrice_list().isEmpty()) {
 
             attraction.setName(attractionToUpdate.getName());
+            attraction.setDescription(attractionToUpdate.getDescription());
+            attraction.setAddress(attractionToUpdate.getAddress());
             attraction.setOpening_hours(attractionToUpdate.getOpening_hours());
+            attraction.setAge_group(attractionToUpdate.getAge_group());
             attraction.setContact_num(attractionToUpdate.getContact_num());
             attraction.setIs_published(attractionToUpdate.getIs_published());
+            attraction.setSuggested_duration(attractionToUpdate.getSuggested_duration());
+            attraction.setAttraction_category(attractionToUpdate.getAttraction_category());
+            attraction.setGeneric_location(attractionToUpdate.getGeneric_location());
 
             List<Price> updatedPriceList = updatePriceList(attractionToUpdate.getPrice_list());
             PriceTierEnum updatedTier = priceTierEstimation(updatedPriceList);
@@ -509,5 +530,6 @@ public class AttractionService {
             }
         }
     }
+
 
 }

@@ -20,14 +20,9 @@ import java.util.Optional;
 
 @Service
 public class BookingService {
-    @Autowired
-    UserRepository userRepository;
 
     @Autowired
-    TouristRepository touristRepository;
-
-    @Autowired
-    LocalRepository localRepository;
+    VendorStaffRepository vendorStaffRepository;
 
     @Autowired
     BookingRepository bookingRepository;
@@ -36,7 +31,30 @@ public class BookingService {
     AttractionRepository attractionRepository;
 
     @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    LocalRepository localRepository;
+
+    @Autowired
+    TouristRepository touristRepository;
+
+    @Autowired
     PaymentRepository paymentRepository;
+
+    public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
+        try {
+            Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
+            if (vendorOptional.isPresent()) {
+                return vendorOptional.get();
+            } else {
+                throw new NotFoundException("Vendor not found!");
+            }
+
+        } catch (Exception ex) {
+            throw new NotFoundException(ex.getMessage());
+        }
+    }
 
     public User findUser(Long userId) throws NotFoundException {
         try {
@@ -197,5 +215,13 @@ public class BookingService {
         localRepository.save(local);
         bookingRepository.save(booking);
         return "Success";
+
+        // Tourist tourist = findTourist(2l);
+        // booking.setTourist_user(tourist);
+        // booking.setPayment(payment);
+        // tourist.getBooking_list().add(booking);
+        // bookingRepository.save(booking);
+        // return "Success";
     }
 }
+

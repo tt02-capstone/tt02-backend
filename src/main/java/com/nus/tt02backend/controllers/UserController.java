@@ -1,17 +1,22 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.exceptions.*;
+import com.nus.tt02backend.models.User;
+import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin
+import java.nio.file.Path;
+
 @RestController
+@CrossOrigin
 @RequestMapping("/user")
 public class UserController {
+
     @Autowired
     UserService userService;
 
@@ -68,10 +73,33 @@ public class UserController {
         return ResponseEntity.ok(successMessage);
     }
 
+    @PutMapping("/editPassword/{userId}/{oldPassword}/{newPassword}")
+    public void editPassword(@PathVariable Long userId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
+        System.out.println("edit pass");
+        userService.editPassword(userId, oldPassword, newPassword);
+    }
+
+    @PutMapping ("/uploadNewProfilePic")
+    public ResponseEntity<User> uploadNewProfilePic(@RequestBody User user) throws UserNotFoundException {
+        User newUser = userService.uploadNewProfilePic(user.getUser_id(), user.getProfile_pic());
+        return ResponseEntity.ok(newUser);
+    }
+
+    // only for admin portal, not vendor portal
+    @PutMapping("/toggleBlock/{userId}")
+    public void toggleBlock(@PathVariable Long userId) throws NotFoundException, ToggleBlockException {
+        userService.toggleBlock(userId);
+    }
+
     @PostMapping ("/webPasswordResetStageThree/{email}/{password}")
     public ResponseEntity<String> webPasswordResetStageThree(@PathVariable String email, @PathVariable String password)
             throws BadRequestException {
         String successMessage = userService.webPasswordResetStageThree(email, password);
         return ResponseEntity.ok(successMessage);
+    }
+    @GetMapping("/viewUserProfile/{userId}")
+    public ResponseEntity<User> viewUserProfile(@PathVariable Long userId) throws UserNotFoundException {
+        User user = userService.viewUserProfile(userId);
+        return ResponseEntity.ok(user);
     }
 }

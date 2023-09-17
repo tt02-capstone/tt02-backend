@@ -1,10 +1,11 @@
 package com.nus.tt02backend.services;
 
-import com.nus.tt02backend.exceptions.BadRequestException;
-import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.exceptions.*;
+import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.TouristRepository;
+import com.nus.tt02backend.repositories.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class TouristService {
@@ -28,39 +25,6 @@ public class TouristService {
     JavaMailSender javaMailSender;
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
-
-    public Tourist touristLogin(String email, String password) throws NotFoundException, BadRequestException {
-        Tourist checkTourist = touristRepository.retrieveTouristByEmail(email);
-
-        if (checkTourist == null) {
-            throw new NotFoundException("There is no account associated with this email address");
-        }
-
-        if (encoder.matches(password, checkTourist.getPassword())
-                && !checkTourist.getIs_blocked()) {
-            checkTourist.setComment_list(new ArrayList<>());
-            checkTourist.setPost_list(null);
-            checkTourist.setBadge_list(null);
-            checkTourist.setSupport_ticket_list(null);
-            checkTourist.setAttraction_list(null);
-            checkTourist.setPost_list(null);
-            checkTourist.setAccommodation_list(null);
-            checkTourist.setCard_list(null);
-            checkTourist.setCart_list(null);
-            checkTourist.setDeal_list(null);
-            checkTourist.setRestaurant_list(null);
-            checkTourist.setTelecom_list(null);
-            checkTourist.setTour_type_list(null);
-            checkTourist.setItinerary(null);
-            return checkTourist;
-
-        } else if (checkTourist.getIs_blocked()) {
-            throw new BadRequestException("Your account is disabled, please contact our help desk");
-        } else {
-            throw new BadRequestException("Incorrect password");
-        }
-
-    }
 
     public void updateTourist(Tourist touristToUpdate) throws NotFoundException {
         Tourist tourist = touristRepository.findById((touristToUpdate.getUser_id()))
@@ -91,8 +55,6 @@ public class TouristService {
             String content = "<p>Dear " + touristToCreate.getName() + ",</p>" +
                     "<p>Thank you for registering for an account with WithinSG. " +
                     "We are glad that you have chosen us to help you explore Singapore!</p>" +
-                    "<p>We have received your application and it is in the midst of processing.</p>" +
-                    "<p>An email will be sent to you once your account has been activated.</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
             sendEmail(touristToCreate.getEmail(), subject, content);
         } catch (MessagingException ex) {
@@ -111,7 +73,59 @@ public class TouristService {
         javaMailSender.send(mimeMessage);
     }
 
+    public Tourist editTouristProfile(Tourist touristToEdit) throws EditUserException {
+        try {
+
+            Optional<Tourist> touristOptional = touristRepository.findById(touristToEdit.getUser_id());
+
+            if (touristOptional.isPresent()) {
+                Tourist tourist = touristOptional.get();
+
+                Long existingId = touristRepository.getTouristIdByEmail(touristToEdit.getEmail());
+                if (existingId != null && existingId != touristToEdit.getUser_id()) { // but there is an existing email
+                    throw new EditUserException("Email currently in use. Please use a different email!");
+                }
+
+                existingId = touristRepository.getTouristIdByPassportNum(touristToEdit.getPassport_num());
+                if (existingId != null && existingId != touristToEdit.getUser_id()) { // but there is a passport number
+                    throw new EditUserException("Passport number currently in use. Please use a different passport number!");
+                }
+
+                existingId = touristRepository.getTouristIdByMobileNum(touristToEdit.getMobile_num());
+                if (existingId != null && existingId != touristToEdit.getUser_id()) { // but there is an existing mobile number
+                    throw new EditUserException("Mobile number currently in use. Please use a different mobile number!");
+                }
+
+                tourist.setEmail(touristToEdit.getEmail());
+                tourist.setName(touristToEdit.getName());
+                tourist.setDate_of_birth(touristToEdit.getDate_of_birth());
+                tourist.setCountry_code(touristToEdit.getCountry_code());
+                tourist.setMobile_num(touristToEdit.getMobile_num());
+                touristRepository.save(tourist);
+                tourist.setPassword(null);
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                return tourist;
+
+            } else {
+                throw new EditUserException("Tourist not found!");
+            }
+        } catch (Exception ex) {
+            throw new EditUserException(ex.getMessage());
+        }
+    }
+
     public List<Tourist> retrieveAllTourist() {
-        return touristRepository.findAll();
+        List<Tourist> touristList = touristRepository.findAll();
+
+        for (Tourist t : touristList) {
+            t.setPassword(null);
+            t.setBooking_list(null);
+            t.setPost_list(null);
+            t.setComment_list(null);
+        }
+
+        return touristList;
     }
 }

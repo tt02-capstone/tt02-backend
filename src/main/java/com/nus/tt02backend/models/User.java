@@ -43,5 +43,9 @@ public class User {
     private String password_reset_token;
 
     @Column
+    private LocalDateTime token_date;
+
     private LocalDateTime password_token_date;
+
+    private String profile_pic;
 }

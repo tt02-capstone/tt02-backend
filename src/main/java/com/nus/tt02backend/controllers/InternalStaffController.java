@@ -1,7 +1,6 @@
 package com.nus.tt02backend.controllers;
 
-import com.nus.tt02backend.exceptions.BadRequestException;
-import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
@@ -10,11 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/staff")
+@RequestMapping("/admin")
 public class InternalStaffController {
     @Autowired
     InternalStaffService internalStaffService;
@@ -32,10 +31,23 @@ public class InternalStaffController {
         return ResponseEntity.noContent().build();
     }
 
+    // not initial sign up
     @PostMapping ("/createStaff")
     public ResponseEntity<Long> createStaff(@RequestBody InternalStaff internalStaffToCreate) throws BadRequestException {
         Long staffId = internalStaffService.createStaff(internalStaffToCreate);
         return ResponseEntity.ok(staffId);
+    }
+
+    @GetMapping("/getAllAdmin")
+    public ResponseEntity<List<InternalStaff>> getAllAdmin() {
+        List<InternalStaff> internalStaffList = internalStaffService.retrieveAllAdmin();
+        return ResponseEntity.ok(internalStaffList);
+    }
+
+    @PutMapping("/editProfile")
+    public ResponseEntity<InternalStaff> editProfile(@RequestBody InternalStaff staffToEdit) throws EditAdminException {
+        InternalStaff internalStaff = internalStaffService.editProfile(staffToEdit);
+        return ResponseEntity.ok(internalStaff);
     }
 
     @PostMapping ("/passwordResetStageOne/{email}")

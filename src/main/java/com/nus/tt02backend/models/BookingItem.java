@@ -13,20 +13,14 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class CartItem {
+public class BookingItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cart_item_id;
+    private Long booking_item_id;
 
     @Column(nullable = false)
     private Integer quantity;
-
-    @Column
-    private String discountCode;
-
-    @Column(nullable = false)
-    private BigDecimal price;
 
     @Column(nullable = false)
     private Date start_datetime;
@@ -39,7 +33,5 @@ public class CartItem {
 
     @Column(nullable = false)
     private String activity_selection;
-
-
 
 }
