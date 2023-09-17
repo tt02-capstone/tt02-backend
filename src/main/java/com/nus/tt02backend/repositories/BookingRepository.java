@@ -9,4 +9,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long>  {
 
     @Query("SELECT b FROM Booking b WHERE b.booking_id=?1")
     Booking getBookingByBookingId(Long bookingId);
+
 }

@@ -49,10 +49,11 @@ public class Booking {
     @OneToOne(fetch = FetchType.LAZY)
     private Room room;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "attraction_id")
     private Attraction attraction;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "tourist_id")
     private Tourist tourist_user;
 

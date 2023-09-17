@@ -19,17 +19,23 @@ public class BookingController {
     @Autowired
     BookingService bookingService;
 
-//    @GetMapping("/getAllAttractionBookingsByVendor/{vendorId}")
-//    public ResponseEntity<List<Booking>> getAllAttractionBookingsByVendor(@PathVariable Long vendorId) throws NotFoundException, BadRequestException {
-//        List<Booking> bookingList = bookingService.getAllAttractionBookingsByVendor(vendorId);
-//        return ResponseEntity.ok(bookingList);
-//    }
-//
-//    @GetMapping("/getAttractionBookingByVendor/{vendorStaffId}/{bookingId}")
-//    public ResponseEntity<Booking> getAttractionBookingByVendor(@PathVariable Long vendorStaffId, @PathVariable Long bookingId) throws NotFoundException {
-//        Booking booking = bookingService.getAttractionBookingByVendor(vendorStaffId, bookingId);
-//        return ResponseEntity.ok(booking);
-//    }
+    @GetMapping("/getAllAttractionBookingsByVendor/{vendorStaffId}")
+    public ResponseEntity<List<Booking>> getAllAttractionBookingsByVendor(@PathVariable Long vendorStaffId) throws NotFoundException, BadRequestException {
+        List<Booking> bookingList = bookingService.getAllAttractionBookingsByVendor(vendorStaffId);
+        return ResponseEntity.ok(bookingList);
+    }
+
+    @GetMapping("/getAttractionBookingByVendor/{vendorStaffId}/{bookingId}")
+    public ResponseEntity<Booking> getAttractionBookingByVendor(@PathVariable Long vendorStaffId, @PathVariable Long bookingId) throws NotFoundException {
+        Booking booking = bookingService.getAttractionBookingByVendor(vendorStaffId, bookingId);
+        return ResponseEntity.ok(booking);
+    }
+
+    @GetMapping("/getBookingByBookingId/{bookingId}")
+    public ResponseEntity<Booking> getBookingByBookingId(@PathVariable Long bookingId) throws NotFoundException {
+        Booking booking = bookingService.getBookingByBookingId(bookingId);
+        return ResponseEntity.ok(booking);
+    }
 
     // To be deleted - for testing purposes
     @GetMapping("/tempCreateBooking")
