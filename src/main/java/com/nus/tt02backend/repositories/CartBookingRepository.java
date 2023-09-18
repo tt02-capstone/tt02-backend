@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface CartBookingRepository extends JpaRepository<CartBooking, Long>  {
 
-
+    @Query("SELECT cb FROM CartBooking cb WHERE cb.cart_booking_id IN :cartBookingIds")
+    List<CartBooking> findCartBookingsByIds(List<Long> cartBookingIds);
 
 }

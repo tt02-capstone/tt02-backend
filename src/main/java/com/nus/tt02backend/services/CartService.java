@@ -13,11 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
@@ -169,26 +171,28 @@ public class CartService {
     }
 
     public List<Long> checkout(String user_type, String tourist_email, String payment_method_id,
+                               Float totalPrice,
                                List<Long> booking_ids) throws StripeException {
 
         Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
 
-        // To include query of cartBookings by booking_ids and user
 
-        List<CartBooking> bookingsToCheckout = currentTourist.getCart_list();
+        List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
 
-        BigDecimal totalAmountPayable = BigDecimal.valueOf(0); // Will retrieve this from FE
+        BigDecimal totalAmountPayable = BigDecimal.valueOf(totalPrice).setScale(2, RoundingMode.HALF_UP); // Will retrieve this from FE
 
         List<Payment> processedPayments = new ArrayList<>();
 
-        List<Long> createdBookings = new ArrayList<>();
+        List<Booking> createdBookings = new ArrayList<>();
+
+        List<Long> createdBookingIds = new ArrayList<>();
 
         Map<String, Object> automaticPaymentMethods =
                 new HashMap<>();
         automaticPaymentMethods.put("enabled", true);
 
         Map<String, Object> paymentParams = new HashMap<>();
-        paymentParams.put("amount", totalAmountPayable);
+        paymentParams.put("amount", totalAmountPayable.multiply(new BigDecimal("100")).intValueExact());
         paymentParams.put("currency", "sgd");
         paymentParams.put(
                 "automatic_payment_methods",
@@ -196,16 +200,29 @@ public class CartService {
         );
         paymentParams.put(
                 "confirm",
-                false
+                true
         );
         paymentParams.put(
                 "customer",
-                "customer_id"
+                currentTourist.getStripe_account_id()
         );
         paymentParams.put(
                 "payment_method",
                 payment_method_id
         );
+
+        paymentParams.put(
+                "return_url",
+                "yourappname://stripe/callback"
+        );
+
+
+        PaymentIntent paymentIntent =
+                PaymentIntent.create(paymentParams);
+
+
+
+        // Pay vendors?
 
         for (CartBooking bookingToCheckout : bookingsToCheckout) {
             BigDecimal amountPayable = BigDecimal.valueOf(0);
@@ -248,21 +265,29 @@ public class CartService {
             bookingRepository.save(newBooking);
             bookingRepository.save(newBooking);
 
-            createdBookings.add(newBooking.getBooking_id());
+            createdBookings.add(newBooking);
+            createdBookingIds.add(newBooking.getBooking_id());
             processedPayments.add(bookingPayment);
         }
-        System.out.println(createdBookings);
+        List<Booking> currentBookings = currentTourist.getBooking_list();
 
-        //System.out.println(processedPayments);
+        if (currentBookings == null) {
+            currentBookings = new ArrayList<>(); // Initialize as an empty list if null
+        }
+        currentBookings.addAll(createdBookings);
+        currentTourist.setBooking_list(currentBookings);
 
 
-        currentTourist.setCart_list(new ArrayList<>());
+        List<CartBooking> currentCartBookings = currentTourist.getCart_list();
+
+        currentCartBookings.removeAll(bookingsToCheckout);
+
+        currentTourist.setCart_list(currentCartBookings);
+
 
         localRepository.save(currentTourist);
 
-        System.out.println("ASD");
 
-
-        return createdBookings;
+        return createdBookingIds;
     }
 }
