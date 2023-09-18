@@ -65,15 +65,16 @@ public class CartController {
         return null;
     }
 
-    @PostMapping("/checkout/{user_type}/{tourist_email}/{payment_method_id}")
+    @PostMapping("/checkout/{user_type}/{tourist_email}/{payment_method_id}/{totalPrice}")
     public ResponseEntity<List<Long>> checkout(@PathVariable String user_type,
                                                @PathVariable String tourist_email,
                                                @PathVariable String payment_method_id,
+                                               @PathVariable Float totalPrice,
                                                @RequestBody List<Long> booking_ids) throws StripeException {
 
 
         List<Long> createdBookingIds =  cartService.checkout(user_type,tourist_email,
-                payment_method_id,booking_ids);
+                payment_method_id, totalPrice,booking_ids);
 
 
 
