@@ -321,7 +321,7 @@ public class BookingService {
         bookingRepository.save(booking);
 
         Payment payment = new Payment();
-        payment.setPayment_amount(new BigDecimal("132"));
+        payment.setPayment_amount(new BigDecimal("100"));
         payment.setIs_paid(true);
         payment.setBooking(booking);
         payment.setComission_percentage(new BigDecimal("0.1"));
@@ -333,7 +333,7 @@ public class BookingService {
 //        tourist.getBooking_list().add(booking);
 //        touristRepository.save(tourist);
 
-        Local local = findLocal(5l);
+        Local local = findLocal(3l);
         booking.setLocal_user(local);
         local.getBooking_list().add(booking);
         localRepository.save(local);
