@@ -22,4 +22,7 @@ public interface LocalRepository extends JpaRepository<Local, Long> {
 
     @Query("SELECT l.user_id FROM Local l WHERE l.mobile_num = ?1")
     Long getLocalIdByMobileNum(String mobileNum);
+
+    @Query("SELECT ls.stripe_account_id FROM Local ls WHERE ls.email=?1")
+    String getStripeIdByEmail(String email);
 }

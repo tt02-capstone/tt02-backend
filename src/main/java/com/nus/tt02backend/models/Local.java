@@ -29,6 +29,9 @@ public class Local extends User {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal wallet_balance;
 
+    @Column
+    private String stripe_account_id;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Card> card_list;
 
