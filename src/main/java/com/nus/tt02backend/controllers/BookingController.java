@@ -56,16 +56,17 @@ public class BookingController {
         return ResponseEntity.ok(paymentList);
     }
 
+    @PostMapping("/createTourBooking/{tourId}")
+    public ResponseEntity<Long> createTourBooking(@PathVariable Long tourId, @RequestBody Booking booking) throws NotFoundException {
+        System.out.println("aaa");
+        Long bookingId = bookingService.createTourBooking(tourId, booking); // need to eventually add payment
+        return ResponseEntity.ok(bookingId);
+    }
+
     // To be deleted - for testing purposes
     @GetMapping("/tempCreateBooking")
     public ResponseEntity<String> tempCreateBooking() throws NotFoundException {
         String responseMessage = bookingService.tempCreateBooking();
         return ResponseEntity.ok(responseMessage);
-    }
-
-    @GetMapping("/getVendorTotalEarnings/{vendorId}")
-    public ResponseEntity<BigDecimal> getVendorTotalEarnings(@PathVariable Long vendorId) throws BadRequestException {
-        BigDecimal sum = bookingService.getVendorTotalEarnings(vendorId);
-        return ResponseEntity.ok(sum);
     }
 }

@@ -46,6 +46,9 @@ public class BookingService {
     @Autowired
     VendorRepository vendorRepository;
 
+    @Autowired
+    TourRepository tourRepository;
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -276,6 +279,33 @@ public class BookingService {
         throw new NotFoundException("Booking not found!"); // if the booking is not part of vendor's listing
     }
 
+    public Long createTourBooking(Long tourId, Booking newBooking) throws NotFoundException { // need to eventually add payment
+
+        Optional<Tour> tourOptional = tourRepository.findById(tourId);
+
+        if (tourOptional.isPresent()) {
+            Tour tour = tourOptional.get();
+
+            Payment payment = new Payment();
+            payment.setPayment_amount(new BigDecimal(123));
+            payment.setComission_percentage(new BigDecimal(10));
+            payment.setIs_paid(true);
+            paymentRepository.save(payment);
+
+            newBooking.setTour(tour);
+            newBooking.setPayment(payment);
+            bookingRepository.save(newBooking);
+
+            payment.setBooking(newBooking);
+            paymentRepository.save(payment);
+
+            return newBooking.getBooking_id();
+        } else {
+            System.out.println("tour not found aaa");
+            throw new NotFoundException("Tour not found!");
+        }
+    }
+
     // To be deleted - for testing purposes
     public String tempCreateBooking() throws NotFoundException {
         Booking booking = new Booking();
@@ -288,14 +318,7 @@ public class BookingService {
 
         Attraction attraction = attractionRepository.findById(1l).get();
         booking.setAttraction(attraction);
-
-<<<<<<< HEAD
-//        List<Booking> attractionBookingList = attraction.getBooking_list();
-//        attractionBookingList.add(booking);
-//        bookingRepository.save(booking);
-=======
         bookingRepository.save(booking);
->>>>>>> c96b4c8589c297ec366ab8f9307b2f1af32c7987
 
         Payment payment = new Payment();
         payment.setPayment_amount(new BigDecimal("132"));
@@ -304,13 +327,8 @@ public class BookingService {
         payment.setComission_percentage(new BigDecimal("0.1"));
         paymentRepository.save(payment);
 
-<<<<<<< HEAD
-        Tourist tourist = findTourist(1l);
-        booking.setTourist_user(tourist);
-=======
 //        Tourist tourist = findTourist(4l);
 //        booking.setTourist_user(tourist);
->>>>>>> c96b4c8589c297ec366ab8f9307b2f1af32c7987
         booking.setPayment(payment);
 //        tourist.getBooking_list().add(booking);
 //        touristRepository.save(tourist);
@@ -329,55 +347,4 @@ public class BookingService {
         // bookingRepository.save(booking);
         // return "Success";
     }
-<<<<<<< HEAD
-
-    public BigDecimal getVendorTotalEarnings(Long vendorId) throws BadRequestException {
-        BigDecimal sum = new BigDecimal(0);
-        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
-
-        if (vendorOptional.isPresent()) {
-            Vendor vendor = vendorOptional.get();
-            vendor.setVendor_staff_list(null);
-
-            // fetch attractions
-            List<Attraction> attractionList = vendor.getAttraction_list();
-            for (Attraction a : attractionList) {
-                Double tempSum = paymentRepository.retrieveSumOfBookingByAttractionId(a.getAttraction_id());
-                sum = sum.add(new BigDecimal(tempSum));
-            }
-
-            List<Telecom> telecomList = vendor.getTelecom_list();
-            for (Telecom t : telecomList) {
-                Double tempSum = paymentRepository.retrieveSumOfBookingByTelecomId(t.getTelecom_id());
-                sum = sum.add(new BigDecimal(tempSum));
-            }
-
-            List<Deal> dealList = vendor.getDeals_list();
-            for (Deal d : dealList) {
-                Double tempSum = paymentRepository.retrieveSumOfBookingByDealId(d.getDeal_id());
-                sum = sum.add(new BigDecimal(tempSum));
-            }
-
-            List<Accommodation> accommodationList = vendor.getAccommodation_list();
-            List<Room> roomList = new ArrayList<>();
-            for (Accommodation a : accommodationList) {
-                List<Room> tempRoom = a.getRoom_list();
-                roomList.addAll(tempRoom);
-            }
-
-            for (Room r : roomList) {
-                Double tempSum = paymentRepository.retrieveSumOfBookingByRoomId(r.getRoom_id());
-                sum = sum.add(new BigDecimal(tempSum));
-            }
-
-            sum = sum.multiply(new BigDecimal(0.9)); // 10% commission removal
-            return sum;
-        } else {
-            throw new BadRequestException("Vendor not found!");
-        }
-    }
 }
-=======
-}
-
->>>>>>> c96b4c8589c297ec366ab8f9307b2f1af32c7987
