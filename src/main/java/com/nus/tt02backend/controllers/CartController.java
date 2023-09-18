@@ -1,6 +1,8 @@
 package com.nus.tt02backend.controllers;
 
 
+import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Booking;
 import com.nus.tt02backend.models.CartBooking;
 import com.nus.tt02backend.models.CartItem;
@@ -24,7 +26,7 @@ public class CartController {
     @PostMapping("/addCartItems/{user_type}/{tourist_email}/{activity_name}")
     public ResponseEntity<Long> addCartItems(@PathVariable String tourist_email,
                                              @PathVariable String activity_name,
-                                             @RequestBody List<CartItem> cartItems) {
+                                             @RequestBody List<CartItem> cartItems) throws NotFoundException, BadRequestException {
         Long bookingId = cartService.addCartItems(tourist_email, activity_name, cartItems);
 
 

@@ -1,5 +1,7 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BookingStatusEnum;
 import com.nus.tt02backend.models.enums.BookingTypeEnum;
@@ -11,10 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 @Service
 public class CartService {
@@ -43,8 +47,14 @@ public class CartService {
     @Autowired
     PaymentRepository paymentRepository;
 
+    @Autowired
+    TicketPerDayRepository ticketPerDayRepository;
+
+    @Autowired
+    AttractionService attractionService;
+
     public Long addCartItems(@PathVariable String tourist_email, @PathVariable String activity_name,
-                             @RequestBody List<CartItem> cartItems) {
+                             @RequestBody List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
 
         // Get Tourist object based on email via Tourist Repository
@@ -53,30 +63,57 @@ public class CartService {
 
         // Need official function to handle different cases
         Attraction selectedAttraction = attractionRepository.getAttractionByName(activity_name);
-        LocalDateTime start_dateTime = LocalDateTime.now();
-        LocalDateTime end_dateTime = LocalDateTime.now();
+
+        LocalDate startDate = cartItems.get(0).getStart_datetime();
+        LocalDate endDate = cartItems.get(0).getEnd_datetime();
+
+
+        // Get current TicketPerDay
+
+        List<TicketPerDay> currentTickets = attractionService.getAllTicketListedByAttractionAndDate(selectedAttraction.getAttraction_id(),
+                cartItems.get(0).getStart_datetime()); // tickets listed based on the date selected
+        if (currentTickets.isEmpty()) {
+            throw new NotFoundException("No tickets found for this date!");
+        }
 
         List<CartItem> addedCartItems = new ArrayList<>();
         for (CartItem cartItemToCreate : cartItems) {
+
+
 
             // Must check if CartItem with attraction name and type exists!
 
 
             CartItem newCartItem = cartItemRepository.save(cartItemToCreate);
-            System.out.println(newCartItem.getCart_item_id());
 
 
             addedCartItems.add(newCartItem);
 
-            System.out.println(addedCartItems.size());
+            // Update relevant ticket in TicketPerDay
 
+            String activitySelection = cartItemToCreate.getActivity_selection();
+
+            OptionalInt indexOfMatchingTicket = IntStream.range(0, currentTickets.size())
+                    .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
+                    .findFirst();
+
+            if (indexOfMatchingTicket.isPresent()) {
+                Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
+                TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
+                currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItemToCreate.getQuantity());
+                ticketPerDayRepository.save(currentTicket);
+                currentTickets.set(foundTicketIndex, currentTicket);
+
+            } else {
+                System.out.println("No matching Ticket found.");
+            }
 
         }
 
         // Check if booking exists
         CartBooking cartBookingToCreate = new CartBooking();
-        cartBookingToCreate.setStart_datetime(start_dateTime);
-        cartBookingToCreate.setEnd_datetime(end_dateTime);
+        cartBookingToCreate.setStart_datetime(startDate.atStartOfDay()); // Could consider changing to Opening Hours
+        cartBookingToCreate.setEnd_datetime(endDate.atStartOfDay());
 
         cartBookingToCreate.setType(BookingTypeEnum.ATTRACTION);
         cartBookingToCreate.setActivity_name(selectedAttraction.getName());
@@ -85,6 +122,14 @@ public class CartService {
 
 
         Long cartBookingId = cartBookingRepository.save(cartBookingToCreate).getCart_booking_id();
+
+
+
+        // Save Attraction
+
+        selectedAttraction.setTicket_per_day_list(currentTickets);
+
+        attractionRepository.save(selectedAttraction);
 
         List<CartBooking> currentCartBookings = currentTourist.getCart_list();
         currentCartBookings.add(cartBookingToCreate);

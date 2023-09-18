@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -29,10 +30,10 @@ public class CartItem {
     private BigDecimal price;
 
     @Column(nullable = false)
-    private Date start_datetime;
+    private LocalDate start_datetime;
 
     @Column(nullable = false)
-    private Date end_datetime;
+    private LocalDate end_datetime;
 
     @Column(nullable = false)
     private BookingTypeEnum type;
