@@ -514,9 +514,11 @@ public class AttractionService {
         if (currentList.isEmpty()) {
             throw new NotFoundException("No tickets found for this date!");
         } else {
+//            System.out.println(tickets_to_check);
+//            System.out.println(currentList);
             for (TicketPerDay ticketToCheck : tickets_to_check) {
                 TicketPerDay findTicketType = currentList.stream()
-                        .filter(t -> t.getTicket_type().equals(ticketToCheck.getTicket_type()))
+                        .filter(t -> t.getTicket_type().equals(ticketToCheck.getTicket_type()) && t.getTicket_per_day_id().equals(ticketToCheck.getTicket_per_day_id()))
                         .findFirst()
                         .orElse(null);
 
