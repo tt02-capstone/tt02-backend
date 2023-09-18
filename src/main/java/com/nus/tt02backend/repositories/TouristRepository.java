@@ -24,4 +24,7 @@ public interface TouristRepository extends JpaRepository<Tourist, Long> {
     @Query("SELECT t.user_id FROM Tourist t WHERE t.passport_num = ?1")
     Long getTouristIdByPassportNum(String passportNum);
 
+    @Query("SELECT t.stripe_account_id FROM Tourist t WHERE t.email=?1")
+    String getStripeIdByEmail(String email);
+
 }
