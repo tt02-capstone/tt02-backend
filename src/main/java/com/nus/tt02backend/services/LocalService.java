@@ -30,6 +30,9 @@ public class LocalService {
     @Autowired
     JavaMailSender javaMailSender;
 
+    @Autowired
+    PaymentService paymentService;
+
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public void updateLocal(Local localToUpdate) throws NotFoundException {
@@ -53,6 +56,11 @@ public class LocalService {
         }
 
         localToCreate.setPassword(encoder.encode(localToCreate.getPassword()));
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", localToCreate.getEmail());
+        customer_parameters.put("name", localToCreate.getName());
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        localToCreate.setStripe_account_id(stripe_account_id);
         localToCreate.setUser_type(UserTypeEnum.LOCAL);
         localRepository.save(localToCreate);
 
