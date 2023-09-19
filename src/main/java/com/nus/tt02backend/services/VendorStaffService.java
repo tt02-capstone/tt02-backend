@@ -10,10 +10,9 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Account;
-import com.stripe.model.BankAccount;
-import com.stripe.model.ExternalAccount;
-import com.stripe.model.ExternalAccountCollection;
+import com.stripe.model.*;
+import com.stripe.net.RequestOptions;
+import com.stripe.param.ChargeCreateParams;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
 
@@ -383,6 +383,78 @@ public class VendorStaffService {
         } else {
             throw new NotFoundException("Vendor Staff not found!");
         }
+    }
+
+    public String withdrawWallet(Long userId, String bank_account_id, BigDecimal amount) throws StripeException, NotFoundException {
+
+        Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
+
+        if (vendorStaffOptional.isPresent()) {
+            VendorStaff vendorStaff = vendorStaffOptional.get();
+
+            Vendor vendor = vendorStaff.getVendor();
+
+            String stripe_account_id = vendor.getStripe_account_id();
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("amount", amount);
+            params.put("currency", "sgd");
+            params.put("destination", bank_account_id);
+
+            RequestOptions requestOptions =
+                    RequestOptions.builder().setStripeAccount(stripe_account_id).build();
+
+
+            Payout payout = Payout.create(params, requestOptions);
+
+
+            vendor.setWallet_balance(vendor.getWallet_balance().subtract(amount));
+
+            vendorRepository.save(vendor);
+
+            return payout.getId();
+
+        } else {
+            throw new NotFoundException("Vendor Staff not found!");
+        }
+
+
+    }
+
+    public String topUpWallet(Long userId, BigDecimal amount) throws StripeException, NotFoundException {
+
+        Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
+
+        if (vendorStaffOptional.isPresent()) {
+            VendorStaff vendorStaff = vendorStaffOptional.get();
+
+            Vendor vendor = vendorStaff.getVendor();
+
+            String stripe_account_id = vendor.getStripe_account_id();
+            Map<String, Object> params = new HashMap<>();
+            params.put("amount", amount);
+            params.put("currency", "sgd");
+            params.put("source", stripe_account_id );
+            params.put(
+                    "description",
+                    "My First Test Charge (created for API docs at https://www.stripe.com/docs/api)"
+            );
+
+
+            Charge charge = Charge.create(params);
+
+
+            vendor.setWallet_balance(vendor.getWallet_balance().subtract(amount));
+
+            vendorRepository.save(vendor);
+
+            return charge.getId();
+
+        } else {
+            throw new NotFoundException("Vendor Staff not found!");
+        }
+
+
     }
 }
 
