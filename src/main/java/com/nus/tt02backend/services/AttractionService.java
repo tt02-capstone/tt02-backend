@@ -282,6 +282,7 @@ public class AttractionService {
             attraction.setSuggested_duration(attractionToUpdate.getSuggested_duration());
             attraction.setAttraction_category(attractionToUpdate.getAttraction_category());
             attraction.setGeneric_location(attractionToUpdate.getGeneric_location());
+            attraction.setAttraction_image_list(attractionToUpdate.getAttraction_image_list());
 
             List<Price> updatedPriceList = updatePriceList(attractionToUpdate.getPrice_list());
             PriceTierEnum updatedTier = priceTierEstimation(updatedPriceList);
