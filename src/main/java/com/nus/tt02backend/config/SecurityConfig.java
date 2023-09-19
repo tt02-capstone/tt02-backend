@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +20,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.nus.tt02backend.filters.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -42,11 +49,27 @@ public class SecurityConfig {
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
       return config.getAuthenticationManager();
   }
-  
+
+//  @Bean("corsConfigurationSource")
+//  CorsConfigurationSource corsConfigurationSource() {
+//      CorsConfiguration configuration = new CorsConfiguration();
+//      configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+//      configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+//      configuration.setAllowedHeaders(Arrays.asList("*"));
+//      configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT"));
+//      configuration.setAllowCredentials(true);
+//      configuration.setExposedHeaders(List.of("Authorization"));
+//
+//      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//      source.registerCorsConfiguration("/**", configuration);
+//      return source;
+//  }
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-    .csrf(csrf -> csrf 
+//    .cors(Customizer.withDefaults())
+    .csrf(csrf -> csrf
       .disable()
     )
     .sessionManagement(session -> session
@@ -58,19 +81,27 @@ public class SecurityConfig {
               "/user/webLogin/**",
               "/local/create",
               "/tourist/create",
-              "/admin/createStaff",
-              "/admin/staffLogin/**",
-              "/admin/passwordResetStageOne/**",
-              "/admin/passwordResetStageTwo/**",
-              "/admin/passwordResetStageThree/**",
+              "/staff/createStaff",
+              "/staff/staffLogin/**",
+              "/staff/passwordResetStageOne/**",
+              "/staff/passwordResetStageTwo/**",
+              "/staff/passwordResetStageThree/**",
               "/vendorStaff/createVendorStaff",
               "/user/passwordResetStageOne/**",
               "/user/webPasswordResetStageOne/**",
               "/user/passwordResetStageTwo/**",
               "/user/webPasswordResetStageTwo/**",
               "/user/passwordResetStageThree/**",
-              "/user/webPasswordResetStageThree/**").permitAll()
-      .requestMatchers(HttpMethod.GET, "/api/v1/test/**").permitAll()
+              "/user/webPasswordResetStageThree/**",
+              "vendorStaff/**",
+              "vendor/**").permitAll()
+      .requestMatchers(HttpMethod.GET,
+              "vendorStaff/**",
+              "vendor/**").permitAll()
+       .requestMatchers(HttpMethod.PUT,
+               "vendorStaff/**",
+               "vendor/**").permitAll()
+        .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()
     )
     .authenticationProvider(authenticationProvider()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
