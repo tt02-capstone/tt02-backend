@@ -32,9 +32,9 @@ public class UserController {
     }
 
     @PostMapping("/webLogin/{email}/{password}")
-    public ResponseEntity<User> userWebLogin(@PathVariable String email, @PathVariable String password)
+    public ResponseEntity<JwtAuthenticationResponse> userWebLogin(@PathVariable String email, @PathVariable String password)
             throws NotFoundException, BadRequestException {
-        User user = userService.userWebLogin(email, password);
+        JwtAuthenticationResponse user = authenticationService.userWebLogin(email, password);
         return ResponseEntity.ok(user);
     }
 
