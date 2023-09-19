@@ -15,7 +15,6 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 
 public class Badge {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long badge_id;

@@ -24,6 +24,9 @@ public class TouristService {
     @Autowired
     JavaMailSender javaMailSender;
 
+    @Autowired
+    PaymentService paymentService;
+
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public void updateTourist(Tourist touristToUpdate) throws NotFoundException {
@@ -47,6 +50,11 @@ public class TouristService {
         }
 
         touristToCreate.setPassword(encoder.encode(touristToCreate.getPassword()));
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", touristToCreate.getEmail());
+        customer_parameters.put("name", touristToCreate.getName());
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        touristToCreate.setStripe_account_id(stripe_account_id);
         touristToCreate.setUser_type(UserTypeEnum.TOURIST);
         touristRepository.save(touristToCreate);
 
@@ -103,6 +111,9 @@ public class TouristService {
                 tourist.setMobile_num(touristToEdit.getMobile_num());
                 touristRepository.save(tourist);
                 tourist.setPassword(null);
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
                 return tourist;
 
             } else {
@@ -116,8 +127,11 @@ public class TouristService {
     public List<Tourist> retrieveAllTourist() {
         List<Tourist> touristList = touristRepository.findAll();
 
-        for (Tourist i : touristList) {
-            i.setPassword(null);
+        for (Tourist t : touristList) {
+            t.setPassword(null);
+            t.setBooking_list(null);
+            t.setPost_list(null);
+            t.setComment_list(null);
         }
 
         return touristList;

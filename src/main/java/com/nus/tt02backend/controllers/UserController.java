@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/user")
@@ -81,6 +83,12 @@ public class UserController {
         userService.editPassword(userId, oldPassword, newPassword);
     }
 
+    @PutMapping ("/uploadNewProfilePic")
+    public ResponseEntity<User> uploadNewProfilePic(@RequestBody User user) throws UserNotFoundException {
+        User newUser = userService.uploadNewProfilePic(user.getUser_id(), user.getProfile_pic());
+        return ResponseEntity.ok(newUser);
+    }
+
     // only for admin portal, not vendor portal
     @PutMapping("/toggleBlock/{userId}")
     public void toggleBlock(@PathVariable Long userId) throws NotFoundException, ToggleBlockException {
@@ -92,5 +100,10 @@ public class UserController {
             throws BadRequestException {
         String successMessage = userService.webPasswordResetStageThree(email, password);
         return ResponseEntity.ok(successMessage);
+    }
+    @GetMapping("/viewUserProfile/{userId}")
+    public ResponseEntity<User> viewUserProfile(@PathVariable Long userId) throws UserNotFoundException {
+        User user = userService.viewUserProfile(userId);
+        return ResponseEntity.ok(user);
     }
 }

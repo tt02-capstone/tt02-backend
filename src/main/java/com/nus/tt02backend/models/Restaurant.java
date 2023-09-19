@@ -52,12 +52,11 @@ public class Restaurant {
     private PriceTierEnum estimated_price_tier;
 
     @ElementCollection
-    @CollectionTable(name="image_list")
-    private ArrayList<String> image_list = new ArrayList<>();
+    @CollectionTable(name="restaurant_image_list")
+    private ArrayList<String> restaurant_image_list;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = true)
-    private ArrayList<Dish> dish_list = new ArrayList<>();
+    private ArrayList<Dish> dish_list;
 
     public Restaurant(Long restaurant_id, String name, String description, String address, String opening_hours, String contact_num, Boolean is_published, Integer suggested_duration, RestaurantEnum restaurant_type, GenericLocationEnum generic_location, PriceTierEnum estimated_price_tier, ArrayList<String> image_list) {
         this.restaurant_id = restaurant_id;
@@ -71,6 +70,6 @@ public class Restaurant {
         this.restaurant_type = restaurant_type;
         this.generic_location = generic_location;
         this.estimated_price_tier = estimated_price_tier;
-        this.image_list = image_list;
+        this.restaurant_image_list = image_list;
     }
 }

@@ -3,13 +3,8 @@ package com.nus.tt02backend.models;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
 
 @Data
 @Entity
@@ -35,6 +30,9 @@ public class User {
     @Column(nullable = false)
     private Boolean is_blocked;
 
+    @Enumerated(EnumType.STRING)
+    private UserTypeEnum user_type;
+
     @Column
     private String email_verification_token;
 
@@ -47,10 +45,9 @@ public class User {
     @Column
     private LocalDateTime token_date;
 
-    @Enumerated(EnumType.STRING)
-    private UserTypeEnum user_type;
-
     private LocalDateTime password_token_date;
+
+    private String profile_pic;
 
     public User(String name, String email, String password, Boolean is_blocked, UserTypeEnum user_type){
         this.name = name;
@@ -59,6 +56,7 @@ public class User {
         this.is_blocked = is_blocked;
         this.user_type = user_type;
     }
+
 
 
 }

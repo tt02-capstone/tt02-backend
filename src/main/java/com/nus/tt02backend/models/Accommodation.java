@@ -34,8 +34,8 @@ public class Accommodation {
     private String contact_num;
 
     @ElementCollection
-    @CollectionTable(name="image_list")
-    private List<String> image_list = new ArrayList<>();;
+    @CollectionTable(name="accomodation_image_list")
+    private List<String> accomodation_image_list;
 
     @Column(nullable = false)
     public Boolean is_published;
@@ -55,24 +55,7 @@ public class Accommodation {
     @Enumerated(EnumType.STRING)
     private PriceTierEnum estimated_price_tier;
 
-    @OneToMany
-    @JoinColumn(nullable = true)
-    private List<Room> room_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Room> room_list;
 
-    public Accommodation(String name, String description, String contact_num,
-                         Boolean is_published, LocalDateTime check_in_time,
-                         LocalDateTime check_out_time, AccommodationTypeEnum type,
-                         GenericLocationEnum generic_location, PriceTierEnum estimated_price_tier,
-                         String address) {
-        this.name = name;
-        this.description = description;
-        this.contact_num = contact_num;
-        this.is_published = is_published;
-        this.check_in_time = check_in_time;
-        this.check_out_time = check_out_time;
-        this.type = type;
-        this.generic_location = generic_location;
-        this.estimated_price_tier = estimated_price_tier;
-        this.address = address;
-    }
 }

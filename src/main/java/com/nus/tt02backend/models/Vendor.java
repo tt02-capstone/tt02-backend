@@ -46,8 +46,11 @@ public class Vendor {
     @Enumerated(EnumType.STRING)
     private VendorEnum vendor_type;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 4096)
     private String service_description;
+
+    @Column
+    private String stripe_account_id;
 
     @OneToMany(mappedBy = "vendor")
     private List<VendorStaff> vendor_staff_list;
@@ -60,9 +63,6 @@ public class Vendor {
 
     @OneToOne(fetch = FetchType.LAZY)
     private Subscription subscription;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendor_user")
-    private List<Post> post_list;
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Attraction> attraction_list;

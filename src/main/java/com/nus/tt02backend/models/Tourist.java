@@ -27,6 +27,9 @@ public class Tourist extends User {
     @Column(nullable = false, unique = true, length = 13)
     private String mobile_num;
 
+    @Column
+    private String stripe_account_id;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Card> card_list;
 
@@ -43,12 +46,12 @@ public class Tourist extends User {
     private Itinerary itinerary;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<CartItem> cart_list;
+    private List<CartBooking> cart_list;
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<SupportTicket> support_ticket_list;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tourist_user")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tourist_user", cascade = CascadeType.ALL)
     private List<Booking> booking_list;
 
     @OneToMany(fetch = FetchType.LAZY)

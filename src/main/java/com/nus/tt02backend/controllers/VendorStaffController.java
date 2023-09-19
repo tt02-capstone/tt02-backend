@@ -7,6 +7,8 @@ import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.services.VendorService;
 import com.nus.tt02backend.services.VendorStaffService;
+import com.stripe.exception.StripeException;
+import com.stripe.model.ExternalAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -78,5 +80,18 @@ public class VendorStaffController {
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff() {
         List<VendorStaff> vendorStaffList = vendorStaffService.retrieveAllVendorStaff();
         return ResponseEntity.ok(vendorStaffList);
+    }
+
+    @PostMapping("/addBankAccount/{userId}/{token}")
+    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException {
+        String bankAccountId = vendorStaffService.addBankAccount(userId, token);
+
+        return ResponseEntity.ok(bankAccountId);
+    }
+
+    @GetMapping("/getBankAccounts/{userId}")
+    public ResponseEntity<List<ExternalAccount>> getBankAccounts(@PathVariable Long userId) throws StripeException, NotFoundException {
+        List<ExternalAccount> bankAccounts = vendorStaffService.getBankAccounts(userId);
+        return ResponseEntity.ok(bankAccounts);
     }
 }

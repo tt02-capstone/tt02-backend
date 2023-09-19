@@ -29,6 +29,9 @@ public class Local extends User {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal wallet_balance;
 
+    @Column
+    private String stripe_account_id;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Card> card_list;
 
@@ -51,7 +54,7 @@ public class Local extends User {
     private Itinerary itinerary;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<CartItem> cart_list;
+    private List<CartBooking> cart_list;
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<SupportTicket> support_ticket_list;

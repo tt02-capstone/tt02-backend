@@ -40,9 +40,8 @@ public class TourType {
     @Column(nullable = false)
     private Boolean is_published;
 
-    @OneToMany
-    @JoinColumn(nullable = true)
-    private List<Tour> tour_list = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Tour> tour_list;
 
     public TourType(BigDecimal price, String name,
                     String description, Integer recommended_pax,
