@@ -325,6 +325,37 @@ public class VendorStaffService {
 
     }
 
+    public String deleteBankAccount(Long userId, String bank_account_id) throws NotFoundException, StripeException {
+
+        Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
+
+        if (vendorStaffOptional.isPresent()) {
+            VendorStaff vendorStaff = vendorStaffOptional.get();
+
+            Vendor vendor = vendorStaff.getVendor();
+
+            String stripe_account_id = vendor.getStripe_account_id();
+
+            Account account =
+                    Account.retrieve(stripe_account_id);
+
+            BankAccount bankAccount =
+                    (BankAccount) account.getExternalAccounts().retrieve(
+                            bank_account_id
+                    );
+
+            BankAccount deletedBankAccount =
+                    bankAccount.delete();
+
+            return deletedBankAccount.getId();
+
+        } else {
+            throw new NotFoundException("Local not found!");
+        }
+
+    }
+
+
     public List<ExternalAccount> getBankAccounts(Long userId) throws NotFoundException, StripeException {
         Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
 

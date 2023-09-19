@@ -89,4 +89,11 @@ public class VendorStaffController {
         List<ExternalAccount> bankAccounts = vendorStaffService.getBankAccounts(userId);
         return ResponseEntity.ok(bankAccounts);
     }
+
+    @PutMapping("/deleteBankAccount/{userId}/{bank_account_id}")
+    public ResponseEntity<String> deleteBankAccount(@PathVariable Long userId, @PathVariable String bank_account_id) throws StripeException, NotFoundException {
+        String deletedBankAccountId = vendorStaffService.deleteBankAccount(userId, bank_account_id);
+
+        return ResponseEntity.ok(deletedBankAccountId);
+    }
 }
