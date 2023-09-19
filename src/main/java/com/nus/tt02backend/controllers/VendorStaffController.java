@@ -11,6 +11,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.ExternalAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -72,6 +73,7 @@ public class VendorStaffController {
     }
 
     @GetMapping("/getAllVendorStaff")
+//    @PreAuthorize("hasRole('VENDOR_STAFF') or hasRole('INTERNAL_STAFF')")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff() {
         List<VendorStaff> vendorStaffList = vendorStaffService.retrieveAllVendorStaff();
         return ResponseEntity.ok(vendorStaffList);
