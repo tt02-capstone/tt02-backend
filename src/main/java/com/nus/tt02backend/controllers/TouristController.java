@@ -39,7 +39,7 @@ public class TouristController {
     }
 
     @GetMapping("/getAllTourist")
-    @PreAuthorize("hasRole('TOURIST') ")
+    @PreAuthorize("hasRole('INTERNAL_STAFF') ")
     public ResponseEntity<List<Tourist>> getAllTourist() {
         List<Tourist> touristList = touristService.retrieveAllTourist();
         return ResponseEntity.ok(touristList);

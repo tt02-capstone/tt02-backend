@@ -17,7 +17,7 @@ import java.util.*;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/staff")
+@RequestMapping("/admin")
 public class InternalStaffController {
     @Autowired
     InternalStaffService internalStaffService;

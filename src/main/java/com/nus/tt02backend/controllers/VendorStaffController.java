@@ -24,7 +24,6 @@ public class VendorStaffController {
     VendorStaffService vendorStaffService;
 
     @PutMapping ("/updateVendorStaff")
-    @PreAuthorize("hasRole('VENDOR_STAFF') ")
     public ResponseEntity<Void> vendorStaffLogin(@RequestBody VendorStaff vendorStaffToUpdate) throws NotFoundException {
         vendorStaffService.updateVendorStaff(vendorStaffToUpdate);
         return ResponseEntity.noContent().build();
@@ -37,7 +36,6 @@ public class VendorStaffController {
     }
 
     @GetMapping("/getAllAssociatedVendorStaff/{vendorId}")
-    @PreAuthorize("hasRole('VENDOR_STAFF') ")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff(@PathVariable Long vendorId) {
         List<VendorStaff> vendorStaffs = vendorStaffService.getAllAssociatedVendorStaff(vendorId);
         return ResponseEntity.ok(vendorStaffs);
@@ -57,7 +55,6 @@ public class VendorStaffController {
     }
 
     @PutMapping("/editVendorStaffProfile")
-    @PreAuthorize("hasRole('VENDOR_STAFF') ")
     public ResponseEntity<VendorStaff> editVendorStaffProfile(@RequestBody VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
         VendorStaff vendorStaff = vendorStaffService.editVendorStaffProfile(vendorStaffToEdit);
         return ResponseEntity.ok(vendorStaff);
@@ -76,7 +73,7 @@ public class VendorStaffController {
     }
 
     @GetMapping("/getAllVendorStaff")
-    @PreAuthorize("hasRole('VENDOR_STAFF') ")
+//    @PreAuthorize("hasRole('VENDOR_STAFF') or hasRole('INTERNAL_STAFF')")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff() {
         List<VendorStaff> vendorStaffList = vendorStaffService.retrieveAllVendorStaff();
         return ResponseEntity.ok(vendorStaffList);
