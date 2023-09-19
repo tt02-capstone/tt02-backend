@@ -9,14 +9,13 @@ import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Attr;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +45,12 @@ public class BookingService {
 
     @Autowired
     BookingItemRepository bookingItemRepository;
+
+    @Autowired
+    VendorRepository vendorRepository;
+
+    @Autowired
+    TourRepository tourRepository;
 
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
@@ -277,6 +282,33 @@ public class BookingService {
         throw new NotFoundException("Booking not found!"); // if the booking is not part of vendor's listing
     }
 
+    public Long createTourBooking(Long tourId, Booking newBooking) throws NotFoundException { // need to eventually add payment
+
+        Optional<Tour> tourOptional = tourRepository.findById(tourId);
+
+        if (tourOptional.isPresent()) {
+            Tour tour = tourOptional.get();
+
+            Payment payment = new Payment();
+            payment.setPayment_amount(new BigDecimal(123));
+            payment.setComission_percentage(new BigDecimal(10));
+            payment.setIs_paid(true);
+            paymentRepository.save(payment);
+
+            newBooking.setTour(tour);
+            newBooking.setPayment(payment);
+            bookingRepository.save(newBooking);
+
+            payment.setBooking(newBooking);
+            paymentRepository.save(payment);
+
+            return newBooking.getBooking_id();
+        } else {
+            System.out.println("tour not found aaa");
+            throw new NotFoundException("Tour not found!");
+        }
+    }
+
     // To be deleted - for testing purposes
     public String tempCreateBooking() throws NotFoundException {
         Booking booking = new Booking();
@@ -285,6 +317,7 @@ public class BookingService {
         booking.setLast_update(LocalDateTime.now());
         booking.setStatus(BookingStatusEnum.UPCOMING);
         booking.setType(BookingTypeEnum.ATTRACTION);
+        bookingRepository.save(booking);
 
         List<BookingItem> bookingItemList = new ArrayList<>();
 
@@ -295,16 +328,11 @@ public class BookingService {
         bookingItemOne.setQuantity(3);
         bookingItemTwo.setQuantity(2);
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_YEAR, 4);
-        Date startDate = calendar.getTime();
-        bookingItemOne.setStart_datetime(startDate);
-        bookingItemTwo.setStart_datetime(startDate);
+        bookingItemOne.setStart_datetime(LocalDate.now().plusDays(4l));
+        bookingItemTwo.setStart_datetime(LocalDate.now().plusDays(4l));
 
-        calendar.add(Calendar.DAY_OF_YEAR, 1);
-        Date endDate = calendar.getTime();
-        bookingItemOne.setEnd_datetime(endDate);
-        bookingItemTwo.setEnd_datetime(endDate);
+        bookingItemOne.setEnd_datetime(LocalDate.now().plusDays(5l));
+        bookingItemTwo.setEnd_datetime(LocalDate.now().plusDays(5l));
 
         bookingItemOne.setType(BookingTypeEnum.ATTRACTION);
         bookingItemTwo.setType(BookingTypeEnum.ATTRACTION);
@@ -322,11 +350,10 @@ public class BookingService {
 
         Attraction attraction = attractionRepository.findById(1l).get();
         booking.setAttraction(attraction);
-
         bookingRepository.save(booking);
 
         Payment payment = new Payment();
-        payment.setPayment_amount(new BigDecimal("123"));
+        payment.setPayment_amount(new BigDecimal("100"));
         payment.setIs_paid(true);
         payment.setBooking(booking);
         payment.setComission_percentage(new BigDecimal("0.1"));
@@ -338,7 +365,7 @@ public class BookingService {
 //        tourist.getBooking_list().add(booking);
 //        touristRepository.save(tourist);
 
-        Local local = findLocal(5l);
+        Local local = findLocal(3l);
         booking.setLocal_user(local);
         local.getBooking_list().add(booking);
         localRepository.save(local);
@@ -353,4 +380,3 @@ public class BookingService {
         // return "Success";
     }
 }
-

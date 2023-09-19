@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -53,6 +54,13 @@ public class BookingController {
     public ResponseEntity<List<Payment>> getAllPaymentsByUser(@PathVariable Long userId) throws NotFoundException, BadRequestException {
         List<Payment> paymentList = bookingService.getAllPaymentsByUser(userId);
         return ResponseEntity.ok(paymentList);
+    }
+
+    @PostMapping("/createTourBooking/{tourId}")
+    public ResponseEntity<Long> createTourBooking(@PathVariable Long tourId, @RequestBody Booking booking) throws NotFoundException {
+        System.out.println("aaa");
+        Long bookingId = bookingService.createTourBooking(tourId, booking); // need to eventually add payment
+        return ResponseEntity.ok(bookingId);
     }
 
     // To be deleted - for testing purposes

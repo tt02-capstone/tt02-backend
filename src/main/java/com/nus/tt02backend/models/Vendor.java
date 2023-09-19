@@ -46,7 +46,7 @@ public class Vendor {
     @Enumerated(EnumType.STRING)
     private VendorEnum vendor_type;
 
-    @Column(nullable = false, length = 300)
+    @Column(nullable = false, length = 4096)
     private String service_description;
 
     @Column

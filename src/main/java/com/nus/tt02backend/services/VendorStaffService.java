@@ -193,7 +193,7 @@ public class VendorStaffService {
         }
         System.out.println("tan: " + vendorStaff.getEmail_verified());
 
-        if (!vendorStaff.getEmail_verified()) {
+        if (vendorStaff.getEmail_verified() == null || !vendorStaff.getEmail_verified()) {
             vendorStaff.setEmail_verified(true);
             vendorStaffRepository.save(vendorStaff);
 

@@ -24,6 +24,9 @@ public class TouristService {
     @Autowired
     JavaMailSender javaMailSender;
 
+    @Autowired
+    PaymentService paymentService;
+
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public void updateTourist(Tourist touristToUpdate) throws NotFoundException {
@@ -47,6 +50,11 @@ public class TouristService {
         }
 
         touristToCreate.setPassword(encoder.encode(touristToCreate.getPassword()));
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", touristToCreate.getEmail());
+        customer_parameters.put("name", touristToCreate.getName());
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        touristToCreate.setStripe_account_id(stripe_account_id);
         touristToCreate.setUser_type(UserTypeEnum.TOURIST);
         touristRepository.save(touristToCreate);
 
