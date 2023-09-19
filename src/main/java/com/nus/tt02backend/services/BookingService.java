@@ -15,6 +15,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +43,9 @@ public class BookingService {
 
     @Autowired
     PaymentRepository paymentRepository;
+
+    @Autowired
+    BookingItemRepository bookingItemRepository;
 
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
@@ -280,6 +285,40 @@ public class BookingService {
         booking.setLast_update(LocalDateTime.now());
         booking.setStatus(BookingStatusEnum.UPCOMING);
         booking.setType(BookingTypeEnum.ATTRACTION);
+
+        List<BookingItem> bookingItemList = new ArrayList<>();
+
+        // Booking Item One
+        BookingItem bookingItemOne = new BookingItem();
+        BookingItem bookingItemTwo = new BookingItem();
+
+        bookingItemOne.setQuantity(3);
+        bookingItemTwo.setQuantity(2);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, 4);
+        Date startDate = calendar.getTime();
+        bookingItemOne.setStart_datetime(startDate);
+        bookingItemTwo.setStart_datetime(startDate);
+
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
+        Date endDate = calendar.getTime();
+        bookingItemOne.setEnd_datetime(endDate);
+        bookingItemTwo.setEnd_datetime(endDate);
+
+        bookingItemOne.setType(BookingTypeEnum.ATTRACTION);
+        bookingItemTwo.setType(BookingTypeEnum.ATTRACTION);
+
+        bookingItemOne.setActivity_selection("ADULT");
+        bookingItemTwo.setActivity_selection("CHILD");
+
+        bookingItemRepository.save(bookingItemOne);
+        bookingItemRepository.save(bookingItemTwo);
+
+        bookingItemList.add(bookingItemOne);
+        bookingItemList.add(bookingItemTwo);
+
+        booking.setBooking_item_list(bookingItemList);
 
         Attraction attraction = attractionRepository.findById(1l).get();
         booking.setAttraction(attraction);

@@ -238,7 +238,7 @@ public class AttractionService {
         Attraction attraction = attractionRepository.getAttractionByName((attractionToCreate.getName()));
 
         if (attraction != null) {
-            throw new BadRequestException("There is an attraction listing with the same name, please another name!");
+            throw new BadRequestException("There is an attraction listing with the same name, please choose another name!");
         }
 
         List<Price> price_list = attractionToCreate.getPrice_list(); // get the price list and process them as price obj
