@@ -10,7 +10,6 @@ import com.nus.tt02backend.repositories.VendorStaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.VendorStaff;
 import jakarta.mail.MessagingException;

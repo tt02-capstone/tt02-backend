@@ -7,6 +7,7 @@ import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.services.TouristService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,12 +32,14 @@ public class TouristController {
     }
 
     @PutMapping("/editTouristProfile")
+    @PreAuthorize("hasRole('TOURIST') ")
     public ResponseEntity<Tourist> editTouristProfile(@RequestBody Tourist touristToEdit) throws EditUserException {
         Tourist tourist = touristService.editTouristProfile(touristToEdit);
         return ResponseEntity.ok(tourist);
     }
 
     @GetMapping("/getAllTourist")
+    @PreAuthorize("hasRole('INTERNAL_STAFF') ")
     public ResponseEntity<List<Tourist>> getAllTourist() {
         List<Tourist> touristList = touristService.retrieveAllTourist();
         return ResponseEntity.ok(touristList);

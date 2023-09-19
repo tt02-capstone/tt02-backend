@@ -48,4 +48,15 @@ public class User {
     private LocalDateTime password_token_date;
 
     private String profile_pic;
+
+    public User(String name, String email, String password, Boolean is_blocked, UserTypeEnum user_type){
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.is_blocked = is_blocked;
+        this.user_type = user_type;
+    }
+
+
+
 }
