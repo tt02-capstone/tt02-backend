@@ -128,10 +128,14 @@ public class CartService {
 
 
         // Save Attraction
+        List<TicketPerDay> updatedList = new ArrayList<>();
+        for (TicketPerDay t : currentTickets) {
+            updatedList = attractionService.updateTicketsPerDay(selectedAttraction.getAttraction_id(), t);
+        }
 
-        selectedAttraction.setTicket_per_day_list(currentTickets);
-
+        selectedAttraction.setTicket_per_day_list(updatedList);
         attractionRepository.save(selectedAttraction);
+
 
         List<CartBooking> currentCartBookings = currentTourist.getCart_list();
         currentCartBookings.add(cartBookingToCreate);
