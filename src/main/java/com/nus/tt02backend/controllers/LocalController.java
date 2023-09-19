@@ -5,6 +5,7 @@ import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.services.LocalService;
+import com.stripe.exception.StripeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,7 +36,7 @@ public class LocalController {
     }
 
     @PostMapping ("/create")
-    public ResponseEntity<Long> createLocal(@RequestBody Local localToCreate) throws BadRequestException {
+    public ResponseEntity<Long> createLocal(@RequestBody Local localToCreate) throws BadRequestException, StripeException {
         Long localId = localService.createLocal(localToCreate);
         return ResponseEntity.ok(localId);
     }

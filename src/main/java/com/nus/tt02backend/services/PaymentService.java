@@ -1,18 +1,17 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.repositories.*;
+import com.stripe.model.*;
+import com.stripe.model.BankAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.TouristRepository;
 import com.nus.tt02backend.repositories.UserRepository;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Account;
-import com.stripe.model.Customer;
-import com.stripe.model.PaymentMethod;
-import com.stripe.model.PaymentMethodCollection;
 
 import java.util.*;
 import java.math.BigDecimal;
@@ -176,5 +175,91 @@ public class PaymentService {
         Double sum = paymentRepository.retrieveTourEarningsByLocalId(localId);
         BigDecimal totalEarned = new BigDecimal(sum * 0.9);
         return totalEarned;
+    }
+
+    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException {
+
+        Optional<Local> localOptional = localRepository.findById(userId);
+
+        if (localOptional.isPresent()) {
+            Local local = localOptional.get();
+
+            String stripe_business_id = local.getStripe_business_id();
+
+            Account account =
+                    Account.retrieve(stripe_business_id);
+
+            Map<String, Object> params = new HashMap<>();
+            params.put(
+                    "external_account",
+                    token
+            );
+
+            com.stripe.model.BankAccount bankAccount =
+                    (BankAccount) account
+                            .getExternalAccounts()
+                            .create(params);
+
+            return bankAccount.getId();
+
+        } else {
+            throw new NotFoundException("Local not found!");
+        }
+
+    }
+
+    public String deleteBankAccount(Long userId, String bank_account_id) throws NotFoundException, StripeException {
+
+        Optional<Local> localOptional = localRepository.findById(userId);
+
+        if (localOptional.isPresent()) {
+            Local local = localOptional.get();
+
+            String stripe_business_id = local.getStripe_business_id();
+
+            Account account =
+                    Account.retrieve(stripe_business_id);
+
+            BankAccount bankAccount =
+                    (BankAccount) account.getExternalAccounts().retrieve(
+                            bank_account_id
+                    );
+
+            BankAccount deletedBankAccount =
+                    bankAccount.delete();
+
+            return deletedBankAccount.getId();
+
+        } else {
+            throw new NotFoundException("Local not found!");
+        }
+
+    }
+
+    public List<ExternalAccount> getBankAccounts(Long userId) throws NotFoundException, StripeException {
+        Optional<Local> localOptional = localRepository.findById(userId);
+
+        if (localOptional.isPresent()) {
+            Local local = localOptional.get();
+
+            String stripe_business_id = local.getStripe_business_id();
+
+            Account account =
+                    Account.retrieve(stripe_business_id);
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("object", "bank_account");
+            params.put("limit", 10);
+
+            ExternalAccountCollection bankAccountsCollection =
+                    account.getExternalAccounts().list(params);
+
+            List<ExternalAccount> bankAccounts = bankAccountsCollection.getData();
+
+            return bankAccounts;
+
+        } else {
+            throw new NotFoundException("Local not found!");
+        }
     }
 }

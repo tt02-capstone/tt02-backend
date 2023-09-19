@@ -1,9 +1,11 @@
 package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.services.PaymentService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
+import com.stripe.model.ExternalAccount;
 import com.stripe.param.CustomerCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -82,5 +84,25 @@ public class PaymentController {
     public ResponseEntity<BigDecimal> getTourTotalEarningForLocal(@PathVariable Long localId) {
         BigDecimal sum = paymentService.getTourTotalEarningForLocal(localId);
         return ResponseEntity.ok(sum);
+    }
+
+    @PostMapping("/addBankAccount/{userId}/{token}")
+    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException {
+        String bankAccountId = paymentService.addBankAccount(userId, token);
+
+        return ResponseEntity.ok(bankAccountId);
+    }
+
+    @PutMapping("/deleteBankAccount/{userId}/{bank_account_id}")
+    public ResponseEntity<String> deleteBankAccount(@PathVariable Long userId, @PathVariable String bank_account_id) throws StripeException, NotFoundException {
+        String deletedBankAccountId = paymentService.deleteBankAccount(userId, bank_account_id);
+
+        return ResponseEntity.ok(deletedBankAccountId);
+    }
+
+    @GetMapping("/getBankAccounts/{userId}")
+    public ResponseEntity<List<ExternalAccount>> getBankAccounts(@PathVariable Long userId) throws StripeException, NotFoundException {
+        List<ExternalAccount> bankAccounts = paymentService.getBankAccounts(userId);
+        return ResponseEntity.ok(bankAccounts);
     }
 }

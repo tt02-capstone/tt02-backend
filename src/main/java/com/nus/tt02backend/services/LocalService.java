@@ -5,6 +5,8 @@ import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.UserRepository;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
@@ -48,7 +50,7 @@ public class LocalService {
         localRepository.save(local);
     }
 
-    public Long createLocal(Local localToCreate) throws BadRequestException {
+    public Long createLocal(Local localToCreate) throws BadRequestException, StripeException {
         Local checkLocal = localRepository.retrieveLocalByEmail(localToCreate.getEmail());
 
         if (checkLocal != null) {
@@ -61,6 +63,31 @@ public class LocalService {
         customer_parameters.put("name", localToCreate.getName());
         String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
         localToCreate.setStripe_account_id(stripe_account_id);
+
+        Map<String, Object> cardPayments =
+                new HashMap<>();
+        cardPayments.put("requested", true);
+        Map<String, Object> transfers = new HashMap<>();
+        transfers.put("requested", true);
+        Map<String, Object> capabilities =
+                new HashMap<>();
+        capabilities.put("card_payments", cardPayments);
+        capabilities.put("transfers", transfers);
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", "custom");
+        params.put("country", "SG");
+        params.put("email", localToCreate.getEmail());
+        Map<String, Object> company =
+                new HashMap<>();
+        company.put("name", localToCreate.getName());
+        params.put("capabilities", capabilities);
+        params.put("business_type", "individual");
+
+
+        Account account = Account.create(params);
+
+        localToCreate.setStripe_account_id(account.getId());
+
         localToCreate.setUser_type(UserTypeEnum.LOCAL);
         localRepository.save(localToCreate);
 

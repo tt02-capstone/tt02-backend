@@ -32,6 +32,9 @@ public class Local extends User {
     @Column
     private String stripe_account_id;
 
+    @Column
+    private String stripe_business_id;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Card> card_list;
 
