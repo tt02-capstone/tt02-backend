@@ -6,6 +6,7 @@ import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.repositories.*;
 import com.stripe.model.*;
 import com.stripe.model.BankAccount;
+import com.stripe.net.RequestOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.nus.tt02backend.repositories.LocalRepository;
@@ -261,5 +262,74 @@ public class PaymentService {
         } else {
             throw new NotFoundException("Local not found!");
         }
+    }
+
+    public String withdrawWallet(Long userId, String bank_account_id, BigDecimal amount) throws StripeException, NotFoundException {
+
+        Optional<Local> localOptional = localRepository.findById(userId);
+
+        if (localOptional.isPresent()) {
+            Local local = localOptional.get();
+
+            String stripe_business_id = local.getStripe_business_id();
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("amount", amount);
+            params.put("currency", "sgd");
+            params.put("destination", bank_account_id);
+
+            RequestOptions requestOptions =
+                    RequestOptions.builder().setStripeAccount(stripe_business_id).build();
+
+
+            Payout payout = Payout.create(params, requestOptions);
+
+
+            local.setWallet_balance(local.getWallet_balance().subtract(amount));
+
+            localRepository.save(local);
+
+            return payout.getId();
+
+        } else {
+            throw new NotFoundException("Vendor Staff not found!");
+        }
+
+
+    }
+
+    public String topUpWallet(Long userId, BigDecimal amount) throws StripeException, NotFoundException {
+
+        Optional<Local> localOptional = localRepository.findById(userId);
+
+        if (localOptional.isPresent()) {
+            Local local = localOptional.get();
+
+            String stripe_business_id = local.getStripe_business_id();
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("amount", amount);
+            params.put("currency", "sgd");
+            params.put("source", stripe_business_id );
+            params.put(
+                    "description",
+                    "Withdrawal"
+            );
+
+
+            Charge charge = Charge.create(params);
+
+
+            local.setWallet_balance(local.getWallet_balance().subtract(amount));
+
+            localRepository.save(local);
+
+            return charge.getId();
+
+        } else {
+            throw new NotFoundException("Vendor Staff not found!");
+        }
+
+
     }
 }

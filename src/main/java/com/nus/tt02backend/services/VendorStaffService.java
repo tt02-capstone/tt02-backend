@@ -437,7 +437,7 @@ public class VendorStaffService {
             params.put("source", stripe_account_id );
             params.put(
                     "description",
-                    "My First Test Charge (created for API docs at https://www.stripe.com/docs/api)"
+                    "Withdrawal"
             );
 
 
