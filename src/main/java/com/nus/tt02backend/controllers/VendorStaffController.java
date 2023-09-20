@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @RestController
@@ -97,5 +98,20 @@ public class VendorStaffController {
         String deletedBankAccountId = vendorStaffService.deleteBankAccount(userId, bank_account_id);
 
         return ResponseEntity.ok(deletedBankAccountId);
+    }
+
+    @PostMapping("/withdrawWallet/{userId}/{bank_account_id}/{amount}")
+    public ResponseEntity<String> withdrawWallet(@PathVariable Long userId, @PathVariable String bank_account_id,
+                                                 @PathVariable BigDecimal amount) throws StripeException, NotFoundException {
+        String payOutId = vendorStaffService.withdrawWallet(userId, bank_account_id, amount);
+
+        return ResponseEntity.ok(payOutId);
+    }
+
+    @PostMapping("/topUpWallet/{userId}/{amount}")
+    public ResponseEntity<String> topUpWallet(@PathVariable Long userId, @PathVariable BigDecimal amount) throws StripeException, NotFoundException {
+        String chargeId = vendorStaffService.topUpWallet(userId, amount);
+
+        return ResponseEntity.ok(chargeId );
     }
 }

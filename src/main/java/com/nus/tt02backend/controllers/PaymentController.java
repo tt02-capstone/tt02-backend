@@ -105,4 +105,19 @@ public class PaymentController {
         List<ExternalAccount> bankAccounts = paymentService.getBankAccounts(userId);
         return ResponseEntity.ok(bankAccounts);
     }
+
+    @PostMapping("/withdrawWallet/{userId}/{bank_account_id}/{amount}")
+    public ResponseEntity<String> withdrawWallet(@PathVariable Long userId, @PathVariable String bank_account_id,
+                                                 @PathVariable BigDecimal amount) throws StripeException, NotFoundException {
+        String payOutId = paymentService.withdrawWallet(userId, bank_account_id, amount);
+
+        return ResponseEntity.ok(payOutId);
+    }
+
+    @PostMapping("/topUpWallet/{userId}/{amount}")
+    public ResponseEntity<String> topUpWallet(@PathVariable Long userId, @PathVariable BigDecimal amount) throws StripeException, NotFoundException {
+        String chargeId = paymentService.topUpWallet(userId, amount);
+
+        return ResponseEntity.ok(chargeId );
+    }
 }
