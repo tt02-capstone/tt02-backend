@@ -44,6 +44,13 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping ("/verifyEmail/{token}")
+    public ResponseEntity<String> verifyEmail(@PathVariable String token) throws BadRequestException {
+        String successMessage = userService.verifyEmail(token);
+        return ResponseEntity.ok(successMessage);
+    }
+
+
     @PostMapping ("/passwordResetStageOne/{email}")
     public ResponseEntity<String> passwordResetStageOne(@PathVariable String email) throws BadRequestException {
         String successMessage = userService.passwordResetStageOne(email);

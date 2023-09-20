@@ -86,6 +86,8 @@ public class SecurityConfig {
               "/admin/passwordResetStageThree/**",
               "/vendorStaff/createVendorStaff",
               "/user/**").permitAll()
+        .requestMatchers(HttpMethod.GET,
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()
     )
