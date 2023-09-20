@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -56,6 +58,12 @@ public class TouristService {
         String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
         touristToCreate.setStripe_account_id(stripe_account_id);
         touristToCreate.setUser_type(UserTypeEnum.TOURIST);
+        UUID uuid = UUID.randomUUID();
+        long otpValue = Math.abs(uuid.getLeastSignificantBits() % 10000); // Get the last 4 digits
+        String emailVerificationToken =  String.format("%04d", otpValue);
+        touristToCreate.setEmail_verification_token(emailVerificationToken);
+        touristToCreate.setEmail_verified(false);
+        touristToCreate.setToken_date(LocalDateTime.now());
         touristRepository.save(touristToCreate);
 
         try {
@@ -63,6 +71,9 @@ public class TouristService {
             String content = "<p>Dear " + touristToCreate.getName() + ",</p>" +
                     "<p>Thank you for registering for an account with WithinSG. " +
                     "We are glad that you have chosen us to help you explore Singapore!</p>" +
+                    "<p>Please enter your code into the WithinSG application to verify your email: </p>" +
+                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" + emailVerificationToken + "</button></a>" +
+                    "<p>Note that the code will expire after 60 minutes.</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
             sendEmail(touristToCreate.getEmail(), subject, content);
         } catch (MessagingException ex) {

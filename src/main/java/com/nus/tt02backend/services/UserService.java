@@ -151,6 +151,37 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public String verifyEmail(String token) throws BadRequestException {
+        System.out.println(token);
+        User user = userRepository.retrieveTouristByEmailVerificationToken(token);
+
+        if (user == null) {
+            throw new BadRequestException("Invalid token");
+        }
+
+        if (Duration.between(user.getToken_date(), LocalDateTime.now()).toMinutes() > 60) {
+            throw new BadRequestException("Your token has expired, please request for a new password reset link");
+        }
+
+        user.setEmail_verification_token(null);
+        user.setEmail_verified(true);
+        user.setToken_date(null);
+        userRepository.save(user);
+
+        try {
+            String subject = "[WithinSG] Email Verified Successfully";
+            String content = "<p>Dear " + user.getName() + ",</p>" +
+                    "<p>Your email has been verified successfully." +
+                    "<p>If you did not perform this action, please let us know immediately by replying to this email</p>" +
+                    "<p>Kind Regards,<br> WithinSG</p>";
+            sendEmail(user.getEmail(), subject, content);
+        } catch (MessagingException ex) {
+            throw new BadRequestException("We encountered a technical error while sending the successful email verification email");
+        }
+
+        return "Your email has been verified successfully";
+    }
+
     public void sendEmail(String email, String subject, String content) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);;
