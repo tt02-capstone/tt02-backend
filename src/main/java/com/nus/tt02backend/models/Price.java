@@ -27,9 +27,4 @@ public class Price {
     @Enumerated(EnumType.STRING)
     private TicketEnum ticket_type;
 
-    public Price(BigDecimal local_amount, BigDecimal tourist_amount, TicketEnum ticket_type) {
-        this.local_amount = local_amount;
-        this.tourist_amount = tourist_amount;
-        this.ticket_type = ticket_type;
-    }
 }

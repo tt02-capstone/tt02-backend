@@ -26,7 +26,7 @@ public class Booking {
 
     private LocalDateTime end_datetime;
 
-    private Date last_update;
+    private LocalDateTime last_update;
 
     @Enumerated(EnumType.STRING)
     private BookingStatusEnum status;
@@ -34,29 +34,39 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private BookingTypeEnum type;
 
+    private String activity_name;
+
     @OneToOne(mappedBy = "booking" , fetch = FetchType.LAZY)
     private Payment payment;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "deal_id")
     private Deal deal;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "telecom_id")
     private Telecom telecom;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "tour_id")
     private Tour tour;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "room_id")
     private Room room;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "attraction_id")
     private Attraction attraction;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "tourist_id")
     private Tourist tourist_user;
 
     @ManyToOne
     @JoinColumn(name = "local_id")
     private Local local_user;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<BookingItem> booking_item_list;
 }

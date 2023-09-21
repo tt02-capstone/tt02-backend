@@ -1,9 +1,12 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @Entity
@@ -16,26 +19,28 @@ public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cart_item_id;
-    private Integer quality;
+
+    @Column(nullable = false)
+    private Integer quantity;
+
+    @Column
     private String discountCode;
+
+    @Column(nullable = false)
     private BigDecimal price;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Deal deal;
+    @Column(nullable = false)
+    private LocalDate start_datetime;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Telecom telecom;
+    @Column(nullable = false)
+    private LocalDate end_datetime;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Tour tour;
+    @Column(nullable = false)
+    private BookingTypeEnum type;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Room room;
+    @Column(nullable = false)
+    private String activity_selection;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Attraction attraction;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Restaurant restaurant;
 
 }

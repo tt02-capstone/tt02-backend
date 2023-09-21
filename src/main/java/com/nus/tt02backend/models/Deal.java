@@ -36,8 +36,8 @@ public class Deal {
     private Boolean is_govt_voucher;
 
     @ElementCollection
-    @CollectionTable(name="image_list")
-    private ArrayList<String> image_list = new ArrayList<>();
+    @CollectionTable(name="deal_image_list")
+    private ArrayList<String> deal_image_list = new ArrayList<>();
 
     @Column(nullable = false)
     private Boolean is_published;
@@ -54,7 +54,7 @@ public class Deal {
         this.start_datetime = start_datetime;
         this.end_datetime = end_datetime;
         this.is_govt_voucher = is_govt_voucher;
-        this.image_list = image_list;
+        this.deal_image_list = image_list;
         this.is_published = is_published;
         this.deal_type = deal_type;
     }
