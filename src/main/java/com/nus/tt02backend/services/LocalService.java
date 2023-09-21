@@ -88,7 +88,14 @@ public class LocalService {
 
         localToCreate.setStripe_account_id(account.getId());
 
+
         localToCreate.setUser_type(UserTypeEnum.LOCAL);
+        UUID uuid = UUID.randomUUID();
+        long otpValue = Math.abs(uuid.getLeastSignificantBits() % 10000); // Get the last 4 digits
+        String emailVerificationToken =  String.format("%04d", otpValue);
+        localToCreate.setEmail_verification_token(emailVerificationToken);
+        localToCreate.setEmail_verified(false);
+        localToCreate.setToken_date(LocalDateTime.now());
         localRepository.save(localToCreate);
 
         try {
@@ -96,8 +103,9 @@ public class LocalService {
             String content = "<p>Dear " + localToCreate.getName() + ",</p>" +
                     "<p>Thank you for registering for an account with WithinSG. " +
                     "We are glad that you have chosen us to help you explore Singapore!</p>" +
-                    "<p>We have received your application and it is in the midst of processing.</p>" +
-                    "<p>An email will be sent to you once your account has been activated.</p>" +
+                    "<p>Please enter your code into the WithinSG application to verify your email: </p>" +
+                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" + emailVerificationToken + "</button></a>" +
+                    "<p>Note that the code will expire after 60 minutes.</p>" +
                     "<p>Kind Regards,<br> WithinSG</p>";
             sendEmail(localToCreate.getEmail(), subject, content);
         } catch (MessagingException ex) {
