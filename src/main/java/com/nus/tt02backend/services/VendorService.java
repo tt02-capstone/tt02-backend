@@ -78,7 +78,7 @@ public class VendorService {
         vendorStaffToCreate.setEmail_verification_token(emailVerificationToken);
         vendorStaffRepository.save(vendorStaffToCreate);
 
-        String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + vendorStaffToCreate.getEmail_verification_token();
+        String emailVerificationLink = "http://localhost:3001/verifyemail?token=" + vendorStaffToCreate.getEmail_verification_token();
         try {
             String subject = "[WithinSG] Account Application Processing";
             String content = "<p>Dear " + vendorStaffToCreate.getName() + ",</p>" +

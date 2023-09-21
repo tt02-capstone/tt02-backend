@@ -73,7 +73,7 @@ public class VendorStaffService {
             vendorStaffToCreate.setEmail_verified(false);
             vendorStaffRepository.save(vendorStaffToCreate);
 
-            String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + vendorStaffToCreate.getEmail_verification_token();
+            String emailVerificationLink = "http://localhost:3001/verifyemail?token=" + vendorStaffToCreate.getEmail_verification_token();
             try {
                 String subject = "[WithinSG] Account Application Processing";
                 String content = "<p>Dear " + vendorStaffToCreate.getName() + ",</p>" +
@@ -135,7 +135,7 @@ public class VendorStaffService {
         vendorStaff.setPassword_reset_token(passwordResetToken);
         vendorStaff.setPassword_token_date(LocalDateTime.now());
         vendorStaffRepository.save(vendorStaff);
-        String passwordResetLink = "http://localhost:3000/passwordreset?token=" + vendorStaff.getPassword_reset_token();
+        String passwordResetLink = "http://localhost:3001/passwordreset?token=" + vendorStaff.getPassword_reset_token();
         try {
             String subject = "[WithinSG] Password Reset Instructions";
             String content = "<p>Dear " + vendorStaff.getName() + ",</p>" +

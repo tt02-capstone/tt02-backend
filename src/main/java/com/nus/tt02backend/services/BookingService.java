@@ -365,7 +365,7 @@ public class BookingService {
 //        tourist.getBooking_list().add(booking);
 //        touristRepository.save(tourist);
 
-        Local local = findLocal(3l);
+        Local local = findLocal(1l);
         booking.setLocal_user(local);
         local.getBooking_list().add(booking);
         localRepository.save(local);
