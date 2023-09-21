@@ -8,10 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CartBookingRepository extends JpaRepository<CartBooking, Long>  {
 
     @Query("SELECT cb FROM CartBooking cb WHERE cb.cart_booking_id IN :cartBookingIds")
     List<CartBooking> findCartBookingsByIds(List<Long> cartBookingIds);
+
+    @Query("SELECT cb FROM CartBooking cb WHERE cb.cart_booking_id = :cartBookingId")
+    Optional<CartBooking> findCartBookingById(Long cartBookingId);
 
 }
