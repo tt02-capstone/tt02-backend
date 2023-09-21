@@ -48,6 +48,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     public Long createStaff(InternalStaff internalStaffToCreate) throws BadRequestException {
+        System.out.println(internalStaffToCreate);
         List<InternalStaff> internalStaffs = retrieveAllStaff();
 
         for (InternalStaff internalStaff : internalStaffs) {
