@@ -46,23 +46,28 @@ public class CartController {
     @PutMapping("/deleteCartItems/{user_type}/{tourist_email}")
     public ResponseEntity<List<Long>> deleteCartItems(@PathVariable String user_type,
                                                       @PathVariable String tourist_email,
-                                                      @RequestBody List<Long> cart_item_ids) {
+                                                      @RequestBody List<Long> cart_booking_ids) throws NotFoundException {
 
-        List<Long> deleted_ids = cartService.deleteCartItems(user_type,tourist_email,cart_item_ids);
+        System.out.println(cart_booking_ids);
+        List<Long> deleted_ids = cartService.deleteCartItems(user_type,tourist_email,cart_booking_ids);
 
 
         return ResponseEntity.ok(deleted_ids);
     }
 
-    @PutMapping("/updateCartItem/{cart_item_id}/{quantity}")
+    @PutMapping("/updateCartItem/{user_type}/{tourist_email}/{cart_item_id}/{cart_booking_id}/{quantity}")
     public ResponseEntity<Long> updateCartItem(
+            @PathVariable String user_type,
+            @PathVariable String tourist_email,
             @PathVariable Long cart_item_id,
-            @PathVariable Integer quantity) {
+            @PathVariable Long cart_booking_id,
+            @PathVariable Integer quantity) throws NotFoundException, BadRequestException {
 
 
-        Long updated_cart_item_id = cartService.updateCartItem(cart_item_id, quantity);
+        Long updated_cart_item_id = cartService.updateCartItem(user_type,tourist_email, cart_item_id,
+                cart_booking_id, quantity);
 
-        return null;
+        return ResponseEntity.ok(updated_cart_item_id);
     }
 
     @PostMapping("/checkout/{user_type}/{tourist_email}/{payment_method_id}/{totalPrice}")
