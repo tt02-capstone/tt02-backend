@@ -66,6 +66,10 @@ public class VendorService {
         params.put("capabilities", capabilities);
         params.put("business_type", "company");
         params.put("company", company);
+        Map<String, Object> tosParams = new HashMap<>();
+        tosParams.put("date",  System.currentTimeMillis() / 1000L);
+        tosParams.put("ip", "8.8.8.8");
+        params.put("tos_acceptance", tosParams);
 
         Account account = Account.create(params);
 
