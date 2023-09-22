@@ -9,6 +9,7 @@ import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Account;
+import com.stripe.model.Person;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -35,6 +36,8 @@ public class VendorService {
     @Autowired
     JavaMailSender javaMailSender;
 
+    @Autowired
+    PaymentService paymentService;
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public Long createVendor(VendorStaff vendorStaffToCreate) throws BadRequestException, StripeException {
@@ -47,29 +50,97 @@ public class VendorService {
 
         Vendor vendorToCreate = vendorStaffToCreate.getVendor();
 
-        Map<String, Object> cardPayments =
-                new HashMap<>();
-        cardPayments.put("requested", true);
-        Map<String, Object> transfers = new HashMap<>();
-        transfers.put("requested", true);
-        Map<String, Object> capabilities =
-                new HashMap<>();
-        capabilities.put("card_payments", cardPayments);
-        capabilities.put("transfers", transfers);
-        Map<String, Object> params = new HashMap<>();
-        params.put("type", "custom");
-        params.put("country", "SG");
-        params.put("email", vendorStaffToCreate.getEmail());
-        Map<String, Object> company =
-                new HashMap<>();
-        company.put("name", vendorToCreate.getBusiness_name());
-        params.put("capabilities", capabilities);
-        params.put("business_type", "company");
-        params.put("company", company);
+//        Map<String, Object> cardPayments =
+//                new HashMap<>();
+//        cardPayments.put("requested", true);
+//        Map<String, Object> transfers = new HashMap<>();
+//        transfers.put("requested", true);
+//        Map<String, Object> capabilities =
+//                new HashMap<>();
+//        capabilities.put("card_payments", cardPayments);
+//        capabilities.put("transfers", transfers);
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("type", "custom");
+//        params.put("country", "SG");
+//        params.put("email", vendorStaffToCreate.getEmail());
+//        Map<String, Object> company =
+//                new HashMap<>();
+//        company.put("name", vendorToCreate.getBusiness_name());
+//        Map<String, Object> company_address =
+//                new HashMap<>();
+//        company_address.put("line1", "Test test test");
+//        company_address.put("postal_code", "12345");
+//        company.put("address", company_address);
+//        company.put("phone", "90909090");
+//        company.put("tax_id", "12345678A");
+//        Map<String, Object> business_profile =
+//                new HashMap<>();
+//
+//        business_profile.put("mcc","7991");
+//        business_profile.put("url","https://www.rwsentosa.com/en/attractions/universal-studios-singapore");
+//
+//        params.put("business_profile", business_profile);
+//        company.put("owners_provided", true);
+//        company.put("directors_provided", true);
+//        Map<String, Object> verification =
+//                new HashMap<>();
+//        verification.put("document", "verified");
+//        company.put("verification", verification);
+//
+//        // Representative
+//        params.put("capabilities", capabilities);
+//        params.put("business_type", "company");
+//        params.put("company", company);
+//        Map<String, Object> tosParams = new HashMap<>();
+//        tosParams.put("date",  System.currentTimeMillis() / 1000L);
+//        tosParams.put("ip", "8.8.8.8");
+//        params.put("tos_acceptance", tosParams);
+//
+//
+//
+//        Account account = Account.create(params);
+//
+//        Map<String, Object> person_params = new HashMap<>();
+//        person_params.put("first_name", "Jane");
+//        person_params.put("last_name", "Diaz");
+//        person_params.put("email", "alvinsiah@u.nus.edu");
+//        person_params.put("nationality","SG");
+//        Map<String, Object> person_address =
+//                new HashMap<>();
+//        person_address.put("line1", "Test test test");
+//        person_address.put("postal_code", "12345");
+//        person_params.put("id_number", "S1234567A");
+//        Map<String, Object> dob_params = new HashMap<>();
+//        dob_params.put("day",1L);
+//        dob_params.put("month",1L);
+//        dob_params.put("year",1990L);
+//
+//        Map<String, Object> relationship_params = new HashMap<>();
+//        relationship_params.put("representative",true);
+//        relationship_params.put("executive",true);
+//        relationship_params.put("title","Team Lead");
+//        person_params.put("relationship", relationship_params);
+//        person_params.put("dob", dob_params);
+//        person_params.put("phone","+6597314137");
+//        person_params.put("address",person_address);
+//        //Set alias to false
+//
+//
+//
+//
+//        //account_params.put()
+//
+//
+//        Person person = account.persons().create(person_params);
+//
+//        System.out.println(account.getRequirements());
 
-        Account account = Account.create(params);
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", vendorStaffToCreate.getEmail());
+        customer_parameters.put("name", vendorToCreate.getBusiness_name());
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
 
-        vendorToCreate.setStripe_account_id(account.getId());
+        vendorToCreate.setStripe_account_id(stripe_account_id);
 
         vendorRepository.save(vendorToCreate);
 

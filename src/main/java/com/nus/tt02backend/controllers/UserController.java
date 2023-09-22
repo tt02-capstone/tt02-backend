@@ -1,6 +1,7 @@
 package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.dto.JwtAuthenticationResponse;
+import com.nus.tt02backend.dto.JwtRefreshResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.models.VendorStaff;
@@ -8,9 +9,14 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.nio.file.Path;
 
@@ -31,6 +37,11 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
+    @GetMapping("/refreshToken")
+    public ResponseEntity<JwtRefreshResponse> refreshToken(HttpServletRequest request) throws NotFoundException, BadRequestException {
+        JwtRefreshResponse userResponse = authenticationService.refreshToken(request);
+        return ResponseEntity.ok(userResponse);
+    }
     @PostMapping("/webLogin/{email}/{password}")
     public ResponseEntity<JwtAuthenticationResponse> userWebLogin(@PathVariable String email, @PathVariable String password)
             throws NotFoundException, BadRequestException {
@@ -98,6 +109,7 @@ public class UserController {
 
     // only for admin portal, not vendor portal
     @PutMapping("/toggleBlock/{userId}")
+    @PreAuthorize("hasRole('INTERNAL_STAFF')")
     public void toggleBlock(@PathVariable Long userId) throws NotFoundException, ToggleBlockException {
         userService.toggleBlock(userId);
     }

@@ -1,10 +1,12 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.JwtAuthenticationResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.VendorService;
 import com.nus.tt02backend.services.VendorStaffService;
 import com.stripe.exception.StripeException;
@@ -23,6 +25,8 @@ import java.util.*;
 public class VendorStaffController {
     @Autowired
     VendorStaffService vendorStaffService;
+    @Autowired
+    AuthenticationService authenticationService;
 
     @PutMapping ("/updateVendorStaff")
     public ResponseEntity<Void> vendorStaffLogin(@RequestBody VendorStaff vendorStaffToUpdate) throws NotFoundException {
@@ -31,12 +35,14 @@ public class VendorStaffController {
     }
 
     @PostMapping ("/createVendorStaff")
+    @PreAuthorize("hasRole('VENDOR_ADMIN')")
     public ResponseEntity<Long> createVendorStaff(@RequestBody VendorStaff vendorStaffToCreate) throws BadRequestException {
         Long vendorStaffId = vendorStaffService.createVendorStaff(vendorStaffToCreate);
         return ResponseEntity.ok(vendorStaffId);
     }
 
     @GetMapping("/getAllAssociatedVendorStaff/{vendorId}")
+    @PreAuthorize("hasRole('INTERNAL_STAFF') or hasRole('VENDOR_STAFF') or hasRole('VENDOR_ADMIN')")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff(@PathVariable Long vendorId) {
         List<VendorStaff> vendorStaffs = vendorStaffService.getAllAssociatedVendorStaff(vendorId);
         return ResponseEntity.ok(vendorStaffs);
@@ -56,12 +62,14 @@ public class VendorStaffController {
     }
 
     @PutMapping("/editVendorStaffProfile")
-    public ResponseEntity<VendorStaff> editVendorStaffProfile(@RequestBody VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
-        VendorStaff vendorStaff = vendorStaffService.editVendorStaffProfile(vendorStaffToEdit);
+    @PreAuthorize("hasRole('VENDOR_STAFF') or hasRole('VENDOR_ADMIN')")
+    public ResponseEntity<JwtAuthenticationResponse> editVendorStaffProfile(@RequestBody VendorStaff vendorStaffToEdit) throws BadRequestException {
+        JwtAuthenticationResponse vendorStaff = authenticationService.editVendorStaffProfile(vendorStaffToEdit);
         return ResponseEntity.ok(vendorStaff);
     }
 
     @PutMapping("/toggleBlock/{vendorStaffId}")
+    @PreAuthorize("hasRole('VENDOR_ADMIN')")
     public void toggleBlock(@PathVariable Long vendorStaffId) throws NotFoundException, ToggleBlockException {
         vendorStaffService.toggleBlock(vendorStaffId);
     }
@@ -74,7 +82,7 @@ public class VendorStaffController {
     }
 
     @GetMapping("/getAllVendorStaff")
-//    @PreAuthorize("hasRole('VENDOR_STAFF') or hasRole('INTERNAL_STAFF')")
+    @PreAuthorize("hasRole('INTERNAL_STAFF') or hasRole('VENDOR_ADMIN') or hasRole('VENDOR_STAFF')")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff() {
         List<VendorStaff> vendorStaffList = vendorStaffService.retrieveAllVendorStaff();
         return ResponseEntity.ok(vendorStaffList);

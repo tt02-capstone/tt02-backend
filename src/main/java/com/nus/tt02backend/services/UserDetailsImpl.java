@@ -30,7 +30,7 @@ public class UserDetailsImpl implements UserDetailsService {
     @Autowired
     private VendorStaffRepository vendorStaffRepository;
     @Override
-    public UserDetails loadUserByUsername(String email) {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user =  userRepository.retrieveUserEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         List<String> roles = new ArrayList<>();
