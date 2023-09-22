@@ -39,9 +39,7 @@ public class UserController {
 
     @GetMapping("/refreshToken")
     public ResponseEntity<JwtRefreshResponse> refreshToken(HttpServletRequest request) throws NotFoundException, BadRequestException {
-        final String authHeader = request.getHeader("Authorization");
-        System.out.println("Authorization" + authHeader);
-        JwtRefreshResponse userResponse = authenticationService.refreshToken(authHeader);
+        JwtRefreshResponse userResponse = authenticationService.refreshToken(request);
         return ResponseEntity.ok(userResponse);
     }
     @PostMapping("/webLogin/{email}/{password}")

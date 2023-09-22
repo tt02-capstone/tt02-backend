@@ -9,6 +9,8 @@ import com.nus.tt02backend.repositories.InternalStaffRepository;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.TouristRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
+import io.jsonwebtoken.impl.DefaultClaims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,32 +41,28 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
 
-    public JwtRefreshResponse refreshToken(String authHeader) throws BadRequestException, NotFoundException {
+    public JwtRefreshResponse refreshToken(HttpServletRequest request) throws BadRequestException, NotFoundException {
         try {
-            if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ")) {
-                throw new BadCredentialsException("Auth Header is empty or doesnt start with Bearer");
-            }
-            final String jwt = authHeader.substring(7);
-            System.out.println("JWT - {}" + jwt.toString());
-
-            String userEmail = jwtService.extractUserName(jwt);
-            if (StringUtils.isEmpty(userEmail)) {
-                throw new BadCredentialsException("JWT token subject is empty");
-            }
+            DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+            Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
+            String userEmail = expectedMap.get("sub").toString();
             UserDetails userDetails = userDetailsImpl.loadUserByUsername(userEmail);
             if (!userEmail.equals(userDetails.getUsername())) {
                 throw new BadCredentialsException("Mismatch is credentials");
             }
-            if (!jwtService.isTokenExpired(jwt)) {
-                throw new BadCredentialsException("Token is still valid");
-            }
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getPassword()));
             String newToken = jwtService.doGenerateRefreshToken(userDetails);
             return new JwtRefreshResponse(newToken);
         } catch (Exception e) {
             throw new BadCredentialsException(e.getMessage());
         }
+    }
+
+    public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
+        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Object> entry : claims.entrySet()) {
+            expectedMap.put(entry.getKey(), entry.getValue());
+        }
+        return expectedMap;
     }
 
     public JwtAuthenticationResponse staffLogin(String email, String password) throws BadRequestException, NotFoundException {
