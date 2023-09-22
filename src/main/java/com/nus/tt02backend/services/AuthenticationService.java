@@ -1,6 +1,7 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.dto.JwtAuthenticationResponse;
+import com.nus.tt02backend.dto.JwtRefreshResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
@@ -9,6 +10,7 @@ import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.TouristRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +37,35 @@ public class AuthenticationService {
     private final TouristRepository touristRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+
+    public JwtRefreshResponse refreshToken(String authHeader) throws BadRequestException, NotFoundException {
+        try {
+            if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ")) {
+                throw new BadCredentialsException("Auth Header is empty or doesnt start with Bearer");
+            }
+            final String jwt = authHeader.substring(7);
+            System.out.println("JWT - {}" + jwt.toString());
+
+            String userEmail = jwtService.extractUserName(jwt);
+            if (StringUtils.isEmpty(userEmail)) {
+                throw new BadCredentialsException("JWT token subject is empty");
+            }
+            UserDetails userDetails = userDetailsImpl.loadUserByUsername(userEmail);
+            if (!userEmail.equals(userDetails.getUsername())) {
+                throw new BadCredentialsException("Mismatch is credentials");
+            }
+            if (!jwtService.isTokenExpired(jwt)) {
+                throw new BadCredentialsException("Token is still valid");
+            }
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getPassword()));
+            String newToken = jwtService.doGenerateRefreshToken(userDetails);
+            return new JwtRefreshResponse(newToken);
+        } catch (Exception e) {
+            throw new BadCredentialsException(e.getMessage());
+        }
+    }
 
     public JwtAuthenticationResponse staffLogin(String email, String password) throws BadRequestException, NotFoundException {
         try {
