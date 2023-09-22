@@ -1,10 +1,12 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.JwtAuthenticationResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.User;
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.VendorService;
 import com.nus.tt02backend.services.VendorStaffService;
 import com.stripe.exception.StripeException;
@@ -23,6 +25,8 @@ import java.util.*;
 public class VendorStaffController {
     @Autowired
     VendorStaffService vendorStaffService;
+    @Autowired
+    AuthenticationService authenticationService;
 
     @PutMapping ("/updateVendorStaff")
     public ResponseEntity<Void> vendorStaffLogin(@RequestBody VendorStaff vendorStaffToUpdate) throws NotFoundException {
@@ -59,8 +63,8 @@ public class VendorStaffController {
 
     @PutMapping("/editVendorStaffProfile")
     @PreAuthorize("hasRole('VENDOR_STAFF') or hasRole('VENDOR_ADMIN')")
-    public ResponseEntity<VendorStaff> editVendorStaffProfile(@RequestBody VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
-        VendorStaff vendorStaff = vendorStaffService.editVendorStaffProfile(vendorStaffToEdit);
+    public ResponseEntity<JwtAuthenticationResponse> editVendorStaffProfile(@RequestBody VendorStaff vendorStaffToEdit) throws BadRequestException {
+        JwtAuthenticationResponse vendorStaff = authenticationService.editVendorStaffProfile(vendorStaffToEdit);
         return ResponseEntity.ok(vendorStaff);
     }
 

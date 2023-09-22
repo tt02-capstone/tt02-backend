@@ -153,7 +153,6 @@ public class LocalService {
                 local.setCountry_code(localToEdit.getCountry_code());
                 local.setMobile_num(localToEdit.getMobile_num());
                 localRepository.save(local);
-                local.setPassword(null);
                 local.setBooking_list(null);
                 local.setPost_list(null);
                 local.setComment_list(null);

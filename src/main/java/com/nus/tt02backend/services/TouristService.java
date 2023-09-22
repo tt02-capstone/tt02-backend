@@ -121,7 +121,6 @@ public class TouristService {
                 tourist.setCountry_code(touristToEdit.getCountry_code());
                 tourist.setMobile_num(touristToEdit.getMobile_num());
                 touristRepository.save(tourist);
-                tourist.setPassword(null);
                 tourist.setBooking_list(null);
                 tourist.setPost_list(null);
                 tourist.setComment_list(null);

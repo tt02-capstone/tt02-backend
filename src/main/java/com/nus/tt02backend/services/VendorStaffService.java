@@ -250,7 +250,6 @@ public class VendorStaffService {
                     vendorRepository.save(vendor);
                 }
 
-                vendorStaff.setPassword(null);
                 vendorStaff.getVendor().setVendor_staff_list(null);
                 return vendorStaff;
 
