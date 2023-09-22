@@ -487,9 +487,7 @@ public class CartService {
                 bookingPayment.setComission_percentage(commission);
                 bookingPayment.setIs_paid(true);
 
-                BigDecimal payoutAmount = totalAmountPayable.multiply(commission);
-
-                Integer commissionCharge = payoutAmount.multiply(new BigDecimal("100")).intValue();
+                BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
 
                 Map<String, Object> automaticPaymentMethods =
                         new HashMap<>();
@@ -511,37 +509,39 @@ public class CartService {
                         currentTourist.getStripe_account_id()
                 );
 
-                Map<String, Object> transferDataParams = new HashMap<>();
-                transferDataParams.put("destination", vendor.getStripe_account_id());
-
-                paymentParams.put("transfer_data", transferDataParams);
-
                 paymentParams.put(
                         "payment_method",
                         payment_method_id
                 );
 
                 paymentParams.put(
-                        "application_fee_amount",
-                        commissionCharge
-                );
-
-
-
-
-
-
-
-                paymentParams.put(
                         "return_url",
                         "yourappname://stripe/callback"
                 );
+
+//                Map<String, Object> transferDataParams = new HashMap<>();
+//                transferDataParams.put("destination", vendor.getStripe_account_id());
+//
+//                paymentParams.put("transfer_data", transferDataParams);
+
+
+
+//                paymentParams.put(
+//                        "application_fee_amount",
+//                        commissionCharge
+//                );
+
+
+
+
 
 
 
 
                 PaymentIntent paymentIntent =
                         PaymentIntent.create(paymentParams);
+
+                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
 
                 bookingPayment.setPayment_id(paymentIntent.getId());
                 paymentRepository.save(bookingPayment);
@@ -559,10 +559,9 @@ public class CartService {
             }
             List<Booking> currentBookings = currentTourist.getBooking_list();
 
-            if (currentBookings == null) {
-                currentBookings = new ArrayList<>(); // Initialize as an empty list if null
-            }
+
             currentBookings.addAll(createdBookings);
+
             currentTourist.setBooking_list(currentBookings);
 
 
@@ -574,6 +573,16 @@ public class CartService {
 
 
             localRepository.save(currentTourist);
+
+//            List<Booking> latestBookings = currentTourist.getBooking_list();
+//            List<Long> bookingIds = new ArrayList<>();
+//
+//            if (latestBookings != null) {
+//                for (Booking booking : currentBookings) {
+//                    bookingIds.add(booking.getBooking_id()); // Assuming getBookingId() is the getter for booking_id
+//                }
+//            }
+
 
             return createdBookingIds;
 
@@ -630,9 +639,9 @@ public class CartService {
                 bookingPayment.setComission_percentage(commission);
                 bookingPayment.setIs_paid(true);
 
-                BigDecimal payoutAmount = totalAmountPayable.multiply(commission);
+                BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
 
-                Integer commissionCharge = payoutAmount.multiply(new BigDecimal("100")).intValue();
+
 
 
 
@@ -656,37 +665,39 @@ public class CartService {
                         currentTourist.getStripe_account_id()
                 );
 
-                Map<String, Object> transferDataParams = new HashMap<>();
-                transferDataParams.put("destination", vendor.getStripe_account_id());
-
-                paymentParams.put("transfer_data", transferDataParams);
-
                 paymentParams.put(
                         "payment_method",
                         payment_method_id
                 );
 
                 paymentParams.put(
-                        "application_fee_amount",
-                        commissionCharge
-                );
-
-
-
-
-
-
-
-                paymentParams.put(
                         "return_url",
                         "yourappname://stripe/callback"
                 );
+
+//                Map<String, Object> transferDataParams = new HashMap<>();
+//                transferDataParams.put("destination", vendor.getStripe_account_id());
+//
+//                paymentParams.put("transfer_data", transferDataParams);
+
+
+
+//                paymentParams.put(
+//                        "application_fee_amount",
+//                        commissionCharge
+//                );
+
+
+
+
 
 
 
 
                 PaymentIntent paymentIntent =
                         PaymentIntent.create(paymentParams);
+
+                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
 
                 bookingPayment.setPayment_id(paymentIntent.getId());
                 paymentRepository.save(bookingPayment);
