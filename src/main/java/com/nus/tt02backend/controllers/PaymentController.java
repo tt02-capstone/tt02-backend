@@ -9,6 +9,7 @@ import com.stripe.model.ExternalAccount;
 import com.stripe.param.CustomerCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.stripe.model.PaymentMethod;
 
@@ -75,12 +76,14 @@ public class PaymentController {
     }
 
     @GetMapping("/getVendorTotalEarnings/{vendorId}")
+    @PreAuthorize("hasRole('VENDOR_ADMIN')")
     public ResponseEntity<BigDecimal> getVendorTotalEarnings(@PathVariable Long vendorId) throws BadRequestException {
         BigDecimal sum = paymentService.getVendorTotalEarnings(vendorId);
         return ResponseEntity.ok(sum);
     }
 
     @GetMapping("/getTourTotalEarningForLocal/{localId}")
+    @PreAuthorize("hasRole('LOCAL')")
     public ResponseEntity<BigDecimal> getTourTotalEarningForLocal(@PathVariable Long localId) {
         BigDecimal sum = paymentService.getTourTotalEarningForLocal(localId);
         return ResponseEntity.ok(sum);

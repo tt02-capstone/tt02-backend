@@ -40,7 +40,7 @@ public class InternalStaffController {
 
     // not initial sign up
     @PostMapping ("/createStaff")
-    @PreAuthorize("hasRole('INTERNAL_STAFF') and hasRole('ADMIN')")
+    @PreAuthorize("hasRole('INTERNAL_STAFF')")
     public ResponseEntity<Long> createStaff(@RequestBody InternalStaff internalStaffToCreate) throws BadRequestException {
         Long staffId = internalStaffService.createStaff(internalStaffToCreate);
         return ResponseEntity.ok(staffId);

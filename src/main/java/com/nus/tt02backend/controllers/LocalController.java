@@ -47,6 +47,4 @@ public class LocalController {
         List<Local> locaList = localService.retrieveAllLocal();
         return ResponseEntity.ok(locaList);
     }
-
-
 }

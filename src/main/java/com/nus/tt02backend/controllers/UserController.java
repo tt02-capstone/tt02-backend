@@ -10,6 +10,7 @@ import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.Path;
@@ -98,6 +99,7 @@ public class UserController {
 
     // only for admin portal, not vendor portal
     @PutMapping("/toggleBlock/{userId}")
+    @PreAuthorize("hasRole('INTERNAL_STAFF')")
     public void toggleBlock(@PathVariable Long userId) throws NotFoundException, ToggleBlockException {
         userService.toggleBlock(userId);
     }
