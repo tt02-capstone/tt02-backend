@@ -418,6 +418,10 @@ public class UserService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
 
+            if (user instanceof InternalStaff && !user.getIs_blocked()) {
+                throw new ToggleBlockException("Admin cannot be blocked!");
+            }
+
             user.setIs_blocked(!user.getIs_blocked());
             userRepository.save(user);
 

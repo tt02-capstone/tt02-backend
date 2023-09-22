@@ -31,12 +31,14 @@ public class VendorStaffController {
     }
 
     @PostMapping ("/createVendorStaff")
+    @PreAuthorize("hasRole('VENDOR_ADMIN')")
     public ResponseEntity<Long> createVendorStaff(@RequestBody VendorStaff vendorStaffToCreate) throws BadRequestException {
         Long vendorStaffId = vendorStaffService.createVendorStaff(vendorStaffToCreate);
         return ResponseEntity.ok(vendorStaffId);
     }
 
     @GetMapping("/getAllAssociatedVendorStaff/{vendorId}")
+    @PreAuthorize("hasRole('INTERNAL_STAFF') or hasRole('VENDOR_STAFF') or hasRole('VENDOR_ADMIN')")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff(@PathVariable Long vendorId) {
         List<VendorStaff> vendorStaffs = vendorStaffService.getAllAssociatedVendorStaff(vendorId);
         return ResponseEntity.ok(vendorStaffs);
@@ -56,12 +58,14 @@ public class VendorStaffController {
     }
 
     @PutMapping("/editVendorStaffProfile")
+    @PreAuthorize("hasRole('VENDOR_STAFF') or hasRole('VENDOR_ADMIN')")
     public ResponseEntity<VendorStaff> editVendorStaffProfile(@RequestBody VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
         VendorStaff vendorStaff = vendorStaffService.editVendorStaffProfile(vendorStaffToEdit);
         return ResponseEntity.ok(vendorStaff);
     }
 
     @PutMapping("/toggleBlock/{vendorStaffId}")
+    @PreAuthorize("hasRole('VENDOR_ADMIN')")
     public void toggleBlock(@PathVariable Long vendorStaffId) throws NotFoundException, ToggleBlockException {
         vendorStaffService.toggleBlock(vendorStaffId);
     }
@@ -74,7 +78,7 @@ public class VendorStaffController {
     }
 
     @GetMapping("/getAllVendorStaff")
-//    @PreAuthorize("hasRole('VENDOR_STAFF') or hasRole('INTERNAL_STAFF')")
+    @PreAuthorize("hasRole('INTERNAL_STAFF') or hasRole('VENDOR_ADMIN') or hasRole('VENDOR_STAFF')")
     public ResponseEntity<List<VendorStaff>> getAllVendorStaff() {
         List<VendorStaff> vendorStaffList = vendorStaffService.retrieveAllVendorStaff();
         return ResponseEntity.ok(vendorStaffList);
