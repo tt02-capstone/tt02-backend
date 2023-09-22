@@ -7,6 +7,8 @@ import com.nus.tt02backend.models.enums.BookingStatusEnum;
 import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Refund;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Attr;
@@ -15,9 +17,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class BookingService {
@@ -174,7 +174,7 @@ public class BookingService {
         }
     }
 
-    public String cancelBooking(Long bookingId) throws NotFoundException, BadRequestException {
+    public String cancelBooking(Long bookingId) throws NotFoundException, BadRequestException, StripeException {
         Booking booking = bookingRepository.getBookingByBookingId(bookingId);
 
         if (booking == null) {
@@ -185,12 +185,16 @@ public class BookingService {
             throw new BadRequestException("Booking has already been cancelled!");
         }
 
-        // refund
         if (Duration.between(booking.getStart_datetime(), LocalDateTime.now()).toDays() >= 3) {
-            // refund 100%
-        } else {
-            // refund 0%
+            Map<String, Object> refundParams = new HashMap<>();
+            refundParams.put(
+                    "payment_intent",
+                    booking.getPayment().getPayment_id()
+            );
+
+            Refund refund = Refund.create(refundParams);
         }
+
         booking.setStatus(BookingStatusEnum.CANCELLED);
         bookingRepository.save(booking);
 
