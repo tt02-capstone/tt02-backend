@@ -86,7 +86,7 @@ public class LocalService {
 
         Account account = Account.create(params);
 
-        localToCreate.setStripe_account_id(account.getId());
+        localToCreate.setStripe_business_id(account.getId());
 
 
         localToCreate.setUser_type(UserTypeEnum.LOCAL);
