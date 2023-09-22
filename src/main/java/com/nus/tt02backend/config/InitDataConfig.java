@@ -28,7 +28,7 @@ public class InitDataConfig implements CommandLineRunner {
             InternalStaff staff = InternalStaff.builder()
                     .email("admin@gmail.com")
                     .name("admin")
-                    .password(passwordEncoder.encode("password"))
+                    .password(passwordEncoder.encode("password1!"))
                     .user_type(UserTypeEnum.INTERNAL_STAFF)
                     .is_blocked(false)
                     .role(InternalRoleEnum.ADMIN)
