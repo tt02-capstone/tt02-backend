@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 public interface AttractionRepository extends JpaRepository<Attraction, Long>{
     @Query("SELECT a FROM Attraction a WHERE a.name=?1")
     Attraction getAttractionByName(String name);
+
+    @Query("SELECT MAX(a.attraction_id) FROM Attraction a")
+    Long findMaxAttractionId();
 }
 
 

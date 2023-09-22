@@ -136,4 +136,14 @@ public class AttractionController {
         attractionService.checkTicketInventory(attraction_id,ticket_date,tickets_to_check);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/getLastAttractionId")
+    public ResponseEntity<?> getLastAttractionId() {
+        try {
+            Long lastAttractionId = attractionService.getLastAttractionId();
+            return ResponseEntity.ok(lastAttractionId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
 }
