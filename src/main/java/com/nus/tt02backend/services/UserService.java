@@ -92,7 +92,7 @@ public class UserService {
 
                     return vendorStaff;
                 } else if (!checkUser.getEmail_verified()) {
-                    String emailVerificationLink = "http://localhost:3000/verifyemail?token=" + checkUser.getEmail_verification_token();
+                    String emailVerificationLink = "http://localhost:3001/verifyemail?token=" + checkUser.getEmail_verification_token();
                     try {
                         String subject = "[WithinSG] Email Verification Required";
                         String content = "<p>Dear " + checkUser.getName() + ",</p>" +
@@ -239,7 +239,7 @@ public class UserService {
         user.setPassword_token_date(LocalDateTime.now());
         userRepository.save(user);
 
-        String passwordResetLink = "http://localhost:3000/passwordreset";
+        String passwordResetLink = "http://localhost:3001/passwordreset";
         try {
             String subject = "[WithinSG] Your Password Reset Instructions";
             String content = "<p>Dear " + user.getName() + ",</p>" +
@@ -293,7 +293,7 @@ public class UserService {
             user.setPassword_token_date(LocalDateTime.now());
             userRepository.save(user);
 
-            String passwordResetLink = "http://localhost:3000/passwordreset";
+            String passwordResetLink = "http://localhost:3001/passwordreset";
             try {
                 String subject = "[WithinSG] Your Password Reset Instructions";
                 String content = "<p>Dear " + user.getName() + ",</p>" +
