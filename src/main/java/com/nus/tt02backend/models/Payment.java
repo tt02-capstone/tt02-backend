@@ -14,8 +14,7 @@ import java.math.BigDecimal;
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long payment_id;
+    private String payment_id;
     private BigDecimal payment_amount;
     private BigDecimal comission_percentage;
     private Boolean is_paid;
