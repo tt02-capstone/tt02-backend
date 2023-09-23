@@ -194,7 +194,7 @@ public class PaymentService {
         return totalEarned;
     }
 
-    public BankAccount addBankAccount(Long userId, String token) throws NotFoundException, StripeException, BadRequestException {
+    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException, BadRequestException {
 
         Optional<Local> localOptional = localRepository.findById(userId);
 
@@ -252,7 +252,7 @@ public class PaymentService {
 //                    (BankAccount) bankAccount.verify(verification_params);
 
 
-            return bankAccount;
+            return bankAccount.getId();
 
         } else {
             throw new NotFoundException("Local not found!");

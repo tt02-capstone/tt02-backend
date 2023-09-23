@@ -291,7 +291,7 @@ public class VendorStaffService {
     }
 
 
-    public BankAccount addBankAccount(Long userId, String token) throws NotFoundException, StripeException, BadRequestException {
+    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException, BadRequestException {
 
         Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
 
@@ -352,7 +352,7 @@ public class VendorStaffService {
 //                    (BankAccount) bankAccount.verify(verification_params);
 
 
-            return bankAccount;
+            return bankAccount.getId();
 
         } else {
             throw new NotFoundException("Vendor Staff not found!");
