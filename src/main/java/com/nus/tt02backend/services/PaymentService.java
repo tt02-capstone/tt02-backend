@@ -7,6 +7,7 @@ import com.nus.tt02backend.repositories.*;
 import com.stripe.model.*;
 import com.stripe.model.BankAccount;
 import com.stripe.net.RequestOptions;
+import com.stripe.param.PaymentMethodListParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.nus.tt02backend.repositories.LocalRepository;
@@ -89,9 +90,24 @@ public class PaymentService {
     }
 
 
-    public String addPaymentMethod(String user_type, String tourist_email,  String payment_method_id) throws StripeException {
+    public String addPaymentMethod(String user_type, String tourist_email,  String payment_method_id) throws StripeException, BadRequestException {
         String tourist_stripe_id = retrieveStripeId(user_type, tourist_email);
         PaymentMethod paymentMethod = retrievePaymentMethod(payment_method_id);
+
+        PaymentMethodListParams listParams = PaymentMethodListParams.builder()
+                .setCustomer(tourist_stripe_id)
+                .setType(PaymentMethodListParams.Type.CARD)
+                .build();
+
+        PaymentMethodCollection paymentMethods = PaymentMethod.list(listParams);
+
+        // Check for duplicates
+        for (PaymentMethod existingPaymentMethod : paymentMethods.getData()) {
+            if (existingPaymentMethod.getCard().getLast4().equals(paymentMethod.getCard().getLast4()) &&
+                    existingPaymentMethod.getCard().getBrand().equals(paymentMethod.getCard().getBrand())) {
+                throw new BadRequestException("Cannot add an existing payment method!");
+            }
+        }
 
         Map<String, Object> params = new HashMap<>();
 
