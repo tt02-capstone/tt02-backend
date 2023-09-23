@@ -683,6 +683,7 @@ public class CartService {
                 newBooking.setActivity_name(bookingToCheckout.getActivity_name());
                 newBooking.setAttraction(selected_attraction);
                 newBooking.setLocal_user(currentTourist);
+                newBooking.setBooking_item_list(bookingItems);
                 bookingRepository.save(newBooking);
 
                 Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
@@ -835,6 +836,7 @@ public class CartService {
                 newBooking.setActivity_name(bookingToCheckout.getActivity_name());
                 newBooking.setAttraction(selected_attraction);
                 newBooking.setTourist_user(currentTourist);
+                newBooking.setBooking_item_list(bookingItems);
                 bookingRepository.save(newBooking);
 
                 Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
