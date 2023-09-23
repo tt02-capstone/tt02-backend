@@ -4,15 +4,12 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.services.PaymentService;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Customer;
-import com.stripe.model.ExternalAccount;
-import com.stripe.model.PaymentSource;
+import com.stripe.model.*;
 import com.stripe.param.CustomerCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.stripe.model.PaymentMethod;
 
 import java.util.*;
 import java.math.BigDecimal;
@@ -91,10 +88,10 @@ public class PaymentController {
     }
 
     @PostMapping("/addBankAccount/{userId}/{token}")
-    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException, BadRequestException {
-        String bankAccountId = paymentService.addBankAccount(userId, token);
+    public ResponseEntity<BankAccount> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException, BadRequestException {
+        BankAccount bankAccount = paymentService.addBankAccount(userId, token);
 
-        return ResponseEntity.ok(bankAccountId);
+        return ResponseEntity.ok(bankAccount);
     }
 
     @PutMapping("/deleteBankAccount/{userId}/{bank_account_id}")

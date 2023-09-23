@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.dto.JwtAuthenticationResponse;
 import com.nus.tt02backend.exceptions.*;
+
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.User;
@@ -10,6 +11,7 @@ import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.VendorService;
 import com.nus.tt02backend.services.VendorStaffService;
 import com.stripe.exception.StripeException;
+import com.stripe.model.BankAccount;
 import com.stripe.model.ExternalAccount;
 import com.stripe.model.PaymentSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,11 +92,11 @@ public class VendorStaffController {
     }
 
     @PostMapping("/addBankAccount/{userId}/{token}")
-    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws
+    public ResponseEntity<BankAccount> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws
             StripeException, NotFoundException, BadRequestException {
-        String bankAccountId = vendorStaffService.addBankAccount(userId, token);
+        BankAccount bankAccount = vendorStaffService.addBankAccount(userId, token);
 
-        return ResponseEntity.ok(bankAccountId);
+        return ResponseEntity.ok(bankAccount);
     }
 
     @GetMapping("/getBankAccounts/{userId}")
