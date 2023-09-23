@@ -7,6 +7,7 @@ import com.nus.tt02backend.repositories.*;
 import com.stripe.model.*;
 import com.stripe.model.BankAccount;
 import com.stripe.net.RequestOptions;
+import com.stripe.param.PaymentMethodListParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.nus.tt02backend.repositories.LocalRepository;
@@ -89,9 +90,24 @@ public class PaymentService {
     }
 
 
-    public String addPaymentMethod(String user_type, String tourist_email,  String payment_method_id) throws StripeException {
+    public String addPaymentMethod(String user_type, String tourist_email,  String payment_method_id) throws StripeException, BadRequestException {
         String tourist_stripe_id = retrieveStripeId(user_type, tourist_email);
         PaymentMethod paymentMethod = retrievePaymentMethod(payment_method_id);
+
+        PaymentMethodListParams listParams = PaymentMethodListParams.builder()
+                .setCustomer(tourist_stripe_id)
+                .setType(PaymentMethodListParams.Type.CARD)
+                .build();
+
+        PaymentMethodCollection paymentMethods = PaymentMethod.list(listParams);
+
+        // Check for duplicates
+        for (PaymentMethod existingPaymentMethod : paymentMethods.getData()) {
+            if (existingPaymentMethod.getCard().getLast4().equals(paymentMethod.getCard().getLast4()) &&
+                    existingPaymentMethod.getCard().getBrand().equals(paymentMethod.getCard().getBrand())) {
+                throw new BadRequestException("Cannot add an existing payment method!");
+            }
+        }
 
         Map<String, Object> params = new HashMap<>();
 
@@ -178,30 +194,65 @@ public class PaymentService {
         return totalEarned;
     }
 
-    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException {
+    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException, BadRequestException {
 
         Optional<Local> localOptional = localRepository.findById(userId);
 
         if (localOptional.isPresent()) {
             Local local = localOptional.get();
 
-            String stripe_business_id = local.getStripe_business_id();
+            String stripe_account_id = local.getStripe_account_id();
 
-            Account account =
-                    Account.retrieve(stripe_business_id);
+            Map<String, Object> retrieveParams =
+                    new HashMap<>();
+            List<String> expandList = new ArrayList<>();
+            expandList.add("sources");
+            retrieveParams.put("expand", expandList);
+            Customer customer =
+                    Customer.retrieve(
+                            stripe_account_id,
+                            retrieveParams,
+                            null
+                    );
+
+            Token bankAccountToken = Token.retrieve(token);
+
+            BankAccount bankAccountFromToken = (BankAccount) bankAccountToken.getBankAccount();
+            String last4FromToken = bankAccountFromToken.getLast4();
+            String bankNameFromToken = bankAccountFromToken.getBankName();
+
+            PaymentSourceCollection externalAccounts = customer.getSources();
+            for (PaymentSource externalAccount : externalAccounts.autoPagingIterable()) {
+                if (externalAccount instanceof BankAccount) {
+                    BankAccount existingBankAccount = (BankAccount) externalAccount;
+                    if (existingBankAccount.getLast4().equals(last4FromToken) && existingBankAccount.getBankName().equals(bankNameFromToken)) {
+                        throw new BadRequestException("Duplicate bank account found!");
+                    }
+                }
+            }
 
             Map<String, Object> params = new HashMap<>();
             params.put(
-                    "external_account",
+                    "source",
                     token
             );
 
-            com.stripe.model.BankAccount bankAccount =
-                    (BankAccount) account
-                            .getExternalAccounts()
-                            .create(params);
+            BankAccount bankAccount =
+                    (BankAccount) customer.getSources().create(
+                            params
+                    );
 
-            return bankAccount.getId();
+            List<Object> amounts = new ArrayList<>();
+            amounts.add(32);
+            amounts.add(45);
+            Map<String, Object> verification_params = new HashMap<>();
+            verification_params.put("amounts", amounts);
+
+            BankAccount updatedBankAccount =
+                    (BankAccount) bankAccount.verify(verification_params);
+
+
+            return updatedBankAccount.getId();
 
         } else {
             throw new NotFoundException("Local not found!");
@@ -216,15 +267,25 @@ public class PaymentService {
         if (localOptional.isPresent()) {
             Local local = localOptional.get();
 
-            String stripe_business_id = local.getStripe_business_id();
+            String stripe_account_id = local.getStripe_account_id();
 
-            Account account =
-                    Account.retrieve(stripe_business_id);
+            Map<String, Object> retrieveParams =
+                    new HashMap<>();
+            List<String> expandList = new ArrayList<>();
+            expandList.add("sources");
+            retrieveParams.put("expand", expandList);
+            Customer customer =
+                    Customer.retrieve(
+                            stripe_account_id,
+                            retrieveParams,
+                            null
+                    );
 
             BankAccount bankAccount =
-                    (BankAccount) account.getExternalAccounts().retrieve(
+                    (BankAccount) customer.getSources().retrieve(
                             bank_account_id
                     );
+
 
             BankAccount deletedBankAccount =
                     bankAccount.delete();
@@ -237,59 +298,72 @@ public class PaymentService {
 
     }
 
-    public List<ExternalAccount> getBankAccounts(Long userId) throws NotFoundException, StripeException {
+    public List<PaymentSource> getBankAccounts(Long userId) throws NotFoundException, StripeException {
         Optional<Local> localOptional = localRepository.findById(userId);
 
         if (localOptional.isPresent()) {
             Local local = localOptional.get();
 
-            String stripe_business_id = local.getStripe_business_id();
+            String stripe_account_id = local.getStripe_account_id();
 
-            Account account =
-                    Account.retrieve(stripe_business_id);
+            Map<String, Object> retrieveParams =
+                    new HashMap<>();
+            List<String> expandList = new ArrayList<>();
+            expandList.add("sources");
+            retrieveParams.put("expand", expandList);
+            Customer customer =
+                    Customer.retrieve(
+                            stripe_account_id,
+                            retrieveParams,
+                            null
+                    );
 
             Map<String, Object> params = new HashMap<>();
             params.put("object", "bank_account");
-            params.put("limit", 10);
 
-            ExternalAccountCollection bankAccountsCollection =
-                    account.getExternalAccounts().list(params);
 
-            List<ExternalAccount> bankAccounts = bankAccountsCollection.getData();
+            PaymentSourceCollection bankAccounts =
+                    customer.getSources().list(params);
 
-            return bankAccounts;
+            List<PaymentSource> currentBankAccounts = bankAccounts.getData();
+
+            return currentBankAccounts;
 
         } else {
             throw new NotFoundException("Local not found!");
         }
     }
 
-    public String withdrawWallet(Long userId, String bank_account_id, BigDecimal amount) throws StripeException, NotFoundException {
+    public BigDecimal withdrawWallet(Long userId, String bank_account_id, BigDecimal amount) throws StripeException, NotFoundException {
 
         Optional<Local> localOptional = localRepository.findById(userId);
 
         if (localOptional.isPresent()) {
             Local local = localOptional.get();
 
-            String stripe_business_id = local.getStripe_business_id();
+            String stripe_account_id = local.getStripe_account_id();
+
+            Customer customer =
+                    Customer.retrieve(stripe_account_id);
 
             Map<String, Object> params = new HashMap<>();
-            params.put("amount", amount);
+            params.put("amount", -amount.multiply(new BigDecimal("100")).intValueExact());
             params.put("currency", "sgd");
-            params.put("destination", bank_account_id);
 
-            RequestOptions requestOptions =
-                    RequestOptions.builder().setStripeAccount(stripe_business_id).build();
+            CustomerBalanceTransaction balanceTransaction =
+                    customer.balanceTransactions().create(params);
 
+            BigDecimal currentWalletBalance = local.getWallet_balance();
 
-            Payout payout = Payout.create(params, requestOptions);
+            local.setWallet_balance(currentWalletBalance.subtract(amount));
 
-
-            local.setWallet_balance(local.getWallet_balance().subtract(amount));
 
             localRepository.save(local);
 
-            return payout.getId();
+            BigDecimal newWalletBalance = local.getWallet_balance();
+
+
+            return newWalletBalance;
 
         } else {
             throw new NotFoundException("Vendor Staff not found!");

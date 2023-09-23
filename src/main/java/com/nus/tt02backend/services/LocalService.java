@@ -64,29 +64,29 @@ public class LocalService {
         String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
         localToCreate.setStripe_account_id(stripe_account_id);
 
-        Map<String, Object> cardPayments =
-                new HashMap<>();
-        cardPayments.put("requested", true);
-        Map<String, Object> transfers = new HashMap<>();
-        transfers.put("requested", true);
-        Map<String, Object> capabilities =
-                new HashMap<>();
-        capabilities.put("card_payments", cardPayments);
-        capabilities.put("transfers", transfers);
-        Map<String, Object> params = new HashMap<>();
-        params.put("type", "custom");
-        params.put("country", "SG");
-        params.put("email", localToCreate.getEmail());
-        Map<String, Object> company =
-                new HashMap<>();
-        company.put("name", localToCreate.getName());
-        params.put("capabilities", capabilities);
-        params.put("business_type", "individual");
-
-
-        Account account = Account.create(params);
-
-        localToCreate.setStripe_business_id(account.getId());
+//        Map<String, Object> cardPayments =
+//                new HashMap<>();
+//        cardPayments.put("requested", true);
+//        Map<String, Object> transfers = new HashMap<>();
+//        transfers.put("requested", true);
+//        Map<String, Object> capabilities =
+//                new HashMap<>();
+//        capabilities.put("card_payments", cardPayments);
+//        capabilities.put("transfers", transfers);
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("type", "custom");
+//        params.put("country", "SG");
+//        params.put("email", localToCreate.getEmail());
+//        Map<String, Object> company =
+//                new HashMap<>();
+//        company.put("name", localToCreate.getName());
+//        params.put("capabilities", capabilities);
+//        params.put("business_type", "individual");
+//
+//
+//        Account account = Account.create(params);
+//
+//        localToCreate.setStripe_business_id(account.getId());
 
 
         localToCreate.setUser_type(UserTypeEnum.LOCAL);
@@ -153,7 +153,6 @@ public class LocalService {
                 local.setCountry_code(localToEdit.getCountry_code());
                 local.setMobile_num(localToEdit.getMobile_num());
                 localRepository.save(local);
-                local.setPassword(null);
                 local.setBooking_list(null);
                 local.setPost_list(null);
                 local.setComment_list(null);

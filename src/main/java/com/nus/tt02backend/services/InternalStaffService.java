@@ -277,7 +277,6 @@ public class InternalStaffService {
                 internalStaff.setEmail(staffToEdit.getEmail());
                 internalStaff.setName(staffToEdit.getName());
                 internalStaffRepository.save(internalStaff);
-                internalStaff.setPassword(null);
                 return internalStaff;
 
             } else {

@@ -4,6 +4,7 @@ import com.nus.tt02backend.dto.JwtAuthenticationResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Vendor;
+import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.InternalStaffService;
@@ -21,9 +22,9 @@ import java.util.*;
 public class InternalStaffController {
     @Autowired
     InternalStaffService internalStaffService;
-
     @Autowired
     AuthenticationService authenticationService;
+
     @PostMapping("/staffLogin/{email}/{password}")
     public ResponseEntity<JwtAuthenticationResponse> staffLogin(@PathVariable String email, @PathVariable String password)
             throws NotFoundException, BadRequestException {
@@ -55,8 +56,8 @@ public class InternalStaffController {
 
     @PutMapping("/editProfile")
     @PreAuthorize("hasRole('INTERNAL_STAFF')")
-    public ResponseEntity<InternalStaff> editProfile(@RequestBody InternalStaff staffToEdit) throws EditAdminException {
-        InternalStaff internalStaff = internalStaffService.editProfile(staffToEdit);
+    public ResponseEntity<JwtAuthenticationResponse> editProfile(@RequestBody InternalStaff staffToEdit) throws BadRequestException {
+        JwtAuthenticationResponse internalStaff = authenticationService.editInternalStaffProfile(staffToEdit);
         return ResponseEntity.ok(internalStaff);
     }
 

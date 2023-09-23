@@ -1,9 +1,11 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.JwtAuthenticationResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.TouristService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,8 @@ import java.util.List;
 public class TouristController {
     @Autowired
     TouristService touristService;
+    @Autowired
+    AuthenticationService authenticationService;
 
     @PutMapping ("/update")
     public ResponseEntity<Void> updateTourist(@RequestBody Tourist touristToUpdate) throws NotFoundException {
@@ -33,8 +37,8 @@ public class TouristController {
 
     @PutMapping("/editTouristProfile")
     @PreAuthorize("hasRole('TOURIST') ")
-    public ResponseEntity<Tourist> editTouristProfile(@RequestBody Tourist touristToEdit) throws EditUserException {
-        Tourist tourist = touristService.editTouristProfile(touristToEdit);
+    public ResponseEntity<JwtAuthenticationResponse> editTouristProfile(@RequestBody Tourist touristToEdit) throws BadRequestException {
+        JwtAuthenticationResponse tourist = authenticationService.editTouristProfile(touristToEdit);
         return ResponseEntity.ok(tourist);
     }
 

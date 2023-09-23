@@ -1,9 +1,12 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.JwtAuthenticationResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.services.AuthenticationService;
 import com.nus.tt02backend.services.LocalService;
 import com.stripe.exception.StripeException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +23,13 @@ public class LocalController {
 
     @Autowired
     LocalService localService;
+    @Autowired
+    AuthenticationService authenticationService;
 
     @PutMapping("/editLocalProfile")
     @PreAuthorize("hasRole('LOCAL') ")
-    public ResponseEntity<Local> editLocalProfile(@RequestBody Local localToEdit) throws EditUserException {
-        Local local = localService.editLocalProfile(localToEdit);
+    public ResponseEntity<JwtAuthenticationResponse> editLocalProfile(@RequestBody Local localToEdit) throws BadRequestException {
+        JwtAuthenticationResponse local = authenticationService.editLocalProfile(localToEdit);
         return ResponseEntity.ok(local);
     }
 
