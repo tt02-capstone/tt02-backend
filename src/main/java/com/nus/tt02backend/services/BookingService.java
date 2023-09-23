@@ -196,6 +196,7 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatusEnum.CANCELLED);
+        booking.setLast_update(LocalDateTime.now());
         bookingRepository.save(booking);
 
         return "Booking successfully cancelled";
