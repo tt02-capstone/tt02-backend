@@ -193,6 +193,20 @@ public class BookingService {
             );
 
             Refund refund = Refund.create(refundParams);
+
+            Payment payment = booking.getPayment();
+
+            Attraction selected_attraction = booking.getAttraction();
+
+            Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
+
+            BigDecimal commission = payment.getPayment_amount().multiply(payment.getComission_percentage());
+
+            BigDecimal payoutAmount = payment.getPayment_amount().subtract(commission);
+
+            vendor.setWallet_balance(vendor.getWallet_balance().subtract(payoutAmount));
+
+            vendorRepository.save(vendor);
         }
 
         booking.setStatus(BookingStatusEnum.CANCELLED);
