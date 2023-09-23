@@ -6,6 +6,7 @@ import com.nus.tt02backend.services.PaymentService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.ExternalAccount;
+import com.stripe.model.PaymentSource;
 import com.stripe.param.CustomerCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -90,7 +91,7 @@ public class PaymentController {
     }
 
     @PostMapping("/addBankAccount/{userId}/{token}")
-    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException {
+    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException, BadRequestException {
         String bankAccountId = paymentService.addBankAccount(userId, token);
 
         return ResponseEntity.ok(bankAccountId);
@@ -104,17 +105,17 @@ public class PaymentController {
     }
 
     @GetMapping("/getBankAccounts/{userId}")
-    public ResponseEntity<List<ExternalAccount>> getBankAccounts(@PathVariable Long userId) throws StripeException, NotFoundException {
-        List<ExternalAccount> bankAccounts = paymentService.getBankAccounts(userId);
+    public ResponseEntity<List<PaymentSource>> getBankAccounts(@PathVariable Long userId) throws StripeException, NotFoundException {
+        List<PaymentSource> bankAccounts = paymentService.getBankAccounts(userId);
         return ResponseEntity.ok(bankAccounts);
     }
 
     @PostMapping("/withdrawWallet/{userId}/{bank_account_id}/{amount}")
-    public ResponseEntity<String> withdrawWallet(@PathVariable Long userId, @PathVariable String bank_account_id,
+    public ResponseEntity<BigDecimal> withdrawWallet(@PathVariable Long userId, @PathVariable String bank_account_id,
                                                  @PathVariable BigDecimal amount) throws StripeException, NotFoundException {
-        String payOutId = paymentService.withdrawWallet(userId, bank_account_id, amount);
+        BigDecimal newWalletBalance = paymentService.withdrawWallet(userId, bank_account_id, amount);
 
-        return ResponseEntity.ok(payOutId);
+        return ResponseEntity.ok(newWalletBalance);
     }
 
     @PostMapping("/topUpWallet/{userId}/{amount}")

@@ -11,6 +11,7 @@ import com.nus.tt02backend.services.VendorService;
 import com.nus.tt02backend.services.VendorStaffService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.ExternalAccount;
+import com.stripe.model.PaymentSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -89,15 +90,16 @@ public class VendorStaffController {
     }
 
     @PostMapping("/addBankAccount/{userId}/{token}")
-    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException {
+    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws
+            StripeException, NotFoundException, BadRequestException {
         String bankAccountId = vendorStaffService.addBankAccount(userId, token);
 
         return ResponseEntity.ok(bankAccountId);
     }
 
     @GetMapping("/getBankAccounts/{userId}")
-    public ResponseEntity<List<ExternalAccount>> getBankAccounts(@PathVariable Long userId) throws StripeException, NotFoundException {
-        List<ExternalAccount> bankAccounts = vendorStaffService.getBankAccounts(userId);
+    public ResponseEntity<List<PaymentSource>> getBankAccounts(@PathVariable Long userId) throws StripeException, NotFoundException {
+        List<PaymentSource> bankAccounts = vendorStaffService.getBankAccounts(userId);
         return ResponseEntity.ok(bankAccounts);
     }
 
@@ -109,17 +111,17 @@ public class VendorStaffController {
     }
 
     @PostMapping("/withdrawWallet/{userId}/{bank_account_id}/{amount}")
-    public ResponseEntity<String> withdrawWallet(@PathVariable Long userId, @PathVariable String bank_account_id,
+    public ResponseEntity<BigDecimal> withdrawWallet(@PathVariable Long userId, @PathVariable String bank_account_id,
                                                  @PathVariable BigDecimal amount) throws StripeException, NotFoundException {
-        String payOutId = vendorStaffService.withdrawWallet(userId, bank_account_id, amount);
+        BigDecimal newWalletBalance = vendorStaffService.withdrawWallet(userId, bank_account_id, amount);
 
-        return ResponseEntity.ok(payOutId);
+        return ResponseEntity.ok(newWalletBalance);
     }
 
     @PostMapping("/topUpWallet/{userId}/{amount}")
-    public ResponseEntity<String> topUpWallet(@PathVariable Long userId, @PathVariable BigDecimal amount) throws StripeException, NotFoundException {
-        String chargeId = vendorStaffService.topUpWallet(userId, amount);
+    public ResponseEntity<BigDecimal> topUpWallet(@PathVariable Long userId, @PathVariable String bank_account_id, @PathVariable BigDecimal amount) throws StripeException, NotFoundException {
+        BigDecimal newWalletBalance = vendorStaffService.topUpWallet(userId, bank_account_id, amount);
 
-        return ResponseEntity.ok(chargeId );
+        return ResponseEntity.ok(newWalletBalance);
     }
 }
