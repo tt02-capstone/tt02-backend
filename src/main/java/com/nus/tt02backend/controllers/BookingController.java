@@ -6,6 +6,7 @@ import com.nus.tt02backend.models.Attraction;
 import com.nus.tt02backend.models.Booking;
 import com.nus.tt02backend.models.Payment;
 import com.nus.tt02backend.services.BookingService;
+import com.stripe.exception.StripeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class BookingController {
     }
 
     @PutMapping("/cancelBooking/{bookingId}")
-    public ResponseEntity<String> cancelBooking(@PathVariable Long bookingId) throws NotFoundException, BadRequestException {
+    public ResponseEntity<String> cancelBooking(@PathVariable Long bookingId) throws NotFoundException, BadRequestException, StripeException {
         String responseMessage = bookingService.cancelBooking(bookingId);
         return ResponseEntity.ok(responseMessage);
     }
