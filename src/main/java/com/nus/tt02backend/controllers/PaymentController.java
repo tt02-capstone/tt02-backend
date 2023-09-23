@@ -58,7 +58,7 @@ public class PaymentController {
 
     @PostMapping("/addPaymentMethod/{user_type}/{tourist_email}/{payment_method_id}")
     public ResponseEntity<String> addPaymentMethod(@PathVariable String user_type, @PathVariable String tourist_email,
-                                                   @PathVariable String payment_method_id) throws StripeException {
+                                                   @PathVariable String payment_method_id) throws StripeException, BadRequestException {
 
         String paymentMethodId = paymentService.addPaymentMethod(user_type, tourist_email,  payment_method_id);
 
