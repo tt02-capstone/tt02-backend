@@ -185,7 +185,7 @@ public class BookingService {
             throw new BadRequestException("Booking has already been cancelled!");
         }
 
-        if (Duration.between(booking.getStart_datetime(), LocalDateTime.now()).toDays() >= 3) {
+        if (Duration.between(LocalDateTime.now(),booking.getStart_datetime()).toDays() >= 3) {
             Map<String, Object> refundParams = new HashMap<>();
             refundParams.put(
                     "payment_intent",
@@ -204,9 +204,12 @@ public class BookingService {
 
             BigDecimal payoutAmount = payment.getPayment_amount().subtract(commission);
 
-            vendor.setWallet_balance(vendor.getWallet_balance().subtract(payoutAmount));
+            BigDecimal currentWalletBalance = vendor.getWallet_balance();
+
+            vendor.setWallet_balance(currentWalletBalance.subtract(payoutAmount));
 
             vendorRepository.save(vendor);
+
         }
 
         booking.setStatus(BookingStatusEnum.CANCELLED);
