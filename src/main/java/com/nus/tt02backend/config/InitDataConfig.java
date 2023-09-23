@@ -26,7 +26,7 @@ public class InitDataConfig implements CommandLineRunner {
         if (internalStaffRepository.count() == 0) {
 
             InternalStaff staff = InternalStaff.builder()
-                    .email("admin@gmail.com")
+                    .email("darrylgoh51@gmail.com")
                     .name("admin")
                     .password(passwordEncoder.encode("password1!"))
                     .user_type(UserTypeEnum.INTERNAL_STAFF)
