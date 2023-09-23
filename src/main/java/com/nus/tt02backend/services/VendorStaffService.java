@@ -291,7 +291,7 @@ public class VendorStaffService {
     }
 
 
-    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException {
+    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException, BadRequestException {
 
         Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
 
@@ -302,21 +302,57 @@ public class VendorStaffService {
 
             String stripe_account_id = vendor.getStripe_account_id();
 
-            Account account =
-                    Account.retrieve(stripe_account_id);
+            Map<String, Object> retrieveParams =
+                    new HashMap<>();
+            List<String> expandList = new ArrayList<>();
+            expandList.add("sources");
+            retrieveParams.put("expand", expandList);
+            Customer customer =
+                    Customer.retrieve(
+                            stripe_account_id,
+                            retrieveParams,
+                            null
+                    );
+
+            Token bankAccountToken = Token.retrieve(token);
+
+            BankAccount bankAccountFromToken = (BankAccount) bankAccountToken.getBankAccount();
+            String last4FromToken = bankAccountFromToken.getLast4();
+            String bankNameFromToken = bankAccountFromToken.getBankName();
+
+            List<PaymentSource> externalAccounts = customer.getSources().getData();
+            for (PaymentSource externalAccount : externalAccounts) {
+                if (externalAccount instanceof BankAccount) {
+                    BankAccount existingBankAccount = (BankAccount) externalAccount;
+                    if (existingBankAccount.getLast4().equals(last4FromToken)) {
+
+                        throw new BadRequestException("Cannot add existing bank account!");
+                    }
+                }
+            }
 
             Map<String, Object> params = new HashMap<>();
             params.put(
-                    "external_account",
+                    "source",
                     token
             );
 
             BankAccount bankAccount =
-                    (BankAccount) account
-                            .getExternalAccounts()
-                            .create(params);
+                    (BankAccount) customer.getSources().create(
+                            params
+                    );
 
-            return bankAccount.getId();
+            List<Integer> amounts = new ArrayList<>();
+            amounts.add(32);
+            amounts.add(45);
+            Map<String, Object> verification_params = new HashMap<>();
+            verification_params.put("amounts", amounts);
+
+            BankAccount updatedBankAccount =
+                    (BankAccount) bankAccount.verify(verification_params);
+
+
+            return updatedBankAccount.getId();
 
         } else {
             throw new NotFoundException("Vendor Staff not found!");
@@ -335,13 +371,23 @@ public class VendorStaffService {
 
             String stripe_account_id = vendor.getStripe_account_id();
 
-            Account account =
-                    Account.retrieve(stripe_account_id);
+            Map<String, Object> retrieveParams =
+                    new HashMap<>();
+            List<String> expandList = new ArrayList<>();
+            expandList.add("sources");
+            retrieveParams.put("expand", expandList);
+            Customer customer =
+                    Customer.retrieve(
+                            stripe_account_id,
+                            retrieveParams,
+                            null
+                    );
 
             BankAccount bankAccount =
-                    (BankAccount) account.getExternalAccounts().retrieve(
+                    (BankAccount) customer.getSources().retrieve(
                             bank_account_id
                     );
+
 
             BankAccount deletedBankAccount =
                     bankAccount.delete();
@@ -349,13 +395,13 @@ public class VendorStaffService {
             return deletedBankAccount.getId();
 
         } else {
-            throw new NotFoundException("Local not found!");
+            throw new NotFoundException("Vendor not found!");
         }
 
     }
 
 
-    public List<ExternalAccount> getBankAccounts(Long userId) throws NotFoundException, StripeException {
+    public List<PaymentSource> getBankAccounts(Long userId) throws NotFoundException, StripeException {
         Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
 
         if (vendorStaffOptional.isPresent()) {
@@ -365,26 +411,35 @@ public class VendorStaffService {
 
             String stripe_account_id = vendor.getStripe_account_id();
 
-            Account account =
-                    Account.retrieve(stripe_account_id);
+            Map<String, Object> retrieveParams =
+                    new HashMap<>();
+            List<String> expandList = new ArrayList<>();
+            expandList.add("sources");
+            retrieveParams.put("expand", expandList);
+            Customer customer =
+                    Customer.retrieve(
+                            stripe_account_id,
+                            retrieveParams,
+                            null
+                    );
 
             Map<String, Object> params = new HashMap<>();
             params.put("object", "bank_account");
-            params.put("limit", 10);
 
-            ExternalAccountCollection bankAccountsCollection =
-                    account.getExternalAccounts().list(params);
 
-            List<ExternalAccount> bankAccounts = bankAccountsCollection.getData();
+            PaymentSourceCollection bankAccounts =
+                    customer.getSources().list(params);
 
-            return bankAccounts;
+            List<PaymentSource> currentBankAccounts = bankAccounts.getData();
+
+            return currentBankAccounts;
 
         } else {
             throw new NotFoundException("Vendor Staff not found!");
         }
     }
 
-    public String withdrawWallet(Long userId, String bank_account_id, BigDecimal amount) throws StripeException, NotFoundException {
+    public BigDecimal withdrawWallet(Long userId, String bank_account_id, BigDecimal amount) throws StripeException, NotFoundException {
 
         Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
 
@@ -395,23 +450,26 @@ public class VendorStaffService {
 
             String stripe_account_id = vendor.getStripe_account_id();
 
+            Customer customer =
+                    Customer.retrieve(stripe_account_id);
+
             Map<String, Object> params = new HashMap<>();
-            params.put("amount", amount);
+            params.put("amount", -amount.multiply(new BigDecimal("100")).intValueExact());
             params.put("currency", "sgd");
-            params.put("destination", bank_account_id);
 
-            RequestOptions requestOptions =
-                    RequestOptions.builder().setStripeAccount(stripe_account_id).build();
+            CustomerBalanceTransaction balanceTransaction =
+                    customer.balanceTransactions().create(params);
 
+            BigDecimal currentWalletBalance = vendor.getWallet_balance();
 
-            Payout payout = Payout.create(params, requestOptions);
+            vendor.setWallet_balance(currentWalletBalance.subtract(amount));
 
-
-            vendor.setWallet_balance(vendor.getWallet_balance().subtract(amount));
 
             vendorRepository.save(vendor);
 
-            return payout.getId();
+            BigDecimal newWalletBalance = vendor.getWallet_balance();
+
+            return newWalletBalance;
 
         } else {
             throw new NotFoundException("Vendor Staff not found!");
@@ -420,7 +478,7 @@ public class VendorStaffService {
 
     }
 
-    public String topUpWallet(Long userId, BigDecimal amount) throws StripeException, NotFoundException {
+    public BigDecimal topUpWallet(Long userId, String bank_account_id, BigDecimal amount) throws StripeException, NotFoundException {
 
         Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
 
@@ -430,24 +488,51 @@ public class VendorStaffService {
             Vendor vendor = vendorStaff.getVendor();
 
             String stripe_account_id = vendor.getStripe_account_id();
-            Map<String, Object> params = new HashMap<>();
-            params.put("amount", amount);
-            params.put("currency", "sgd");
-            params.put("source", stripe_account_id );
-            params.put(
-                    "description",
-                    "Withdrawal"
+
+            Map<String, Object> automaticPaymentMethods =
+                    new HashMap<>();
+            automaticPaymentMethods.put("enabled", true);
+
+            Map<String, Object> paymentParams = new HashMap<>();
+            paymentParams.put("amount", amount.multiply(new BigDecimal("100")).intValueExact());
+            paymentParams.put("currency", "sgd");
+            paymentParams.put(
+                    "automatic_payment_methods",
+                    automaticPaymentMethods
+            );
+            paymentParams.put(
+                    "confirm",
+                    true
+            );
+            paymentParams.put(
+                    "customer",
+                    stripe_account_id
+            );
+
+            paymentParams.put(
+                    "payment_method",
+                    bank_account_id
+            );
+
+            paymentParams.put(
+                    "return_url",
+                    "yourappname://stripe/callback"
             );
 
 
-            Charge charge = Charge.create(params);
+
+            PaymentIntent paymentIntent =
+                    PaymentIntent.create(paymentParams);
 
 
-            vendor.setWallet_balance(vendor.getWallet_balance().subtract(amount));
+            vendor.setWallet_balance(vendor.getWallet_balance().add(amount));
 
             vendorRepository.save(vendor);
 
-            return charge.getId();
+            BigDecimal newWalletBalance = vendor.getWallet_balance();
+
+
+            return newWalletBalance;
 
         } else {
             throw new NotFoundException("Vendor Staff not found!");
