@@ -133,7 +133,7 @@ public class BookingService {
                     booking.setStatus(BookingStatusEnum.UPCOMING);
                 }
             }
-            bookingRepository.save(booking);
+            // bookingRepository.save(booking);
             bookingsToReturn.add(booking);
         }
 
