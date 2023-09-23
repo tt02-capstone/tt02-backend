@@ -368,6 +368,39 @@ public class AttractionService {
         currentSavedAttractions.add(attractionToSave);
         userRepository.save(currentUser);
 
+        if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
+            Local local = (Local) currentUser;
+            local.setCard_list(null);
+            local.setWithdrawal_list(null);
+            local.setComment_list(null);
+            local.setPost_list(null);
+            local.setBadge_list(null);
+            local.setCart_list(null);
+            local.setSupport_ticket_list(null);
+            local.setBooking_list(null);
+            local.setTour_list(null);
+            local.setTour_type_list(null);
+            local.setAttraction_list(null);
+            local.setAccommodation_list(null);
+            local.setRestaurant_list(null);
+            local.setTelecom_list(null);
+            local.setDeals_list(null);
+        } else {
+            Tourist tourist = (Tourist) currentUser;
+            tourist.setCard_list(null);
+            tourist.setComment_list(null);
+            tourist.setPost_list(null);
+            tourist.setBadge_list(null);
+            tourist.setCart_list(null);
+            tourist.setSupport_ticket_list(null);
+            tourist.setBooking_list(null);
+            tourist.setTour_type_list(null);
+            tourist.setAttraction_list(null);
+            tourist.setAccommodation_list(null);
+            tourist.setRestaurant_list(null);
+            tourist.setTelecom_list(null);
+        }
+
         return currentUser;
     }
 
@@ -391,6 +424,40 @@ public class AttractionService {
                 } else if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
                     localRepository.save((Local) currentUser);
                 }
+
+                if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
+                    Local local = (Local) currentUser;
+                    local.setCard_list(null);
+                    local.setWithdrawal_list(null);
+                    local.setComment_list(null);
+                    local.setPost_list(null);
+                    local.setBadge_list(null);
+                    local.setCart_list(null);
+                    local.setSupport_ticket_list(null);
+                    local.setBooking_list(null);
+                    local.setTour_list(null);
+                    local.setTour_type_list(null);
+                    local.setAttraction_list(null);
+                    local.setAccommodation_list(null);
+                    local.setRestaurant_list(null);
+                    local.setTelecom_list(null);
+                    local.setDeals_list(null);
+                } else {
+                    Tourist tourist = (Tourist) currentUser;
+                    tourist.setCard_list(null);
+                    tourist.setComment_list(null);
+                    tourist.setPost_list(null);
+                    tourist.setBadge_list(null);
+                    tourist.setCart_list(null);
+                    tourist.setSupport_ticket_list(null);
+                    tourist.setBooking_list(null);
+                    tourist.setTour_type_list(null);
+                    tourist.setAttraction_list(null);
+                    tourist.setAccommodation_list(null);
+                    tourist.setRestaurant_list(null);
+                    tourist.setTelecom_list(null);
+                }
+                
                 return currentUser;
             }
         }
