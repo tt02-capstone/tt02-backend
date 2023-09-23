@@ -133,7 +133,7 @@ public class BookingService {
                     booking.setStatus(BookingStatusEnum.UPCOMING);
                 }
             }
-            bookingRepository.save(booking);
+            // bookingRepository.save(booking);
             bookingsToReturn.add(booking);
         }
 
@@ -185,7 +185,7 @@ public class BookingService {
             throw new BadRequestException("Booking has already been cancelled!");
         }
 
-        if (Duration.between(booking.getStart_datetime(), LocalDateTime.now()).toDays() >= 3) {
+        if (Duration.between(LocalDateTime.now(),booking.getStart_datetime()).toDays() >= 3) {
             Map<String, Object> refundParams = new HashMap<>();
             refundParams.put(
                     "payment_intent",
@@ -193,9 +193,27 @@ public class BookingService {
             );
 
             Refund refund = Refund.create(refundParams);
+
+            Payment payment = booking.getPayment();
+
+            Attraction selected_attraction = booking.getAttraction();
+
+            Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
+
+            BigDecimal commission = payment.getPayment_amount().multiply(payment.getComission_percentage());
+
+            BigDecimal payoutAmount = payment.getPayment_amount().subtract(commission);
+
+            BigDecimal currentWalletBalance = vendor.getWallet_balance();
+
+            vendor.setWallet_balance(currentWalletBalance.subtract(payoutAmount));
+
+            vendorRepository.save(vendor);
+
         }
 
         booking.setStatus(BookingStatusEnum.CANCELLED);
+        booking.setLast_update(LocalDateTime.now());
         bookingRepository.save(booking);
 
         return "Booking successfully cancelled";

@@ -91,6 +91,8 @@ public class UserService {
                     vendorStaff.setPost_list(null);
 
                     return vendorStaff;
+                } else if (vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.REJECTED) {
+                    throw new BadRequestException("Your application was rejected, contact us for more information.");
                 } else if (!checkUser.getEmail_verified()) {
                     String emailVerificationLink = "http://localhost:3001/verifyemail?token=" + checkUser.getEmail_verification_token();
                     try {
