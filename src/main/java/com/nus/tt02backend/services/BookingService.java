@@ -133,7 +133,7 @@ public class BookingService {
                     booking.setStatus(BookingStatusEnum.UPCOMING);
                 }
             }
-            bookingRepository.save(booking);
+            // bookingRepository.save(booking);
             bookingsToReturn.add(booking);
         }
 
@@ -210,6 +210,7 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatusEnum.CANCELLED);
+        booking.setLast_update(LocalDateTime.now());
         bookingRepository.save(booking);
 
         return "Booking successfully cancelled";
