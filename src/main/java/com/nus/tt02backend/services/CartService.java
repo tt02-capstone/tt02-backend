@@ -69,17 +69,102 @@ public class CartService {
 
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
 
-            // In the future will include check for activity_type
-
-            CartBooking cartBookingToCreate = addCartOperation(activity_name,cartItems);
-
             List<CartBooking> currentCartBookings = currentTourist.getCart_list();
-            currentCartBookings.add(cartBookingToCreate);
-            currentTourist.setCart_list(currentCartBookings);
+            LocalDate startDate = cartItems.get(0).getStart_datetime();
+            Optional<CartBooking> matchingBooking = currentCartBookings.stream()
+                    .filter(cartBooking -> cartBooking.getActivity_name().equals(activity_name) &&
+                            cartBooking.getStart_datetime().equals(startDate.atStartOfDay()))
+                    .findFirst();
 
-            localRepository.save(currentTourist);
+            OptionalInt indexOpt = IntStream.range(0, currentCartBookings.size())
+                    .filter(i -> currentCartBookings.get(i).getActivity_name().equals(activity_name) &&
+                            currentCartBookings.get(i).getStart_datetime().equals(startDate.atStartOfDay()))
+                    .findFirst();
 
-            return cartBookingToCreate.getCart_booking_id();
+            if (matchingBooking.isPresent()) {
+
+                CartBooking existingBooking = matchingBooking.get();
+
+                List<CartItem> existingCartItems = existingBooking.getCart_item_list();
+
+                for (CartItem cartItem : cartItems) {
+
+                    String activitySelection = cartItem.getActivity_selection();
+                    Optional<CartItem> matchingItem = existingCartItems.stream()
+                            .filter(cartItemToCheck -> cartItemToCheck.getActivity_selection().equals(activitySelection))
+                            .findFirst();
+
+                    // if exists
+                    if (matchingItem.isPresent()) {
+                        CartItem existingCartItem = matchingItem.get();
+                        Integer newQuantity = cartItem.getQuantity() + existingCartItem.getQuantity();
+                        existingBooking = updateCartOperation(existingCartItem.getCart_item_id(), existingBooking.getCart_booking_id(),
+                                newQuantity);
+
+                        cartBookingRepository.save(existingBooking);
+
+                    } else {
+
+                        List<TicketPerDay> currentTickets = attractionService.getAllTicketListedByAttractionAndDate(
+                                existingBooking.getAttraction().getAttraction_id(),
+                                cartItems.get(0).getStart_datetime()); // tickets listed based on the date selected
+                        if (currentTickets.isEmpty()) {
+                            throw new NotFoundException("No tickets found for this date!");
+                        }
+
+                        cartItem = cartItemRepository.save(cartItem);
+
+
+
+                        // Update relevant ticket in TicketPerDay
+
+
+
+                        OptionalInt indexOfMatchingTicket = IntStream.range(0, currentTickets.size())
+                                .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
+                                .findFirst();
+
+                        if (indexOfMatchingTicket.isPresent()) {
+                            Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
+                            TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
+                            currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItem.getQuantity());
+                            ticketPerDayRepository.save(currentTicket);
+                            currentTickets.set(foundTicketIndex, currentTicket);
+
+                        } else {
+                            throw new NotFoundException("No tickets found for this date!");
+
+                        }
+                        existingCartItems.add(cartItem);
+
+                        existingBooking.setCart_item_list(existingCartItems);
+
+                        cartBookingRepository.save(existingBooking);
+
+                    }
+
+
+                }
+
+                currentCartBookings.set(indexOpt.getAsInt(),existingBooking);
+
+                currentTourist.setCart_list(currentCartBookings);
+
+                localRepository.save(currentTourist);
+
+                return existingBooking.getCart_booking_id();
+
+            } else {
+
+                CartBooking cartBookingToCreate = addCartOperation(activity_name,cartItems);
+                currentCartBookings.add(cartBookingToCreate);
+                currentTourist.setCart_list(currentCartBookings);
+
+                localRepository.save(currentTourist);
+
+                return cartBookingToCreate.getCart_booking_id();
+
+            }
 
 
         } else if (user_type.equals("TOURIST")) {
@@ -87,13 +172,102 @@ public class CartService {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
 
             List<CartBooking> currentCartBookings = currentTourist.getCart_list();
-            CartBooking cartBookingToCreate = addCartOperation(activity_name,cartItems);
-            currentCartBookings.add(cartBookingToCreate);
-            currentTourist.setCart_list(currentCartBookings);
+            LocalDate startDate = cartItems.get(0).getStart_datetime();
+            Optional<CartBooking> matchingBooking = currentCartBookings.stream()
+                    .filter(cartBooking -> cartBooking.getActivity_name().equals(activity_name) &&
+                            cartBooking.getStart_datetime().equals(startDate.atStartOfDay()))
+                    .findFirst();
 
-            touristRepository.save(currentTourist);
+            OptionalInt indexOpt = IntStream.range(0, currentCartBookings.size())
+                    .filter(i -> currentCartBookings.get(i).getActivity_name().equals(activity_name) &&
+                            currentCartBookings.get(i).getStart_datetime().equals(startDate.atStartOfDay()))
+                    .findFirst();
 
-            return cartBookingToCreate.getCart_booking_id();
+            if (matchingBooking.isPresent()) {
+
+                CartBooking existingBooking = matchingBooking.get();
+
+                List<CartItem> existingCartItems = existingBooking.getCart_item_list();
+
+                for (CartItem cartItem : cartItems) {
+
+                    String activitySelection = cartItem.getActivity_selection();
+                    Optional<CartItem> matchingItem = existingCartItems.stream()
+                            .filter(cartItemToCheck -> cartItemToCheck.getActivity_selection().equals(activitySelection))
+                            .findFirst();
+
+                    // if exists
+                    if (matchingItem.isPresent()) {
+                        CartItem existingCartItem = matchingItem.get();
+                        Integer newQuantity = cartItem.getQuantity() + existingCartItem.getQuantity();
+                        existingBooking = updateCartOperation(existingCartItem.getCart_item_id(), existingBooking.getCart_booking_id(),
+                                newQuantity);
+
+                        cartBookingRepository.save(existingBooking);
+
+                    } else {
+
+                        List<TicketPerDay> currentTickets = attractionService.getAllTicketListedByAttractionAndDate(
+                                existingBooking.getAttraction().getAttraction_id(),
+                                cartItems.get(0).getStart_datetime()); // tickets listed based on the date selected
+                        if (currentTickets.isEmpty()) {
+                            throw new NotFoundException("No tickets found for this date!");
+                        }
+
+                        cartItem = cartItemRepository.save(cartItem);
+
+
+
+                        // Update relevant ticket in TicketPerDay
+
+
+
+                        OptionalInt indexOfMatchingTicket = IntStream.range(0, currentTickets.size())
+                                .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
+                                .findFirst();
+
+                        if (indexOfMatchingTicket.isPresent()) {
+                            Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
+                            TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
+                            currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItem.getQuantity());
+                            ticketPerDayRepository.save(currentTicket);
+                            currentTickets.set(foundTicketIndex, currentTicket);
+
+                        } else {
+                            throw new NotFoundException("No tickets found for this date!");
+
+                        }
+                        existingCartItems.add(cartItem);
+
+                        existingBooking.setCart_item_list(existingCartItems);
+
+                        cartBookingRepository.save(existingBooking);
+
+                    }
+
+
+                }
+
+                currentCartBookings.set(indexOpt.getAsInt(),existingBooking);
+
+                currentTourist.setCart_list(currentCartBookings);
+
+                touristRepository.save(currentTourist);
+
+                return existingBooking.getCart_booking_id();
+
+            } else {
+
+                CartBooking cartBookingToCreate = addCartOperation(activity_name,cartItems);
+                currentCartBookings.add(cartBookingToCreate);
+                currentTourist.setCart_list(currentCartBookings);
+
+                touristRepository.save(currentTourist);
+
+                return cartBookingToCreate.getCart_booking_id();
+
+            }
+
         } else {
             throw new BadRequestException("Invalid user type");
         }
@@ -320,11 +494,18 @@ public class CartService {
                     .filter(i -> Objects.equals(cartBookingsToUpdate.get(i).getCart_booking_id(), cartBooking.getCart_booking_id()))
                     .findFirst();
 
-            cartBookingsToUpdate.set(indexCartBooking.getAsInt(), cartBooking);
+            if (cartBooking.getCart_item_list().isEmpty()) {
+                cartBookingsToUpdate.remove(indexCartBooking.getAsInt());
+                cartBookingRepository.delete(cartBooking);
+            } else {
 
-            currentTourist.setCart_list(cartBookingsToUpdate);
+                cartBookingsToUpdate.set(indexCartBooking.getAsInt(), cartBooking);
 
-            localRepository.save(currentTourist);
+                currentTourist.setCart_list(cartBookingsToUpdate);
+
+                localRepository.save(currentTourist);
+
+            }
 
         } else if (user_type.equals("TOURIST")) {
 
@@ -338,11 +519,23 @@ public class CartService {
                     .filter(i -> Objects.equals(cartBookingsToUpdate.get(i).getCart_booking_id(), cartBooking.getCart_booking_id()))
                     .findFirst();
 
-            cartBookingsToUpdate.set(indexCartBooking.getAsInt(), cartBooking);
+            if (cartBooking.getCart_item_list().isEmpty()) {
+                cartBookingsToUpdate.remove(indexCartBooking.getAsInt());
+                cartBookingRepository.delete(cartBooking);
+            } else {
 
-            currentTourist.setCart_list(cartBookingsToUpdate);
+                cartBookingsToUpdate.set(indexCartBooking.getAsInt(), cartBooking);
 
-            touristRepository.save(currentTourist);
+                currentTourist.setCart_list(cartBookingsToUpdate);
+
+                touristRepository.save(currentTourist);
+
+            }
+
+
+
+
+
         } else {
             throw new BadRequestException("Invalid user type");
         }
@@ -406,17 +599,30 @@ public class CartService {
 
             selected_attraction.setTicket_per_day_list(updatedList);
 
-            cartItem.setQuantity(quantity);
-
-            cartItemRepository.save(cartItem);
-
             List<CartItem> cartItemsToUpdate = cartBooking.getCart_item_list();
 
             OptionalInt indexOpt = IntStream.range(0, cartItemsToUpdate.size())
                     .filter(i -> Objects.equals(cartItemsToUpdate.get(i).getCart_item_id(), cartItem.getCart_item_id()))
                     .findFirst();
 
-            cartItemsToUpdate.set(indexOpt.getAsInt(), cartItem); // To check for present
+            if (quantity <= 0) {
+                cartItemsToUpdate.remove(indexOpt.getAsInt());
+
+                cartItemRepository.delete(cartItem);
+
+
+            } else {
+
+                cartItem.setQuantity(quantity);
+
+                cartItemRepository.save(cartItem);
+
+
+                cartItemsToUpdate.set(indexOpt.getAsInt(), cartItem); // To check for present
+
+            }
+
+
 
             cartBooking.setCart_item_list(cartItemsToUpdate);
 
@@ -477,6 +683,7 @@ public class CartService {
                 newBooking.setActivity_name(bookingToCheckout.getActivity_name());
                 newBooking.setAttraction(selected_attraction);
                 newBooking.setLocal_user(currentTourist);
+                newBooking.setBooking_item_list(bookingItems);
                 bookingRepository.save(newBooking);
 
                 Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
@@ -629,6 +836,7 @@ public class CartService {
                 newBooking.setActivity_name(bookingToCheckout.getActivity_name());
                 newBooking.setAttraction(selected_attraction);
                 newBooking.setTourist_user(currentTourist);
+                newBooking.setBooking_item_list(bookingItems);
                 bookingRepository.save(newBooking);
 
                 Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());

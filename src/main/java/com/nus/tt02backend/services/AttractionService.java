@@ -534,5 +534,9 @@ public class AttractionService {
         }
     }
 
+    public Long getLastAttractionId() {
+        Long lastAttractionId = attractionRepository.findMaxAttractionId();
+        return (lastAttractionId != null) ? lastAttractionId : 0L; // Default to 0 if no attractions exist
+    }
 
 }

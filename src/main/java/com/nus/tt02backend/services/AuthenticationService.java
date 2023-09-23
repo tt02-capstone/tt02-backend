@@ -1,6 +1,7 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.dto.JwtAuthenticationResponse;
+import com.nus.tt02backend.dto.JwtRefreshResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
@@ -8,7 +9,10 @@ import com.nus.tt02backend.repositories.InternalStaffRepository;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.TouristRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
+import io.jsonwebtoken.impl.DefaultClaims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +39,31 @@ public class AuthenticationService {
     private final TouristRepository touristRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+
+    public JwtRefreshResponse refreshToken(HttpServletRequest request) throws BadRequestException, NotFoundException {
+        try {
+            DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+            Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
+            String userEmail = expectedMap.get("sub").toString();
+            UserDetails userDetails = userDetailsImpl.loadUserByUsername(userEmail);
+            if (!userEmail.equals(userDetails.getUsername())) {
+                throw new BadCredentialsException("Mismatch is credentials");
+            }
+            String newToken = jwtService.doGenerateRefreshToken(userDetails);
+            return new JwtRefreshResponse(newToken);
+        } catch (Exception e) {
+            throw new BadCredentialsException(e.getMessage());
+        }
+    }
+
+    public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
+        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Object> entry : claims.entrySet()) {
+            expectedMap.put(entry.getKey(), entry.getValue());
+        }
+        return expectedMap;
+    }
 
     public JwtAuthenticationResponse staffLogin(String email, String password) throws BadRequestException, NotFoundException {
         try {
