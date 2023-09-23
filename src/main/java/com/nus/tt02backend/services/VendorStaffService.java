@@ -291,7 +291,7 @@ public class VendorStaffService {
     }
 
 
-    public String addBankAccount(Long userId, String token) throws NotFoundException, StripeException, BadRequestException {
+    public BankAccount addBankAccount(Long userId, String token) throws NotFoundException, StripeException, BadRequestException {
 
         Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(userId);
 
@@ -342,17 +342,17 @@ public class VendorStaffService {
                             params
                     );
 
-            List<Integer> amounts = new ArrayList<>();
-            amounts.add(32);
-            amounts.add(45);
-            Map<String, Object> verification_params = new HashMap<>();
-            verification_params.put("amounts", amounts);
+//            List<Integer> amounts = new ArrayList<>();
+//            amounts.add(32);
+//            amounts.add(45);
+//            Map<String, Object> verification_params = new HashMap<>();
+//            verification_params.put("amounts", amounts);
+//
+//            BankAccount updatedBankAccount =
+//                    (BankAccount) bankAccount.verify(verification_params);
 
-            BankAccount updatedBankAccount =
-                    (BankAccount) bankAccount.verify(verification_params);
 
-
-            return updatedBankAccount.getId();
+            return bankAccount;
 
         } else {
             throw new NotFoundException("Vendor Staff not found!");
