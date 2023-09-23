@@ -92,11 +92,11 @@ public class VendorStaffController {
     }
 
     @PostMapping("/addBankAccount/{userId}/{token}")
-    public ResponseEntity<BankAccount> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws
+    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws
             StripeException, NotFoundException, BadRequestException {
-        BankAccount bankAccount = vendorStaffService.addBankAccount(userId, token);
+        String bankAccountId = vendorStaffService.addBankAccount(userId, token);
 
-        return ResponseEntity.ok(bankAccount);
+        return ResponseEntity.ok(bankAccountId);
     }
 
     @GetMapping("/getBankAccounts/{userId}")

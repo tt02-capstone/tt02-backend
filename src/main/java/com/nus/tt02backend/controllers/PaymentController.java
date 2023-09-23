@@ -88,10 +88,10 @@ public class PaymentController {
     }
 
     @PostMapping("/addBankAccount/{userId}/{token}")
-    public ResponseEntity<BankAccount> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException, BadRequestException {
-        BankAccount bankAccount = paymentService.addBankAccount(userId, token);
+    public ResponseEntity<String> addBankAccount(@PathVariable Long userId, @PathVariable String token) throws StripeException, NotFoundException, BadRequestException {
+        String bankAccountId = paymentService.addBankAccount(userId, token);
 
-        return ResponseEntity.ok(bankAccount);
+        return ResponseEntity.ok(bankAccountId);
     }
 
     @PutMapping("/deleteBankAccount/{userId}/{bank_account_id}")
