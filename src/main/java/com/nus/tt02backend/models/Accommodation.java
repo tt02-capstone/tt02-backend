@@ -41,10 +41,10 @@ public class Accommodation {
     public Boolean is_published;
 
     @Column(nullable = false)
-    private String check_in_time;
+    private LocalDateTime check_in_time;
 
     @Column(nullable = false)
-    private String check_out_time;
+    private LocalDateTime check_out_time;
 
     @Enumerated(EnumType.STRING)
     private AccommodationTypeEnum type;
