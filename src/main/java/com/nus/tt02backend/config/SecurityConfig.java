@@ -87,6 +87,8 @@ public class SecurityConfig {
               "/vendor/createVendor",
               "/vendorStaff/createVendorStaff",
               "/telecom/**", // to remove
+              "/accommodation/createAccommodation/**", // to remove
+              "/accommodation/createRoom/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
                 "/telecom/**", // to remove
