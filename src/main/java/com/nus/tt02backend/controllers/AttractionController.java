@@ -152,4 +152,10 @@ public class AttractionController {
         Attraction attraction =  attractionService.createSeasonalActivity(vendorStaff,attractionId, activityToCreate);
         return ResponseEntity.ok(attraction);
     }
+
+    @GetMapping("/getSeasonalActivity/{attraction_id}")
+    public ResponseEntity<SeasonalActivity> getSeasonalActivity(@PathVariable Long attraction_id) throws NotFoundException{
+        SeasonalActivity sa = attractionService.getSeasonalActivity(attraction_id);
+        return ResponseEntity.ok(sa);
+    }
 }

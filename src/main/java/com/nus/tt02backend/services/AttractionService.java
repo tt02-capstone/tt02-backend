@@ -618,7 +618,7 @@ public class AttractionService {
 
         Attraction attraction = attractionOptional.get();
         List<SeasonalActivity> currentList = attraction.getSeasonal_activity_list();
-        for (SeasonalActivity sa : currentList) { // ensure that there isnt overlap in the activities 
+        for (SeasonalActivity sa : currentList) { // ensure that there isnt overlap in the activities
             if ((activityToCreate.getStart_date().isAfter(sa.getStart_date()) || activityToCreate.getStart_date().isEqual(sa.getStart_date())) &&
                     (activityToCreate.getStart_date().isBefore(sa.getEnd_date()) ||  activityToCreate.getStart_date().isEqual(sa.getEnd_date()))) {
                 throw new BadRequestException("There is an exisiting activity which collide with the new activity!");
@@ -649,6 +649,30 @@ public class AttractionService {
         attractionRepository.save(attraction);
 
         return attraction;
+    }
+
+    public SeasonalActivity getSeasonalActivity(Long attractionId) throws NotFoundException {
+        Attraction current = retrieveAttraction(attractionId);
+        List<SeasonalActivity> sList = current.getSeasonal_activity_list();
+
+        LocalDate currentDate = LocalDate.now();
+
+        List<SeasonalActivity> filteredList = sList.stream() // to get the activities that fall within the current date
+                .filter(activity -> {
+                    LocalDate startDate = activity.getStart_date();
+                    LocalDate endDate = activity.getEnd_date();
+                    return ((currentDate.isAfter(startDate) || currentDate.isEqual(startDate)) && (currentDate.isBefore(endDate) || currentDate.isEqual(endDate)));
+                })
+                .toList();
+
+        if (filteredList.isEmpty()) {
+            throw new NotFoundException("No Seasonal Activity now!");
+        } else {
+//            System.out.print("get seasonal");
+//            System.out.println(filteredList.get(0));
+            return filteredList.get(0);
+        }
+
     }
 
 }
