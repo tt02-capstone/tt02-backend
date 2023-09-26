@@ -244,7 +244,6 @@ public class CartService {
 
         }
 
-        // [LOG1] To check if booking exists
         CartBooking cartBookingToCreate = new CartBooking();
         cartBookingToCreate.setStart_datetime(startDate.atStartOfDay());
         cartBookingToCreate.setEnd_datetime(endDate.atStartOfDay());
@@ -258,8 +257,6 @@ public class CartService {
         cartBookingRepository.save(cartBookingToCreate);
 
 
-
-        // Save Attraction
         List<TicketPerDay> updatedList = new ArrayList<>();
         for (TicketPerDay t : currentTickets) {
             updatedList = attractionService.updateTicketsPerDay(selectedAttraction.getAttraction_id(), t);
@@ -271,6 +268,12 @@ public class CartService {
         return cartBookingToCreate;
 
     }
+
+    //
+    //
+    // VIEW CART
+    //
+    //
 
     public List<CartBooking> viewCart(String user_type, String tourist_email) throws BadRequestException {
 
@@ -294,6 +297,12 @@ public class CartService {
 
 
     }
+
+    //
+    //
+    // DELETE CART
+    //
+    //
 
     public List<Long> deleteCartItems(String user_type, String tourist_email,
                                       List<Long> cart_booking_ids) throws NotFoundException, BadRequestException {
@@ -396,6 +405,12 @@ public class CartService {
 
         return cartBookingsToDelete;
     }
+
+    //
+    //
+    // UPDATE CART
+    //
+    //
 
 
     public Long updateCartItem(String user_type, String tourist_email, Long cart_item_id, Long cart_booking_id,
@@ -557,316 +572,450 @@ public class CartService {
 
     }
 
+    //
+    //
+    // CHECKOUT
+    //
+    //
+
     public List<Long> checkout(String user_type, String tourist_email, String payment_method_id,
-                               Float totalPrice,
-                               List<Long> booking_ids) throws StripeException, BadRequestException {
+                               Float totalPrice, List<Long> booking_ids)
+            throws StripeException, BadRequestException {
 
+        List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
+        BigDecimal totalAmountPayable = BigDecimal.valueOf(totalPrice).setScale(2, RoundingMode.HALF_UP);
+
+        List<Long> createdBookingIds = new ArrayList<>();
+        List<Booking> createdBookings = new ArrayList<>();
         if (user_type.equals("LOCAL")) {
-
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
-
-            List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
-
-            BigDecimal totalAmountPayable = BigDecimal.valueOf(totalPrice).setScale(2, RoundingMode.HALF_UP);
-
-            List<Payment> processedPayments = new ArrayList<>();
-
-            List<Booking> createdBookings = new ArrayList<>();
-
-            List<Long> createdBookingIds = new ArrayList<>();
-
-
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
-                BigDecimal amountPayable = BigDecimal.valueOf(0);
-                List<BookingItem> bookingItems = new ArrayList<>();
-                Attraction selected_attraction = bookingToCheckout.getAttraction();
-                for (CartItem cartItem: bookingToCheckout.getCart_item_list()) {
-                    amountPayable = amountPayable.add(cartItem.getPrice());
-                    BookingItem newBookingItem = new BookingItem();
-                    newBookingItem.setQuantity(cartItem.getQuantity());
-                    newBookingItem.setStart_datetime(cartItem.getStart_datetime());
-                    newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
-                    newBookingItem.setType(cartItem.getType());
-                    newBookingItem.setActivity_selection(cartItem.getActivity_selection());
-                    bookingItemRepository.save(newBookingItem);
-                    bookingItems.add(newBookingItem);
-
-                }
-
-                Booking newBooking = new Booking();
-                newBooking.setStart_datetime(bookingToCheckout.getStart_datetime());
-                newBooking.setEnd_datetime(bookingToCheckout.getEnd_datetime());
-                newBooking.setLast_update(LocalDateTime.now());
-                newBooking.setStatus(BookingStatusEnum.UPCOMING);
-                newBooking.setType(bookingToCheckout.getType());
-                newBooking.setActivity_name(bookingToCheckout.getActivity_name());
-                newBooking.setAttraction(selected_attraction);
-                newBooking.setLocal_user(currentTourist);
-                newBooking.setBooking_item_list(bookingItems);
-                bookingRepository.save(newBooking);
-
-                Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
-
-                Payment bookingPayment = new Payment();
-                bookingPayment.setPayment_amount(totalAmountPayable);
-                BigDecimal commission = BigDecimal.valueOf(0.10);
-                bookingPayment.setComission_percentage(commission);
-                bookingPayment.setIs_paid(true);
-
-                BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
-
-                Map<String, Object> automaticPaymentMethods =
-                        new HashMap<>();
-                automaticPaymentMethods.put("enabled", true);
-
-                Map<String, Object> paymentParams = new HashMap<>();
-                paymentParams.put("amount", totalAmountPayable.multiply(new BigDecimal("100")).intValueExact());
-                paymentParams.put("currency", "sgd");
-                paymentParams.put(
-                        "automatic_payment_methods",
-                        automaticPaymentMethods
-                );
-                paymentParams.put(
-                        "confirm",
-                        true
-                );
-                paymentParams.put(
-                        "customer",
-                        currentTourist.getStripe_account_id()
-                );
-
-                paymentParams.put(
-                        "payment_method",
-                        payment_method_id
-                );
-
-                paymentParams.put(
-                        "return_url",
-                        "yourappname://stripe/callback"
-                );
-
-//                Map<String, Object> transferDataParams = new HashMap<>();
-//                transferDataParams.put("destination", vendor.getStripe_account_id());
-//
-//                paymentParams.put("transfer_data", transferDataParams);
-
-
-
-//                paymentParams.put(
-//                        "application_fee_amount",
-//                        commissionCharge
-//                );
-
-
-
-
-
-
-
-
-                PaymentIntent paymentIntent =
-                        PaymentIntent.create(paymentParams);
-
-                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
-
-                bookingPayment.setPayment_id(paymentIntent.getId());
-                paymentRepository.save(bookingPayment);
-
-
-
-                bookingPayment.setBooking(newBooking);
-                newBooking.setPayment(bookingPayment);
-                bookingRepository.save(newBooking);
-                paymentRepository.save(bookingPayment);
-
-                createdBookings.add(newBooking);
-                createdBookingIds.add(newBooking.getBooking_id());
-                processedPayments.add(bookingPayment);
+                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
+                createdBookings.add(createdBooking);
+                createdBookingIds.add(createdBooking.getBooking_id());
             }
-            List<Booking> currentBookings = currentTourist.getBooking_list();
-
-
-            currentBookings.addAll(createdBookings);
-
-            currentTourist.setBooking_list(currentBookings);
-
-
-            List<CartBooking> currentCartBookings = currentTourist.getCart_list();
-
-            currentCartBookings.removeAll(bookingsToCheckout);
-
-            currentTourist.setCart_list(currentCartBookings);
-
-
-            localRepository.save(currentTourist);
-
-//            List<Booking> latestBookings = currentTourist.getBooking_list();
-//            List<Long> bookingIds = new ArrayList<>();
-//
-//            if (latestBookings != null) {
-//                for (Booking booking : currentBookings) {
-//                    bookingIds.add(booking.getBooking_id()); // Assuming getBookingId() is the getter for booking_id
-//                }
-//            }
-
-
-            return createdBookingIds;
-
+            updateLocalUser(currentTourist, bookingsToCheckout, createdBookings);
         } else if (user_type.equals("TOURIST")) {
-
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
-
-            List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
-
-            BigDecimal totalAmountPayable = BigDecimal.valueOf(totalPrice).setScale(2, RoundingMode.HALF_UP);
-
-            List<Payment> processedPayments = new ArrayList<>();
-
-            List<Booking> createdBookings = new ArrayList<>();
-
-            List<Long> createdBookingIds = new ArrayList<>();
-
-
-            // Pay vendors?
-
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
-                BigDecimal amountPayable = BigDecimal.valueOf(0);
-                List<BookingItem> bookingItems = new ArrayList<>();
-                Attraction selected_attraction = bookingToCheckout.getAttraction();
-                for (CartItem cartItem: bookingToCheckout.getCart_item_list()) {
-                    amountPayable = amountPayable.add(cartItem.getPrice());
-                    BookingItem newBookingItem = new BookingItem();
-                    newBookingItem.setQuantity(cartItem.getQuantity());
-                    newBookingItem.setStart_datetime(cartItem.getStart_datetime());
-                    newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
-                    newBookingItem.setType(cartItem.getType());
-                    newBookingItem.setActivity_selection(cartItem.getActivity_selection());
-                    bookingItemRepository.save(newBookingItem);
-                    bookingItems.add(newBookingItem);
-
-                }
-
-                Booking newBooking = new Booking();
-                newBooking.setStart_datetime(bookingToCheckout.getStart_datetime());
-                newBooking.setEnd_datetime(bookingToCheckout.getEnd_datetime());
-                newBooking.setLast_update(LocalDateTime.now());
-                newBooking.setStatus(BookingStatusEnum.UPCOMING);
-                newBooking.setType(bookingToCheckout.getType());
-                newBooking.setActivity_name(bookingToCheckout.getActivity_name());
-                newBooking.setAttraction(selected_attraction);
-                newBooking.setTourist_user(currentTourist);
-                newBooking.setBooking_item_list(bookingItems);
-                bookingRepository.save(newBooking);
-
-                Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
-
-                Payment bookingPayment = new Payment();
-                bookingPayment.setPayment_amount(totalAmountPayable);
-                BigDecimal commission = BigDecimal.valueOf(0.10);
-                bookingPayment.setComission_percentage(commission);
-                bookingPayment.setIs_paid(true);
-
-                BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
-
-
-
-
-
-                Map<String, Object> automaticPaymentMethods =
-                        new HashMap<>();
-                automaticPaymentMethods.put("enabled", true);
-
-                Map<String, Object> paymentParams = new HashMap<>();
-                paymentParams.put("amount", totalAmountPayable.multiply(new BigDecimal("100")).intValueExact());
-                paymentParams.put("currency", "sgd");
-                paymentParams.put(
-                        "automatic_payment_methods",
-                        automaticPaymentMethods
-                );
-                paymentParams.put(
-                        "confirm",
-                        true
-                );
-                paymentParams.put(
-                        "customer",
-                        currentTourist.getStripe_account_id()
-                );
-
-                paymentParams.put(
-                        "payment_method",
-                        payment_method_id
-                );
-
-                paymentParams.put(
-                        "return_url",
-                        "yourappname://stripe/callback"
-                );
-
-//                Map<String, Object> transferDataParams = new HashMap<>();
-//                transferDataParams.put("destination", vendor.getStripe_account_id());
-//
-//                paymentParams.put("transfer_data", transferDataParams);
-
-
-
-//                paymentParams.put(
-//                        "application_fee_amount",
-//                        commissionCharge
-//                );
-
-
-
-
-
-
-
-
-                PaymentIntent paymentIntent =
-                        PaymentIntent.create(paymentParams);
-
-                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
-
-                bookingPayment.setPayment_id(paymentIntent.getId());
-                paymentRepository.save(bookingPayment);
-
-
-
-                bookingPayment.setBooking(newBooking);
-                newBooking.setPayment(bookingPayment);
-                bookingRepository.save(newBooking);
-                paymentRepository.save(bookingPayment);
-
-                createdBookings.add(newBooking);
-                createdBookingIds.add(newBooking.getBooking_id());
-                processedPayments.add(bookingPayment);
+                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
+                createdBookings.add(createdBooking);
+                createdBookingIds.add(createdBooking.getBooking_id());
             }
-            List<Booking> currentBookings = currentTourist.getBooking_list();
-
-            if (currentBookings == null) {
-                currentBookings = new ArrayList<>(); // Initialize as an empty list if null
-            }
-            currentBookings.addAll(createdBookings);
-            currentTourist.setBooking_list(currentBookings);
-
-
-            List<CartBooking> currentCartBookings = currentTourist.getCart_list();
-
-            currentCartBookings.removeAll(bookingsToCheckout);
-
-            currentTourist.setCart_list(currentCartBookings);
-
-
-            touristRepository.save(currentTourist);
-
-            return createdBookingIds;
-
-
+            updateTouristUser(currentTourist, bookingsToCheckout, createdBookings);
         } else {
             throw new BadRequestException("Invalid user type");
         }
 
-
+        return createdBookingIds;
     }
+
+    private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id)
+            throws StripeException {
+
+        List<BookingItem> bookingItems = createBookingItems(bookingToCheckout);
+        Booking newBooking = createBooking(user, bookingToCheckout, bookingItems);
+        Payment newPayment = createPayment(newBooking, totalAmountPayable, payment_method_id);
+
+        // Other Payment Logic, if needed
+        return newBooking;
+    }
+
+    private List<BookingItem> createBookingItems(CartBooking bookingToCheckout) {
+        List<BookingItem> bookingItems = new ArrayList<>();
+        for (CartItem cartItem : bookingToCheckout.getCart_item_list()) {
+            BookingItem newBookingItem = new BookingItem();
+            newBookingItem.setQuantity(cartItem.getQuantity());
+            newBookingItem.setStart_datetime(cartItem.getStart_datetime());
+            newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
+            newBookingItem.setType(cartItem.getType());
+            newBookingItem.setActivity_selection(cartItem.getActivity_selection());
+            bookingItemRepository.save(newBookingItem);  // Assuming bookingItemRepository is accessible here
+            bookingItems.add(newBookingItem);
+        }
+        return bookingItems;
+    }
+
+    private <T> Booking createBooking(T user, CartBooking bookingToCheckout, List<BookingItem> bookingItems) {
+        Booking newBooking = new Booking();
+
+        // Populate booking fields that are common for both Local and Tourist
+        newBooking.setStart_datetime(bookingToCheckout.getStart_datetime());
+        newBooking.setEnd_datetime(bookingToCheckout.getEnd_datetime());
+        newBooking.setLast_update(LocalDateTime.now());
+        newBooking.setStatus(BookingStatusEnum.UPCOMING);
+        newBooking.setType(bookingToCheckout.getType());
+        newBooking.setActivity_name(bookingToCheckout.getActivity_name());
+        newBooking.setAttraction(bookingToCheckout.getAttraction());
+        newBooking.setBooking_item_list(bookingItems);
+
+        // Check user type and populate fields accordingly
+        if (user instanceof Local) {
+            newBooking.setLocal_user((Local) user);
+        } else if (user instanceof Tourist) {
+            newBooking.setTourist_user((Tourist) user);
+        } else {
+            throw new IllegalArgumentException("Invalid user type");
+        }
+
+        // Save the new booking
+        bookingRepository.save(newBooking);  // Assuming bookingRepository is accessible here
+
+        return newBooking;
+    }
+
+    private Payment createPayment(Booking newBooking, BigDecimal totalAmountPayable, String payment_method_id) throws StripeException {
+        Payment bookingPayment = new Payment();
+        bookingPayment.setPayment_amount(totalAmountPayable);
+
+        // Assuming a 10% commission for the example
+        BigDecimal commission = BigDecimal.valueOf(0.10);
+        bookingPayment.setComission_percentage(commission);
+        bookingPayment.setIs_paid(true);
+
+        BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
+
+        Map<String, Object> automaticPaymentMethods = new HashMap<>();
+        automaticPaymentMethods.put("enabled", true);
+
+        Map<String, Object> paymentParams = new HashMap<>();
+        paymentParams.put("amount", totalAmountPayable.multiply(new BigDecimal("100")).intValueExact());
+        paymentParams.put("currency", "sgd");
+        paymentParams.put("automatic_payment_methods", automaticPaymentMethods);
+        paymentParams.put("confirm", true);
+
+        String stripeAccountId = (newBooking.getLocal_user() != null) ? newBooking.getLocal_user().getStripe_account_id() :
+                (newBooking.getTourist_user() != null) ? newBooking.getTourist_user().getStripe_account_id() :
+                        null;
+
+        if(stripeAccountId == null) {
+            throw new IllegalStateException("No Stripe account ID found for the booking user.");
+        }
+
+        paymentParams.put("customer", stripeAccountId);
+        paymentParams.put("payment_method", payment_method_id);
+        paymentParams.put("return_url", "yourappname://stripe/callback");
+
+        PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
+
+        // Assuming vendorRepository is accessible here
+        Vendor vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
+        vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+
+        bookingPayment.setPayment_id(paymentIntent.getId());
+
+        // Assuming paymentRepository is accessible here
+        paymentRepository.save(bookingPayment);
+
+        return bookingPayment;
+    }
+
+    private void updateLocalUser(Local currentTourist, List<CartBooking> bookingsToCheckout, List<Booking> createdBookings) {
+        // Add the newly created bookings to the Local user's list of bookings
+        List<Booking> currentBookings = currentTourist.getBooking_list();
+        if (currentBookings == null) {
+            currentBookings = new ArrayList<>(); // Initialize as an empty list if null
+        }
+        currentBookings.addAll(createdBookings);
+        currentTourist.setBooking_list(currentBookings);
+
+        // Remove the checked-out cart bookings from the Local user's cart
+        List<CartBooking> currentCartBookings = currentTourist.getCart_list();
+        currentCartBookings.removeAll(bookingsToCheckout);
+        currentTourist.setCart_list(currentCartBookings);
+
+        // Assuming localRepository is accessible here
+        localRepository.save(currentTourist);
+    }
+
+    private void updateTouristUser(Tourist currentTourist, List<CartBooking> bookingsToCheckout , List<Booking> createdBookings) {
+        // Add the newly created bookings to the Tourist user's list of bookings
+        List<Booking> currentBookings = currentTourist.getBooking_list();
+        if (currentBookings == null) {
+            currentBookings = new ArrayList<>(); // Initialize as an empty list if null
+        }
+        currentBookings.addAll(createdBookings);
+        currentTourist.setBooking_list(currentBookings);
+
+        // Remove the checked-out cart bookings from the Tourist user's cart
+        List<CartBooking> currentCartBookings = currentTourist.getCart_list();
+        currentCartBookings.removeAll(bookingsToCheckout);
+        currentTourist.setCart_list(currentCartBookings);
+
+        // Assuming touristRepository is accessible here
+        touristRepository.save(currentTourist);
+    }
+
+
+
+//    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id,
+//                               Float totalPrice,
+//                               List<Long> booking_ids) throws StripeException, BadRequestException {
+//
+//        if (user_type.equals("LOCAL")) {
+//
+//            Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
+//
+//            List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
+//
+//            BigDecimal totalAmountPayable = BigDecimal.valueOf(totalPrice).setScale(2, RoundingMode.HALF_UP);
+//
+//            List<Payment> processedPayments = new ArrayList<>();
+//
+//            List<Booking> createdBookings = new ArrayList<>();
+//
+//            List<Long> createdBookingIds = new ArrayList<>();
+//
+//
+//            for (CartBooking bookingToCheckout : bookingsToCheckout) {
+//                BigDecimal amountPayable = BigDecimal.valueOf(0);
+//                List<BookingItem> bookingItems = new ArrayList<>();
+//                Attraction selected_attraction = bookingToCheckout.getAttraction();
+//                for (CartItem cartItem: bookingToCheckout.getCart_item_list()) {
+//                    amountPayable = amountPayable.add(cartItem.getPrice());
+//                    BookingItem newBookingItem = new BookingItem();
+//                    newBookingItem.setQuantity(cartItem.getQuantity());
+//                    newBookingItem.setStart_datetime(cartItem.getStart_datetime());
+//                    newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
+//                    newBookingItem.setType(cartItem.getType());
+//                    newBookingItem.setActivity_selection(cartItem.getActivity_selection());
+//                    bookingItemRepository.save(newBookingItem);
+//                    bookingItems.add(newBookingItem);
+//
+//                }
+//
+//                Booking newBooking = new Booking();
+//                newBooking.setStart_datetime(bookingToCheckout.getStart_datetime());
+//                newBooking.setEnd_datetime(bookingToCheckout.getEnd_datetime());
+//                newBooking.setLast_update(LocalDateTime.now());
+//                newBooking.setStatus(BookingStatusEnum.UPCOMING);
+//                newBooking.setType(bookingToCheckout.getType());
+//                newBooking.setActivity_name(bookingToCheckout.getActivity_name());
+//                newBooking.setAttraction(selected_attraction);
+//                newBooking.setLocal_user(currentTourist);
+//                newBooking.setBooking_item_list(bookingItems);
+//                bookingRepository.save(newBooking);
+//
+//                Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
+//
+//                Payment bookingPayment = new Payment();
+//                bookingPayment.setPayment_amount(totalAmountPayable);
+//                BigDecimal commission = BigDecimal.valueOf(0.10);
+//                bookingPayment.setComission_percentage(commission);
+//                bookingPayment.setIs_paid(true);
+//
+//                BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
+//
+//                Map<String, Object> automaticPaymentMethods =
+//                        new HashMap<>();
+//                automaticPaymentMethods.put("enabled", true);
+//
+//                Map<String, Object> paymentParams = new HashMap<>();
+//                paymentParams.put("amount", totalAmountPayable.multiply(new BigDecimal("100")).intValueExact());
+//                paymentParams.put("currency", "sgd");
+//                paymentParams.put(
+//                        "automatic_payment_methods",
+//                        automaticPaymentMethods
+//                );
+//                paymentParams.put(
+//                        "confirm",
+//                        true
+//                );
+//                paymentParams.put(
+//                        "customer",
+//                        currentTourist.getStripe_account_id()
+//                );
+//
+//                paymentParams.put(
+//                        "payment_method",
+//                        payment_method_id
+//                );
+//
+//                paymentParams.put(
+//                        "return_url",
+//                        "yourappname://stripe/callback"
+//                );
+//
+//
+//                PaymentIntent paymentIntent =
+//                        PaymentIntent.create(paymentParams);
+//
+//                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+//
+//                bookingPayment.setPayment_id(paymentIntent.getId());
+//                paymentRepository.save(bookingPayment);
+//
+//
+//
+//                bookingPayment.setBooking(newBooking);
+//                newBooking.setPayment(bookingPayment);
+//                bookingRepository.save(newBooking);
+//                paymentRepository.save(bookingPayment);
+//
+//                createdBookings.add(newBooking);
+//                createdBookingIds.add(newBooking.getBooking_id());
+//                processedPayments.add(bookingPayment);
+//            }
+//            List<Booking> currentBookings = currentTourist.getBooking_list();
+//
+//
+//            currentBookings.addAll(createdBookings);
+//
+//            currentTourist.setBooking_list(currentBookings);
+//
+//
+//            List<CartBooking> currentCartBookings = currentTourist.getCart_list();
+//
+//            currentCartBookings.removeAll(bookingsToCheckout);
+//
+//            currentTourist.setCart_list(currentCartBookings);
+//
+//
+//            localRepository.save(currentTourist);
+//
+//
+//
+//            return createdBookingIds;
+//
+//        } else if (user_type.equals("TOURIST")) {
+//
+//            Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
+//
+//            List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
+//
+//            BigDecimal totalAmountPayable = BigDecimal.valueOf(totalPrice).setScale(2, RoundingMode.HALF_UP);
+//
+//            List<Payment> processedPayments = new ArrayList<>();
+//
+//            List<Booking> createdBookings = new ArrayList<>();
+//
+//            List<Long> createdBookingIds = new ArrayList<>();
+//
+//
+//            // Pay vendors?
+//
+//            for (CartBooking bookingToCheckout : bookingsToCheckout) {
+//                BigDecimal amountPayable = BigDecimal.valueOf(0);
+//                List<BookingItem> bookingItems = new ArrayList<>();
+//                Attraction selected_attraction = bookingToCheckout.getAttraction();
+//                for (CartItem cartItem: bookingToCheckout.getCart_item_list()) {
+//                    amountPayable = amountPayable.add(cartItem.getPrice());
+//                    BookingItem newBookingItem = new BookingItem();
+//                    newBookingItem.setQuantity(cartItem.getQuantity());
+//                    newBookingItem.setStart_datetime(cartItem.getStart_datetime());
+//                    newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
+//                    newBookingItem.setType(cartItem.getType());
+//                    newBookingItem.setActivity_selection(cartItem.getActivity_selection());
+//                    bookingItemRepository.save(newBookingItem);
+//                    bookingItems.add(newBookingItem);
+//
+//                }
+//
+//                Booking newBooking = new Booking();
+//                newBooking.setStart_datetime(bookingToCheckout.getStart_datetime());
+//                newBooking.setEnd_datetime(bookingToCheckout.getEnd_datetime());
+//                newBooking.setLast_update(LocalDateTime.now());
+//                newBooking.setStatus(BookingStatusEnum.UPCOMING);
+//                newBooking.setType(bookingToCheckout.getType());
+//                newBooking.setActivity_name(bookingToCheckout.getActivity_name());
+//                newBooking.setAttraction(selected_attraction);
+//                newBooking.setTourist_user(currentTourist);
+//                newBooking.setBooking_item_list(bookingItems);
+//                bookingRepository.save(newBooking);
+//
+//                Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
+//
+//                Payment bookingPayment = new Payment();
+//                bookingPayment.setPayment_amount(totalAmountPayable);
+//                BigDecimal commission = BigDecimal.valueOf(0.10);
+//                bookingPayment.setComission_percentage(commission);
+//                bookingPayment.setIs_paid(true);
+//
+//                BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
+//
+//
+//
+//
+//
+//                Map<String, Object> automaticPaymentMethods =
+//                        new HashMap<>();
+//                automaticPaymentMethods.put("enabled", true);
+//
+//                Map<String, Object> paymentParams = new HashMap<>();
+//                paymentParams.put("amount", totalAmountPayable.multiply(new BigDecimal("100")).intValueExact());
+//                paymentParams.put("currency", "sgd");
+//                paymentParams.put(
+//                        "automatic_payment_methods",
+//                        automaticPaymentMethods
+//                );
+//                paymentParams.put(
+//                        "confirm",
+//                        true
+//                );
+//                paymentParams.put(
+//                        "customer",
+//                        currentTourist.getStripe_account_id()
+//                );
+//
+//                paymentParams.put(
+//                        "payment_method",
+//                        payment_method_id
+//                );
+//
+//                paymentParams.put(
+//                        "return_url",
+//                        "yourappname://stripe/callback"
+//                );
+//
+//
+//
+//
+//                PaymentIntent paymentIntent =
+//                        PaymentIntent.create(paymentParams);
+//
+//                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+//
+//                bookingPayment.setPayment_id(paymentIntent.getId());
+//                paymentRepository.save(bookingPayment);
+//
+//
+//
+//                bookingPayment.setBooking(newBooking);
+//                newBooking.setPayment(bookingPayment);
+//                bookingRepository.save(newBooking);
+//                paymentRepository.save(bookingPayment);
+//
+//                createdBookings.add(newBooking);
+//                createdBookingIds.add(newBooking.getBooking_id());
+//                processedPayments.add(bookingPayment);
+//            }
+//            List<Booking> currentBookings = currentTourist.getBooking_list();
+//
+//            if (currentBookings == null) {
+//                currentBookings = new ArrayList<>(); // Initialize as an empty list if null
+//            }
+//            currentBookings.addAll(createdBookings);
+//            currentTourist.setBooking_list(currentBookings);
+//
+//
+//            List<CartBooking> currentCartBookings = currentTourist.getCart_list();
+//
+//            currentCartBookings.removeAll(bookingsToCheckout);
+//
+//            currentTourist.setCart_list(currentCartBookings);
+//
+//
+//            touristRepository.save(currentTourist);
+//
+//            return createdBookingIds;
+//
+//
+//        } else {
+//            throw new BadRequestException("Invalid user type");
+//        }
+//
+//
+//    }
 
 
 }
