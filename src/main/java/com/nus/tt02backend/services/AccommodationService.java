@@ -47,6 +47,18 @@ public class AccommodationService {
         return accommodationRepository.findAll();
     }
 
+    public List<Accommodation> retrieveAllPublishedAccommodation() {
+        List<Accommodation> accommodationList = accommodationRepository.findAll();
+        List<Accommodation> publishedList = new ArrayList<>();
+        for (Accommodation a : accommodationList) {
+            if (a.getIs_published() == Boolean.TRUE) {
+                publishedList.add(a);
+            }
+        }
+
+        return publishedList;
+    }
+
     public Accommodation retrieveAccommodation(Long accommodationId) throws NotFoundException {
         try {
             Optional<Accommodation> accommodationOptional = accommodationRepository.findById(accommodationId);

@@ -21,9 +21,33 @@ public class AccommodationController {
     @Autowired
     AccommodationService accommodationService;
 
+    @GetMapping("/getAllAccommodations")
+    public ResponseEntity<List<Accommodation>> getAccommodationList() {
+        List<Accommodation> accommodationList = accommodationService.retrieveAllAccommodations();
+        return ResponseEntity.ok(accommodationList);
+    }
+
+    @GetMapping("/getAllPublishedAccommodation") // local n tourist can only view published listings
+    public ResponseEntity<List<Accommodation>> getPublishedAccommodationList() {
+        List<Accommodation> publishedAccommodationList = accommodationService.retrieveAllPublishedAccommodation();
+        return ResponseEntity.ok(publishedAccommodationList);
+    }
+
     @GetMapping("/getAccommodation/{accommodationId}")
     public ResponseEntity<Accommodation> getAccommodation(@PathVariable Long accommodationId) throws NotFoundException {
         Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
+        return ResponseEntity.ok(accommodation);
+    }
+
+    @GetMapping("/getAccommodationListByVendor/{vendorStaffId}")
+    public ResponseEntity<List<Accommodation>> getAccommodationListByVendor(@PathVariable Long vendorStaffId) throws NotFoundException {
+        List<Accommodation> accommodationList = accommodationService.retrieveAllAccommodationsByVendor(vendorStaffId);
+        return ResponseEntity.ok(accommodationList);
+    }
+
+    @GetMapping("/getAccommodationByVendor/{vendorStaffId}/{accommodationId}")
+    public ResponseEntity<Accommodation> getAccommodationByVendor(@PathVariable Long vendorStaffId,@PathVariable Long accommodationId) throws NotFoundException {
+        Accommodation accommodation = accommodationService.retrieveAccommodationByVendor(vendorStaffId,accommodationId);
         return ResponseEntity.ok(accommodation);
     }
 
@@ -43,33 +67,6 @@ public class AccommodationController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("createRoom/{accommodationId}")
-    public ResponseEntity<Room> createRoom(@PathVariable Long accommodationId , @RequestBody Room roomToCreate)
-            throws BadRequestException, IllegalArgumentException, NotFoundException {
-
-        Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
-        Room room =  accommodationService.createRoom(accommodation,roomToCreate);
-        return ResponseEntity.ok(room);
-    }
-
-    @GetMapping("/getAllAccommodations")
-    public ResponseEntity<List<Accommodation>> getAccommodationList() {
-        List<Accommodation> accommodationList = accommodationService.retrieveAllAccommodations();
-        return ResponseEntity.ok(accommodationList);
-    }
-
-    @GetMapping("/getAccommodationListByVendor/{vendorStaffId}")
-    public ResponseEntity<List<Accommodation>> getAccommodationListByVendor(@PathVariable Long vendorStaffId) throws NotFoundException {
-        List<Accommodation> accommodationList = accommodationService.retrieveAllAccommodationsByVendor(vendorStaffId);
-        return ResponseEntity.ok(accommodationList);
-    }
-
-    @GetMapping("/getAccommodationByVendor/{vendorStaffId}/{accommodationId}")
-    public ResponseEntity<Accommodation> getAccommodationByVendor(@PathVariable Long vendorStaffId,@PathVariable Long accommodationId) throws NotFoundException {
-        Accommodation accommodation = accommodationService.retrieveAccommodationByVendor(vendorStaffId,accommodationId);
-        return ResponseEntity.ok(accommodation);
-    }
-
     @GetMapping("/getLastAccommodationId")
     public ResponseEntity<?> getLastAccommodationId() {
         try {
@@ -78,6 +75,15 @@ public class AccommodationController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @PostMapping("createRoom/{accommodationId}")
+    public ResponseEntity<Room> createRoom(@PathVariable Long accommodationId , @RequestBody Room roomToCreate)
+            throws BadRequestException, IllegalArgumentException, NotFoundException {
+
+        Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
+        Room room =  accommodationService.createRoom(accommodation,roomToCreate);
+        return ResponseEntity.ok(room);
     }
 
     @GetMapping("/getRoomListByAccommodation/{accommodationId}")
