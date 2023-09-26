@@ -42,6 +42,9 @@ public class AttractionService {
     @Autowired
     TicketPerDayRepository ticketPerDayRepository;
 
+    @Autowired
+    SeasonalActivityRepository seasonalActivityRepository;
+
     public User findUser(Long userId) throws NotFoundException {
         try {
             Optional<User> userOptional = userRepository.findById(userId);
@@ -604,6 +607,72 @@ public class AttractionService {
     public Long getLastAttractionId() {
         Long lastAttractionId = attractionRepository.findMaxAttractionId();
         return (lastAttractionId != null) ? lastAttractionId : 0L; // Default to 0 if no attractions exist
+    }
+
+    public Attraction createSeasonalActivity(VendorStaff vendorStaff, Long attractionId, SeasonalActivity activityToCreate) throws BadRequestException,  NotFoundException{
+        Optional<Attraction> attractionOptional = attractionRepository.findById(attractionId);
+
+        if (attractionOptional.isEmpty()) {
+            throw new NotFoundException("Attraction not found!");
+        }
+
+        Attraction attraction = attractionOptional.get();
+        List<SeasonalActivity> currentList = attraction.getSeasonal_activity_list();
+        for (SeasonalActivity sa : currentList) { // ensure that there isnt overlap in the activities
+            if ((activityToCreate.getStart_date().isAfter(sa.getStart_date()) || activityToCreate.getStart_date().isEqual(sa.getStart_date())) &&
+                    (activityToCreate.getStart_date().isBefore(sa.getEnd_date()) ||  activityToCreate.getStart_date().isEqual(sa.getEnd_date()))) {
+                throw new BadRequestException("There is an exisiting activity which collide with the new activity!");
+            }
+        }
+
+        SeasonalActivity activity = seasonalActivityRepository.save(activityToCreate);
+        currentList.add(activity);
+
+        Vendor vendor = vendorStaff.getVendor();
+        List<Attraction> attrList = vendor.getAttraction_list();
+
+        for (Attraction a : attrList) {
+            if (a.getAttraction_id().equals(attractionId)) {
+                a.setSeasonal_activity_list(currentList); // update vendor's attraction w the new seasonal activity list
+                break;
+            }
+        }
+
+        vendor.setAccommodation_list(null);
+        vendor.setWithdrawal_list(null);
+        vendor.setVendor_staff_list(null);
+        vendor.setRestaurant_list(null);
+        vendor.setTelecom_list(null);
+        vendor.setDeals_list(null);
+
+        vendorStaffRepository.save(vendorStaff); // update the vendor staff db
+        attractionRepository.save(attraction);
+
+        return attraction;
+    }
+
+    public SeasonalActivity getSeasonalActivity(Long attractionId) throws NotFoundException {
+        Attraction current = retrieveAttraction(attractionId);
+        List<SeasonalActivity> sList = current.getSeasonal_activity_list();
+
+        LocalDate currentDate = LocalDate.now();
+
+        List<SeasonalActivity> filteredList = sList.stream() // to get the activities that fall within the current date
+                .filter(activity -> {
+                    LocalDate startDate = activity.getStart_date();
+                    LocalDate endDate = activity.getEnd_date();
+                    return ((currentDate.isAfter(startDate) || currentDate.isEqual(startDate)) && (currentDate.isBefore(endDate) || currentDate.isEqual(endDate)));
+                })
+                .toList();
+
+        if (filteredList.isEmpty()) {
+            throw new NotFoundException("No Seasonal Activity now!");
+        } else {
+//            System.out.print("get seasonal");
+//            System.out.println(filteredList.get(0));
+            return filteredList.get(0);
+        }
+
     }
 
 }

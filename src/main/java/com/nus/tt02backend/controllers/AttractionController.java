@@ -1,10 +1,7 @@
 package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.*;
-import com.nus.tt02backend.models.Attraction;
-import com.nus.tt02backend.models.TicketPerDay;
-import com.nus.tt02backend.models.User;
-import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.TicketEnum;
 import com.nus.tt02backend.services.AttractionService;
 import org.aspectj.weaver.ast.Not;
@@ -145,5 +142,20 @@ public class AttractionController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @PostMapping ("createSeasonalActivity/{vendorStaffId}/{attractionId}")
+    public ResponseEntity<Attraction> createSeasonalActivity(@PathVariable Long vendorStaffId , @PathVariable Long attractionId ,@RequestBody SeasonalActivity activityToCreate)
+            throws NotFoundException, BadRequestException  {
+
+        VendorStaff vendorStaff = attractionService.retrieveVendor(vendorStaffId);
+        Attraction attraction =  attractionService.createSeasonalActivity(vendorStaff,attractionId, activityToCreate);
+        return ResponseEntity.ok(attraction);
+    }
+
+    @GetMapping("/getSeasonalActivity/{attraction_id}")
+    public ResponseEntity<SeasonalActivity> getSeasonalActivity(@PathVariable Long attraction_id) throws NotFoundException{
+        SeasonalActivity sa = attractionService.getSeasonalActivity(attraction_id);
+        return ResponseEntity.ok(sa);
     }
 }
