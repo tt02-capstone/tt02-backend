@@ -616,7 +616,10 @@ public class CartService {
         List<BookingItem> bookingItems = createBookingItems(bookingToCheckout);
         Booking newBooking = createBooking(user, bookingToCheckout, bookingItems);
         Payment newPayment = createPayment(newBooking, totalAmountPayable, payment_method_id);
-
+        newBooking.setPayment(newPayment);
+        newPayment.setBooking(newBooking);
+        bookingRepository.save(newBooking);
+        paymentRepository.save(newPayment);
         // Other Payment Logic, if needed
         return newBooking;
     }
