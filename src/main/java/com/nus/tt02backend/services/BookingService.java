@@ -1,6 +1,7 @@
 package com.nus.tt02backend.services;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
@@ -191,7 +192,7 @@ public class BookingService {
                     tourist.setBooking_list(null);
                 }
 
-                if (booking.getQr_code_list().isEmpty()) {
+                if (booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
                     for (BookingItem bookingItem : booking.getBooking_item_list()) {
                         long[] voucherCodes = generateVoucherCodes(booking.getBooking_id(), bookingItem.getQuantity());
                         for (int i = 0; i < voucherCodes.length; i++) {
@@ -251,7 +252,15 @@ public class BookingService {
             vendor.setWallet_balance(currentWalletBalance.subtract(payoutAmount));
 
             vendorRepository.save(vendor);
+        }
 
+        List<QrCode> qrCodes = new ArrayList<QrCode>();
+        qrCodes.addAll(booking.getQr_code_list());
+
+        for (QrCode qrCode : qrCodes) {
+            amazonS3.deleteObject(new DeleteObjectRequest("tt02", "bookings/" + qrCode.getVoucher_code() + ".png"));
+            booking.getQr_code_list().remove(qrCode);
+            qrCodeRepository.deleteById(qrCode.getQr_code_id());
         }
 
         booking.setStatus(BookingStatusEnum.CANCELLED);
