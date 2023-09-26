@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -28,20 +29,11 @@ public class SeasonalActivity {
     private String description;
 
     @Column(nullable = false)
-    private LocalDateTime start_datetime;
+    private LocalDate start_date;
 
     @Column(nullable = false)
-    private LocalDateTime end_datetime;
+    private LocalDate end_date;
 
     @Column(nullable = false)
     private Integer suggested_duration;
-
-    public SeasonalActivity(String name, String description, LocalDateTime start_datetime,
-                            LocalDateTime end_datetime, Integer suggested_duration) {
-        this.name = name;
-        this.description = description;
-        this.start_datetime = start_datetime;
-        this.end_datetime = end_datetime;
-        this.suggested_duration = suggested_duration;
-    }
 }
