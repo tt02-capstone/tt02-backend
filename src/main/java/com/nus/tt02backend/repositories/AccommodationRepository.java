@@ -10,4 +10,7 @@ public interface AccommodationRepository extends JpaRepository<Accommodation, Lo
     @Query("SELECT a FROM Accommodation a WHERE a.name=?1")
     Accommodation getAccommodationByName(String name);
 
+    @Query("SELECT MAX(a.accommodation_id) FROM Accommodation a")
+    Long findMaxAccommodationId();
+
 }

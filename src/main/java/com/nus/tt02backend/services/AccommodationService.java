@@ -43,7 +43,11 @@ public class AccommodationService {
         }
     }
 
-    public Accommodation retrieveAccommodation(Long accommodationId) throws IllegalArgumentException, NotFoundException {
+    public List<Accommodation> retrieveAllAccommodations() {
+        return accommodationRepository.findAll();
+    }
+
+    public Accommodation retrieveAccommodation(Long accommodationId) throws NotFoundException {
         try {
             Optional<Accommodation> accommodationOptional = accommodationRepository.findById(accommodationId);
             if (accommodationOptional.isPresent()) {
@@ -51,10 +55,30 @@ public class AccommodationService {
             } else {
                 throw new NotFoundException("Accommodation not found!");
             }
-
         } catch (Exception ex) {
-            throw new NotFoundException(ex.getMessage());
+            throw new NotFoundException((ex.getMessage()));
         }
+    }
+
+    public List<Accommodation> retrieveAllAccommodationsByVendor(Long vendorStaffId) throws NotFoundException {
+        VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
+        Vendor vendor = vendorStaff.getVendor();
+
+        if (!vendor.getAccommodation_list().isEmpty()) {
+            return vendor.getAccommodation_list();
+        } else {
+            throw new NotFoundException("Accommodations not found!");
+        }
+    }
+
+    public Accommodation retrieveAccommodationByVendor(Long vendorStaffId, Long attractionId) throws NotFoundException {
+        List<Accommodation> attractionList = retrieveAllAccommodationsByVendor(vendorStaffId);
+        for (Accommodation a : attractionList) {
+            if (a.getAccommodation_id().equals(attractionId)) {
+                return a;
+            }
+        }
+        throw new NotFoundException("Accommodation not found!"); // if the attraction is not part of vendor's listing
     }
 
     public Accommodation createAccommodation(VendorStaff vendorStaff, Accommodation accommodationToCreate) throws BadRequestException {
@@ -175,4 +199,10 @@ public class AccommodationService {
             return PriceTierEnum.TIER_5;
         }
     }
+
+    public Long getLastAccommodationId() {
+        Long lastAccommodationId = accommodationRepository.findMaxAccommodationId();
+        return (lastAccommodationId != null) ? lastAccommodationId : 0L; // Default to 0 if no attractions exist
+    }
+
 }

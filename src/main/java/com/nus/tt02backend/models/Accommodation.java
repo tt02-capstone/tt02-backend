@@ -34,8 +34,8 @@ public class Accommodation {
     private String contact_num;
 
     @ElementCollection
-    @CollectionTable(name="accomodation_image_list")
-    private List<String> accomodation_image_list;
+    @CollectionTable(name="accommodation_image_list")
+    private List<String> accommodation_image_list;
 
     @Column(nullable = false)
     public Boolean is_published;
