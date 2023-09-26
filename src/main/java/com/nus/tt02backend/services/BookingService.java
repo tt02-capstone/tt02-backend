@@ -1,5 +1,7 @@
 package com.nus.tt02backend.services;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
@@ -11,13 +13,23 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Refund;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import org.w3c.dom.Attr;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import javax.imageio.ImageIO;
+import java.math.*;
+import java.time.*;
 import java.util.*;
+import java.util.List;
 
 @Service
 public class BookingService {
@@ -55,6 +67,12 @@ public class BookingService {
     @Autowired
     TelecomRepository telecomRepository;
 
+    @Autowired
+    private AmazonS3 amazonS3;
+
+    @Autowired
+    QrCodeRepository qrCodeRepository;
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -77,7 +95,7 @@ public class BookingService {
             } else {
                 throw new NotFoundException("User not found!");
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             throw new NotFoundException(ex.getMessage());
         }
     }
@@ -167,7 +185,23 @@ public class BookingService {
                     Tourist tourist = booking.getTourist_user();
                     tourist.setBooking_list(null);
                 }
+
+                if (booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
+                    for (BookingItem bookingItem : booking.getBooking_item_list()) {
+                        long[] voucherCodes = generateVoucherCodes(booking.getBooking_id(), bookingItem.getQuantity());
+                        for (int i = 0; i < voucherCodes.length; i++) {
+                            QrCode qrCode = new QrCode();
+                            qrCode.setVoucher_code(Long.toString(voucherCodes[i]));
+                            qrCode.setQr_code_link(generateAndUploadQRCode(Long.toString(voucherCodes[i])));
+                            qrCodeRepository.save(qrCode);
+                            booking.getQr_code_list().add(qrCode);
+                        }
+                    }
+                }
+
+                bookingRepository.save(booking);
                 booking.getPayment().setBooking(null);
+
                 return booking;
             } else {
                 throw new NotFoundException("Booking not found");
@@ -188,7 +222,7 @@ public class BookingService {
             throw new BadRequestException("Booking has already been cancelled!");
         }
 
-        if (Duration.between(LocalDateTime.now(),booking.getStart_datetime()).toDays() >= 3) {
+        if (Duration.between(LocalDateTime.now(), booking.getStart_datetime()).toDays() >= 3) {
             Map<String, Object> refundParams = new HashMap<>();
             refundParams.put(
                     "payment_intent",
@@ -212,7 +246,15 @@ public class BookingService {
             vendor.setWallet_balance(currentWalletBalance.subtract(payoutAmount));
 
             vendorRepository.save(vendor);
+        }
 
+        List<QrCode> qrCodes = new ArrayList<QrCode>();
+        qrCodes.addAll(booking.getQr_code_list());
+
+        for (QrCode qrCode : qrCodes) {
+            amazonS3.deleteObject(new DeleteObjectRequest("tt02", "bookings/" + qrCode.getVoucher_code() + ".png"));
+            booking.getQr_code_list().remove(qrCode);
+            qrCodeRepository.deleteById(qrCode.getQr_code_id());
         }
 
         booking.setStatus(BookingStatusEnum.CANCELLED);
@@ -237,7 +279,6 @@ public class BookingService {
     }
     
     public List<Booking> getAllBookingsByVendor(Long vendorStaffId) throws NotFoundException {
-
         VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
         Vendor vendor = vendorStaff.getVendor();
 
@@ -326,8 +367,75 @@ public class BookingService {
         }
     }
 
-    public Booking createAttractionBooking(Long attractionId, Booking booking) throws NotFoundException {
+    public BufferedImage generateQRCode(String text, int width, int height) {
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
 
+            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
+
+            BufferedImage qrCodeImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+            Graphics2D graphics = (Graphics2D) qrCodeImage.getGraphics();
+            graphics.setColor(Color.WHITE);
+            graphics.fillRect(0, 0, width, height);
+
+            graphics.setColor(Color.BLACK);
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    if (bitMatrix.get(x, y)) {
+                        graphics.fillRect(x, y, 1, 1);
+                    }
+                }
+            }
+
+            return qrCodeImage;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String generateAndUploadQRCode(String text) {
+        try {
+            BufferedImage qrCodeImage = generateQRCode(text, 200, 200);
+
+            if (qrCodeImage != null) {
+                try {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(qrCodeImage, "png", baos);
+                    byte[] qrCodeBytes = baos.toByteArray();
+
+                    String fileName = "bookings/" + text + ".png";
+                    InputStream inputStream = new ByteArrayInputStream(qrCodeBytes);
+
+                    ObjectMetadata metadata = new ObjectMetadata();
+                    metadata.setContentLength(qrCodeBytes.length);
+
+                    amazonS3.putObject(new PutObjectRequest("tt02", fileName, inputStream, metadata));
+
+                    return amazonS3.getUrl("tt02", fileName).toString();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static long[] generateVoucherCodes(long bookingId, int numTickets) {
+        long[] uniqueNumbers = new long[numTickets];
+        long baseNumber = bookingId * 1000000L;
+
+        for (int i = 0; i < numTickets; i++) {
+            uniqueNumbers[i] = baseNumber + i + 1;
+        }
+
+        return uniqueNumbers;
+    }
+
+    public Booking createAttractionBooking(Long attractionId, Booking booking) throws NotFoundException {
         Optional<Attraction> attractionOptional = attractionRepository.findById(attractionId);
 
         if (attractionOptional.isPresent()) {

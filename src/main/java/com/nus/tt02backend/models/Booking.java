@@ -73,4 +73,7 @@ public class Booking {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<BookingItem> booking_item_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<QrCode> qr_code_list;
 }
