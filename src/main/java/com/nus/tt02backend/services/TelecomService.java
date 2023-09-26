@@ -31,6 +31,7 @@ public class TelecomService {
         if (vendorOptional.isPresent()) {
             Vendor vendor = vendorOptional.get();
             telecomRepository.save(telecom);
+            if (vendor.getTelecom_list() == null) vendor.setTelecom_list(new ArrayList<>());
             vendor.getTelecom_list().add(telecom);
             vendorRepository.save(vendor);
             return telecom;

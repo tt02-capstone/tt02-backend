@@ -52,6 +52,9 @@ public class BookingService {
     @Autowired
     TourRepository tourRepository;
 
+    @Autowired
+    TelecomRepository telecomRepository;
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -233,75 +236,68 @@ public class BookingService {
         return payments;
     }
     
-    public List<Booking> getAllAttractionBookingsByVendor(Long vendorStaffId) throws NotFoundException {
+    public List<Booking> getAllBookingsByVendor(Long vendorStaffId) throws NotFoundException {
 
         VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
         Vendor vendor = vendorStaff.getVendor();
 
         List<Booking> bookingsToReturn = new ArrayList<Booking>();
-        List<Attraction> attractionList = new ArrayList<Attraction>();
-
         List<Booking> bookingList = retrieveAllBookings();
 
-        if (!vendor.getAttraction_list().isEmpty()) {
+        for (Booking b : bookingList) {
+            System.out.println("hey: " + b.getBooking_id());
+            System.out.println(vendor.getTelecom_list().size());
+            if (!vendor.getAttraction_list().isEmpty()) {
+                // attraction
+                for (Attraction a : vendor.getAttraction_list()) {
+                    if (b.getAttraction() != null && b.getAttraction().getAttraction_id() == a.getAttraction_id()) {
+                        System.out.println("aaaa");
+                        Booking temp = this.setBookingStatus(b);
+                        bookingRepository.save(temp);
+                        bookingsToReturn.add(temp);
+                    }
+                }
+            }
 
-            attractionList = vendor.getAttraction_list();
-
-            for (Attraction attraction : attractionList) {
-
-                Long attractionId = attraction.getAttraction_id();
-
-                // for each booking that has the same attraction_id as attractionId, then add to list
-                for (Booking booking : bookingList) {
-                    if (booking.getAttraction().getAttraction_id() == attractionId) {
-                        if (booking.getStatus() != BookingStatusEnum.CANCELLED) {
-                            if (booking.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
-                                booking.setStatus(BookingStatusEnum.ONGOING);
-                            } else if (booking.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
-                                booking.setStatus(BookingStatusEnum.COMPLETED);
-                            } else {
-                                booking.setStatus(BookingStatusEnum.UPCOMING);
-                            }
-                        }
-                        bookingRepository.save(booking);
-                        bookingsToReturn.add(booking);
+            // telecom
+            if (!vendor.getTelecom_list().isEmpty()) {
+                for (Telecom t : vendor.getTelecom_list()) {
+                    if (b.getTelecom() != null && b.getTelecom().getTelecom_id() == t.getTelecom_id()) {
+                        System.out.println("bbbb");
+                        Booking temp = this.setBookingStatus(b);
+                        bookingRepository.save(temp);
+                        bookingsToReturn.add(temp);
                     }
                 }
             }
         }
 
-        for (Booking booking : bookingsToReturn) {
-            if (booking.getLocal_user() != null) {
-                Local local = booking.getLocal_user();
+        // setting of 2 way relationship to null
+        for (Booking b : bookingsToReturn) {
+            if (b.getLocal_user() != null) {
+                Local local = b.getLocal_user();
                 local.setBooking_list(null);
-            } else if (booking.getTourist_user() != null) {
-                Tourist tourist = booking.getTourist_user();
+            } else if (b.getTourist_user() != null) {
+                Tourist tourist = b.getTourist_user();
                 tourist.setBooking_list(null);
             }
-            booking.getPayment().setBooking(null);
+            b.getPayment().setBooking(null);
         }
 
         return bookingsToReturn;
     }
 
-    public Booking getAttractionBookingByVendor(Long vendorStaffId, Long bookingId) throws NotFoundException {
-
-        List<Booking> bookingList = getAllAttractionBookingsByVendor(vendorStaffId);
-
-        for (Booking b : bookingList) {
-            if (b.getBooking_id().equals(bookingId)) {
-                if (b.getLocal_user() != null) {
-                    Local local = b.getLocal_user();
-                    local.setBooking_list(null);
-                } else if (b.getTourist_user() != null) {
-                    Tourist tourist = b.getTourist_user();
-                    tourist.setBooking_list(null);
-                }
-                b.getPayment().setBooking(null);
-                return b;
+    private Booking setBookingStatus(Booking b) {
+        if (b.getStatus() != BookingStatusEnum.CANCELLED) {
+            if (b.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
+                b.setStatus(BookingStatusEnum.ONGOING);
+            } else if (b.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
+                b.setStatus(BookingStatusEnum.COMPLETED);
+            } else {
+                b.setStatus(BookingStatusEnum.UPCOMING);
             }
         }
-        throw new NotFoundException("Booking not found!"); // if the booking is not part of vendor's listing
+        return b;
     }
 
     public Long createTourBooking(Long tourId, Booking newBooking) throws NotFoundException { // need to eventually add payment
@@ -326,79 +322,61 @@ public class BookingService {
 
             return newBooking.getBooking_id();
         } else {
-            System.out.println("tour not found aaa");
             throw new NotFoundException("Tour not found!");
         }
     }
 
-    // To be deleted - for testing purposes
-    public String tempCreateBooking() throws NotFoundException {
-        Booking booking = new Booking();
-        booking.setStart_datetime(LocalDateTime.now().plusDays(4l));
-        booking.setEnd_datetime(LocalDateTime.now().plusDays(5l));
-        booking.setLast_update(LocalDateTime.now());
-        booking.setStatus(BookingStatusEnum.UPCOMING);
-        booking.setType(BookingTypeEnum.ATTRACTION);
-        bookingRepository.save(booking);
+    public Booking createAttractionBooking(Long attractionId, Booking booking) throws NotFoundException {
 
-        List<BookingItem> bookingItemList = new ArrayList<>();
+        Optional<Attraction> attractionOptional = attractionRepository.findById(attractionId);
 
-        // Booking Item One
-        BookingItem bookingItemOne = new BookingItem();
-        BookingItem bookingItemTwo = new BookingItem();
+        if (attractionOptional.isPresent()) {
+            Payment payment = booking.getPayment();
+            paymentRepository.save(payment);
 
-        bookingItemOne.setQuantity(3);
-        bookingItemTwo.setQuantity(2);
+            for (BookingItem bi : booking.getBooking_item_list()) {
+                bookingItemRepository.save(bi);
+            }
 
-        bookingItemOne.setStart_datetime(LocalDate.now().plusDays(4l));
-        bookingItemTwo.setStart_datetime(LocalDate.now().plusDays(4l));
+            Attraction attraction = attractionOptional.get();
+            booking.setAttraction(attraction);
+            bookingRepository.save(booking);
 
-        bookingItemOne.setEnd_datetime(LocalDate.now().plusDays(5l));
-        bookingItemTwo.setEnd_datetime(LocalDate.now().plusDays(5l));
+            payment.setBooking(booking);
+            paymentRepository.save(payment);
 
-        bookingItemOne.setType(BookingTypeEnum.ATTRACTION);
-        bookingItemTwo.setType(BookingTypeEnum.ATTRACTION);
+            booking.getPayment().setBooking(null);
+            return booking;
 
-        bookingItemOne.setActivity_selection("ADULT");
-        bookingItemTwo.setActivity_selection("CHILD");
+        } else {
+            throw new NotFoundException("Attraction not found!");
+        }
+    }
 
-        bookingItemRepository.save(bookingItemOne);
-        bookingItemRepository.save(bookingItemTwo);
+    public Booking createTelecomBooking(Long telecomId, Booking booking) throws NotFoundException {
 
-        bookingItemList.add(bookingItemOne);
-        bookingItemList.add(bookingItemTwo);
+        Optional<Telecom> telecomOptional = telecomRepository.findById(telecomId);
 
-        booking.setBooking_item_list(bookingItemList);
+        if (telecomOptional.isPresent()) {
+            Payment payment = booking.getPayment();
+            paymentRepository.save(payment);
 
-        Attraction attraction = attractionRepository.findById(1l).get();
-        booking.setAttraction(attraction);
-        bookingRepository.save(booking);
+            for (BookingItem bi : booking.getBooking_item_list()) {
+                bookingItemRepository.save(bi);
+            }
 
-        Payment payment = new Payment();
-        payment.setPayment_amount(new BigDecimal("100"));
-        payment.setIs_paid(true);
-        payment.setBooking(booking);
-        payment.setComission_percentage(new BigDecimal("0.1"));
-        paymentRepository.save(payment);
+            Telecom telecom = telecomOptional.get();
+            booking.setTelecom(telecom);
+            bookingRepository.save(booking);
 
-//        Tourist tourist = findTourist(4l);
-//        booking.setTourist_user(tourist);
-        booking.setPayment(payment);
-//        tourist.getBooking_list().add(booking);
-//        touristRepository.save(tourist);
+            payment.setBooking(booking);
+            paymentRepository.save(payment);
 
-        Local local = findLocal(1l);
-        booking.setLocal_user(local);
-        local.getBooking_list().add(booking);
-        localRepository.save(local);
-        bookingRepository.save(booking);
-        return "Success";
+            booking.getPayment().setBooking(null);
+            return booking;
 
-        // Tourist tourist = findTourist(2l);
-        // booking.setTourist_user(tourist);
-        // booking.setPayment(payment);
-        // tourist.getBooking_list().add(booking);
-        // bookingRepository.save(booking);
-        // return "Success";
+        } else {
+            throw new NotFoundException("Telecom not found!");
+        }
     }
 }

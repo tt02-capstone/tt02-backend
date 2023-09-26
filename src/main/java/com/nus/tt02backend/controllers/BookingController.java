@@ -27,16 +27,10 @@ public class BookingController {
         return ResponseEntity.ok(bookingList);
     }
 
-    @GetMapping("/getAllAttractionBookingsByVendor/{vendorStaffId}")
-    public ResponseEntity<List<Booking>> getAllAttractionBookingsByVendor(@PathVariable Long vendorStaffId) throws NotFoundException, BadRequestException {
-        List<Booking> bookingList = bookingService.getAllAttractionBookingsByVendor(vendorStaffId);
+    @GetMapping("/getAllBookingsByVendor/{vendorStaffId}")
+    public ResponseEntity<List<Booking>> getAllBookingsByVendor(@PathVariable Long vendorStaffId) throws NotFoundException {
+        List<Booking> bookingList = bookingService.getAllBookingsByVendor(vendorStaffId);
         return ResponseEntity.ok(bookingList);
-    }
-
-    @GetMapping("/getAttractionBookingByVendor/{vendorStaffId}/{bookingId}")
-    public ResponseEntity<Booking> getAttractionBookingByVendor(@PathVariable Long vendorStaffId, @PathVariable Long bookingId) throws NotFoundException {
-        Booking booking = bookingService.getAttractionBookingByVendor(vendorStaffId, bookingId);
-        return ResponseEntity.ok(booking);
     }
 
     @GetMapping("/getBookingByBookingId/{bookingId}")
@@ -64,10 +58,17 @@ public class BookingController {
         return ResponseEntity.ok(bookingId);
     }
 
-    // To be deleted - for testing purposes
-    @GetMapping("/tempCreateBooking")
-    public ResponseEntity<String> tempCreateBooking() throws NotFoundException {
-        String responseMessage = bookingService.tempCreateBooking();
-        return ResponseEntity.ok(responseMessage);
+    // not to be used by frontend
+    @PostMapping("/createAttractionBooking/{attractionId}")
+    public ResponseEntity<Booking> createAttractionBooking(@PathVariable Long attractionId, @RequestBody Booking newBooking) throws NotFoundException {
+        Booking booking = bookingService.createAttractionBooking(attractionId, newBooking);
+        return ResponseEntity.ok(booking);
+    }
+
+    // not to be used by frontend
+    @PostMapping("/createTelecomBooking/{telecomId}")
+    public ResponseEntity<Booking> createTelecomBooking(@PathVariable Long telecomId, @RequestBody Booking newBooking) throws NotFoundException {
+        Booking booking = bookingService.createTelecomBooking(telecomId, newBooking);
+        return ResponseEntity.ok(booking);
     }
 }

@@ -89,14 +89,17 @@ public class SecurityConfig {
               "/telecom/**", // to remove
               "/accommodation/createAccommodation/**", // to remove
               "/accommodation/createRoom/**", // to remove
+              "/booking/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
                 "/telecom/**", // to remove
+                "/booking/**", // to remove
                 "user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
                 "/vendorStaff/verifyEmail/**",
                 "/booking/tempCreateBooking",
                 "/telecom/**", // to remove
+                "/booking/**", // to remove
                 "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()
