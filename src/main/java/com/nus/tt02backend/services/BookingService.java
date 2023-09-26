@@ -6,7 +6,6 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BookingStatusEnum;
-import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import com.stripe.exception.StripeException;
@@ -24,12 +23,12 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.w3c.dom.Attr;
 import javax.imageio.ImageIO;
-import java.math.*;
-import java.time.*;
+
 import java.util.*;
 import java.util.List;
+import java.math.*;
+import java.time.*;
 
 @Service
 public class BookingService {
