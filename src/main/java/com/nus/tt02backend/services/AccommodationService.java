@@ -71,10 +71,10 @@ public class AccommodationService {
         }
     }
 
-    public Accommodation retrieveAccommodationByVendor(Long vendorStaffId, Long attractionId) throws NotFoundException {
-        List<Accommodation> attractionList = retrieveAllAccommodationsByVendor(vendorStaffId);
-        for (Accommodation a : attractionList) {
-            if (a.getAccommodation_id().equals(attractionId)) {
+    public Accommodation retrieveAccommodationByVendor(Long vendorStaffId, Long accommodationId) throws NotFoundException {
+        List<Accommodation> accommodationList = retrieveAllAccommodationsByVendor(vendorStaffId);
+        for (Accommodation a : accommodationList) {
+            if (a.getAccommodation_id().equals(accommodationId)) {
                 return a;
             }
         }
@@ -104,7 +104,6 @@ public class AccommodationService {
         List<Accommodation> currentList = vendor.getAccommodation_list();
         currentList.add(newAccommodation);
         vendor.setAccommodation_list(currentList); // set new accommodation for the vendor
-        System.out.println(vendor.getAccommodation_list());
 
         vendor.setAttraction_list(null);
         vendor.setWithdrawal_list(null);
@@ -205,4 +204,14 @@ public class AccommodationService {
         return (lastAccommodationId != null) ? lastAccommodationId : 0L; // Default to 0 if no attractions exist
     }
 
+    public List<Room> getRoomListByAccommodation(Long accommodationId) throws NotFoundException {
+        Accommodation accommodation = accommodationRepository.findById(accommodationId)
+                .orElseThrow(() -> new NotFoundException("Accommodation not found when getting list of rooms!"));
+
+        if (accommodation.getRoom_list().isEmpty()) {
+            throw new NotFoundException("No rooms created for this accommodation listing!");
+        }
+
+        return accommodation.getRoom_list();
+    }
 }

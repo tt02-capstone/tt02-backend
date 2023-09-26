@@ -2,16 +2,15 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.Accommodation;
-import com.nus.tt02backend.models.Accommodation;
-import com.nus.tt02backend.models.Room;
-import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.services.AccommodationService;
 import com.nus.tt02backend.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -21,6 +20,12 @@ public class AccommodationController {
 
     @Autowired
     AccommodationService accommodationService;
+
+    @GetMapping("/getAccommodation/{accommodationId}")
+    public ResponseEntity<Accommodation> getAccommodation(@PathVariable Long accommodationId) throws NotFoundException {
+        Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
+        return ResponseEntity.ok(accommodation);
+    }
 
     @PostMapping("createAccommodation/{vendorStaffId}")
     public ResponseEntity<Accommodation> createAccommodation(@PathVariable Long vendorStaffId , @RequestBody Accommodation accommodationToCreate)
@@ -66,5 +71,11 @@ public class AccommodationController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/getRoomListByAccommodation/{accommodationId}")
+    public ResponseEntity<List<Room>> getRoomListByAccommodation(@PathVariable Long accommodationId) throws NotFoundException {
+        List<Room> roomList = accommodationService.getRoomListByAccommodation(accommodationId);
+        return ResponseEntity.ok(roomList);
     }
 }
