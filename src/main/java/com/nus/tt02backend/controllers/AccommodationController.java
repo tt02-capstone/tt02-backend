@@ -36,6 +36,13 @@ public class AccommodationController {
         return ResponseEntity.ok(accommodation);
     }
 
+    @PutMapping("/updateAccommodation/{vendorStaffId}")
+    public ResponseEntity<Void> updateAccommodation(@PathVariable Long vendorStaffId ,@RequestBody Accommodation accommodationToUpdate) throws NotFoundException {
+        VendorStaff vendorStaff = accommodationService.retrieveVendor(vendorStaffId);
+        accommodationService.updateAccommodation(vendorStaff, accommodationToUpdate);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("createRoom/{accommodationId}")
     public ResponseEntity<Room> createRoom(@PathVariable Long accommodationId , @RequestBody Room roomToCreate)
             throws BadRequestException, IllegalArgumentException, NotFoundException {

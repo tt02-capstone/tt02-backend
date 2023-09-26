@@ -78,7 +78,41 @@ public class AccommodationService {
                 return a;
             }
         }
-        throw new NotFoundException("Accommodation not found!"); // if the attraction is not part of vendor's listing
+        throw new NotFoundException("Accommodation not found!"); // if the accommodation is not part of vendor's listing
+    }
+
+    public List<Room> updateRoomList(List<Room> room_list) throws NotFoundException {
+        List<Room> update_room_list = new ArrayList<Room>();
+
+        if (room_list != null) {
+            for (Room input : room_list) {
+
+                if (input.getRoom_id() == null) {
+                    Room roomToCreate = new Room();
+
+                    roomToCreate.setRoom_number(input.getRoom_number());
+                    roomToCreate.setAmenities_description(input.getAmenities_description());
+                    roomToCreate.setNum_of_pax(input.getNum_of_pax());
+                    roomToCreate.setRoom_type(input.getRoom_type());
+                    roomToCreate.setPrice(input.getPrice());
+
+                    roomRepository.save(roomToCreate);
+                    update_room_list.add(roomToCreate);
+                } else {
+                    Room room = roomRepository.findById(input.getRoom_id()).orElseThrow(() -> new NotFoundException("Room Not Found!"));
+
+                    room.setRoom_number(input.getRoom_number());
+                    room.setAmenities_description(input.getAmenities_description());
+                    room.setNum_of_pax(input.getNum_of_pax());
+                    room.setRoom_type(input.getRoom_type());
+                    room.setPrice(input.getPrice());
+
+                    roomRepository.save(room);
+                    update_room_list.add(room);
+                }
+            }
+        }
+        return update_room_list;
     }
 
     public Accommodation createAccommodation(VendorStaff vendorStaff, Accommodation accommodationToCreate) throws BadRequestException {
@@ -117,6 +151,34 @@ public class AccommodationService {
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
 
         return newAccommodation;
+    }
+
+    public void updateAccommodation(VendorStaff vendorStaff, Accommodation accommodationToUpdate) throws NotFoundException {
+        Accommodation accommodation = accommodationRepository.findById(accommodationToUpdate.getAccommodation_id())
+                .orElseThrow(() -> new NotFoundException("Accommodation Not Found!"));
+        if (accommodationToUpdate.getName() != null && accommodationToUpdate.getContact_num() != null &&
+                accommodationToUpdate.getIs_published() != null) {
+
+            accommodation.setName(accommodationToUpdate.getName());
+            accommodation.setDescription(accommodationToUpdate.getDescription());
+            accommodation.setAddress(accommodationToUpdate.getAddress());
+            accommodation.setContact_num(accommodationToUpdate.getContact_num());
+            accommodation.setAccommodation_image_list(accommodationToUpdate.getAccommodation_image_list());
+            accommodation.setIs_published(accommodationToUpdate.getIs_published());
+            accommodation.setCheck_in_time(accommodationToUpdate.getCheck_in_time());
+            accommodation.setCheck_out_time(accommodationToUpdate.getCheck_out_time());
+            accommodation.setType(accommodationToUpdate.getType());
+            accommodation.setGeneric_location(accommodationToUpdate.getGeneric_location());
+
+            // change price list to room
+            List<Room> updatedRoomList = updateRoomList(accommodationToUpdate.getRoom_list());
+            PriceTierEnum updatedTier = priceTierEstimation(updatedRoomList);
+
+            accommodation.setRoom_list(updatedRoomList);
+            accommodation.setEstimated_price_tier(updatedTier);
+        }
+
+        accommodationRepository.save(accommodation);
     }
 
     public List<Room> createRoomList(List<Room> room_list) throws BadRequestException {
@@ -201,7 +263,7 @@ public class AccommodationService {
 
     public Long getLastAccommodationId() {
         Long lastAccommodationId = accommodationRepository.findMaxAccommodationId();
-        return (lastAccommodationId != null) ? lastAccommodationId : 0L; // Default to 0 if no attractions exist
+        return (lastAccommodationId != null) ? lastAccommodationId : 0L; // Default to 0 if no accommodations exist
     }
 
     public List<Room> getRoomListByAccommodation(Long accommodationId) throws NotFoundException {
