@@ -144,6 +144,58 @@ public class TourService {
         return attraction;
     }
 
+    public Tour createTour(Long tourTypeId, Tour tourToCreate) throws BadRequestException {
+        Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeId);
+
+        if (tourTypeOptional.isEmpty()) {
+            throw new BadRequestException("Tour type does not exist!");
+        }
+
+        TourType tourType = tourTypeOptional.get();
+        Tour createdTour = tourRepository.save(tourToCreate);
+        tourType.getTour_list().add(createdTour);
+        tourTypeRepository.save(tourType);
+
+        return createdTour;
+    }
+
+    public List<Tour> getAllToursByTourType(Long tourTypeId) throws BadRequestException {
+        Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeId);
+
+        if (tourTypeOptional.isEmpty()) {
+            throw new BadRequestException("Tour type does not exist!");
+        }
+
+        return tourTypeOptional.get().getTour_list();
+    }
+
+    public Tour getTourByTourId(Long tourId) throws BadRequestException {
+        Optional<Tour> tourOptional = tourRepository.findById(tourId);
+
+        if (tourOptional.isEmpty()) {
+            throw new BadRequestException("Tour does not exist!");
+        }
+
+        return tourOptional.get();
+    }
+
+    public Tour updateTour(Tour tourToUpdate) throws BadRequestException {
+        Optional<Tour> tourOptional = tourRepository.findById(tourToUpdate.getTour_id());
+
+        if (tourOptional.isEmpty()) {
+            throw new BadRequestException("Tour does not exist!");
+        }
+
+        Tour tour = tourOptional.get();
+        tour.setDate(tourToUpdate.getDate());
+        tour.setStart_time(tourToUpdate.getStart_time());
+        tour.setEnd_time(tourToUpdate.getEnd_time());
+        tourRepository.save(tour);
+
+        return tour;
+    }
+
+    /*
     public Long createTour(Long tourTypeId, Tour tour) throws BadRequestException {
 
 //        Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeId);
@@ -158,4 +210,5 @@ public class TourService {
             throw new BadRequestException("Tour type not found!");
         }
     }
+     */
 }

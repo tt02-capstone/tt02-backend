@@ -381,7 +381,6 @@ public class AttractionService {
             local.setCart_list(null);
             local.setSupport_ticket_list(null);
             local.setBooking_list(null);
-            local.setTour_list(null);
             local.setTour_type_list(null);
             local.setAttraction_list(null);
             local.setAccommodation_list(null);
@@ -438,7 +437,6 @@ public class AttractionService {
                     local.setCart_list(null);
                     local.setSupport_ticket_list(null);
                     local.setBooking_list(null);
-                    local.setTour_list(null);
                     local.setTour_type_list(null);
                     local.setAttraction_list(null);
                     local.setAccommodation_list(null);
