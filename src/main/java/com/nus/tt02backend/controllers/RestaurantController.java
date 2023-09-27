@@ -114,4 +114,14 @@ public class RestaurantController {
         return ResponseEntity.ok(rList);
     }
 
+    @GetMapping("/getLastRestId")
+    public ResponseEntity<?> getLastRestId() {
+        try {
+            Long lastRestId = restaurantService.getLastRestId();
+            return ResponseEntity.ok(lastRestId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
 }

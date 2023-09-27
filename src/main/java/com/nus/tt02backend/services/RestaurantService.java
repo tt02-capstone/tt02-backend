@@ -97,7 +97,7 @@ public class RestaurantService {
         if (!vendor.getRestaurant_list().isEmpty()) {
             return vendor.getRestaurant_list();
         } else {
-            throw new NotFoundException("Attractions not found!");
+            throw new NotFoundException("Restaurant not found!");
         }
     }
 
@@ -337,6 +337,10 @@ public class RestaurantService {
         }
     }
 
+    public Long getLastRestId() {
+        Long lastRestId = restaurantRepository.findMaxRestaurantId();
+        return (lastRestId != null) ? lastRestId : 0L;
+    }
 
 
 }

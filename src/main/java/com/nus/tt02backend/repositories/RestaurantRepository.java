@@ -8,5 +8,7 @@ public interface RestaurantRepository  extends JpaRepository<Restaurant, Long> {
     @Query("SELECT r FROM Restaurant r WHERE r.name=?1")
     Restaurant getRestaurantByName(String name);
 
+    @Query("SELECT MAX(r.restaurant_id) FROM Restaurant r")
+    Long findMaxRestaurantId();
 
 }
