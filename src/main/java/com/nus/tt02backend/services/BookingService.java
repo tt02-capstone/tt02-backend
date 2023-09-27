@@ -52,6 +52,9 @@ public class BookingService {
     @Autowired
     TourRepository tourRepository;
 
+    @Autowired
+    RoomRepository roomRepository;
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -232,7 +235,20 @@ public class BookingService {
 
         return payments;
     }
-    
+
+    private Booking setBookingStatus(Booking b) {
+        if (b.getStatus() != BookingStatusEnum.CANCELLED) {
+            if (b.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
+                b.setStatus(BookingStatusEnum.ONGOING);
+            } else if (b.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
+                b.setStatus(BookingStatusEnum.COMPLETED);
+            } else {
+                b.setStatus(BookingStatusEnum.UPCOMING);
+            }
+        }
+        return b;
+    }
+
     public List<Booking> getAllAttractionBookingsByVendor(Long vendorStaffId) throws NotFoundException {
 
         VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
@@ -243,28 +259,17 @@ public class BookingService {
 
         List<Booking> bookingList = retrieveAllBookings();
 
-        if (!vendor.getAttraction_list().isEmpty()) {
-
-            attractionList = vendor.getAttraction_list();
-
-            for (Attraction attraction : attractionList) {
-
-                Long attractionId = attraction.getAttraction_id();
-
-                // for each booking that has the same attraction_id as attractionId, then add to list
-                for (Booking booking : bookingList) {
-                    if (booking.getAttraction().getAttraction_id() == attractionId) {
-                        if (booking.getStatus() != BookingStatusEnum.CANCELLED) {
-                            if (booking.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
-                                booking.setStatus(BookingStatusEnum.ONGOING);
-                            } else if (booking.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
-                                booking.setStatus(BookingStatusEnum.COMPLETED);
-                            } else {
-                                booking.setStatus(BookingStatusEnum.UPCOMING);
-                            }
+        for (Booking b : bookingList) {
+            if (!vendor.getAttraction_list().isEmpty()) {
+                if (!vendor.getAttraction_list().isEmpty()) {
+                    // attraction
+                    for (Attraction a : vendor.getAttraction_list()) {
+                        if (b.getAttraction() != null && b.getAttraction().getAttraction_id() == a.getAttraction_id()) {
+                            System.out.println("aaaa");
+                            Booking temp = this.setBookingStatus(b);
+                            bookingRepository.save(temp);
+                            bookingsToReturn.add(temp);
                         }
-                        bookingRepository.save(booking);
-                        bookingsToReturn.add(booking);
                     }
                 }
             }
@@ -278,6 +283,7 @@ public class BookingService {
                 Tourist tourist = booking.getTourist_user();
                 tourist.setBooking_list(null);
             }
+            System.out.println("booking" + booking);
             booking.getPayment().setBooking(null);
         }
 
@@ -332,7 +338,7 @@ public class BookingService {
     }
 
     // To be deleted - for testing purposes
-    public String tempCreateBooking() throws NotFoundException {
+    public String tempCreateAttractionBooking() throws NotFoundException {
         Booking booking = new Booking();
         booking.setStart_datetime(LocalDateTime.now().plusDays(4l));
         booking.setEnd_datetime(LocalDateTime.now().plusDays(5l));
@@ -345,22 +351,95 @@ public class BookingService {
 
         // Booking Item One
         BookingItem bookingItemOne = new BookingItem();
-        BookingItem bookingItemTwo = new BookingItem();
+//        BookingItem bookingItemTwo = new BookingItem();
 
         bookingItemOne.setQuantity(3);
-        bookingItemTwo.setQuantity(2);
+//        bookingItemTwo.setQuantity(2);
+
+        bookingItemOne.setStart_datetime(LocalDate.now().plusDays(4l));
+//        bookingItemTwo.setStart_datetime(LocalDate.now().plusDays(4l));
+
+        bookingItemOne.setEnd_datetime(LocalDate.now().plusDays(5l));
+//        bookingItemTwo.setEnd_datetime(LocalDate.now().plusDays(5l));
+
+        bookingItemOne.setType(BookingTypeEnum.ATTRACTION);
+//        bookingItemTwo.setType(BookingTypeEnum.ATTRACTION);
+
+        bookingItemOne.setActivity_selection("ALL");
+//        bookingItemTwo.setActivity_selection("CHILD");
+
+        bookingItemRepository.save(bookingItemOne);
+//        bookingItemRepository.save(bookingItemTwo);
+
+        bookingItemList.add(bookingItemOne);
+//        bookingItemList.add(bookingItemTwo);
+
+        booking.setBooking_item_list(bookingItemList);
+
+        Attraction attraction = attractionRepository.findById(1l).get();
+        booking.setAttraction(attraction);
+        bookingRepository.save(booking);
+
+        Payment payment = new Payment();
+        payment.setPayment_id("2");
+        payment.setPayment_amount(new BigDecimal("100"));
+        payment.setIs_paid(true);
+        payment.setBooking(booking);
+        payment.setComission_percentage(new BigDecimal("0.1"));
+        paymentRepository.save(payment);
+
+//        Tourist tourist = findTourist(4l);
+//        booking.setTourist_user(tourist);
+//        booking.setPayment(payment);
+//        tourist.getBooking_list().add(booking);
+//        touristRepository.save(tourist);
+
+        Local local = findLocal(3l);
+        booking.setLocal_user(local);
+        local.getBooking_list().add(booking);
+        booking.setPayment(payment);
+        localRepository.save(local);
+        bookingRepository.save(booking);
+        return "Success";
+
+        // Tourist tourist = findTourist(2l);
+        // booking.setTourist_user(tourist);
+        // tourist.getBooking_list().add(booking);
+        // bookingRepository.save(booking);
+        // return "Success";
+    }
+
+    // To be deleted - for testing purposes
+    public String tempCreateAccommodationBooking() throws NotFoundException {
+        Booking booking = new Booking();
+        booking.setStart_datetime(LocalDateTime.now().plusDays(4l));
+        booking.setEnd_datetime(LocalDateTime.now().plusDays(8l));
+        booking.setLast_update(LocalDateTime.now());
+        booking.setStatus(BookingStatusEnum.UPCOMING);
+        booking.setType(BookingTypeEnum.ACCOMODATION);
+        booking.setActivity_name("Room");
+        bookingRepository.save(booking);
+
+        List<BookingItem> bookingItemList = new ArrayList<>();
+
+        // Booking Item One
+        BookingItem bookingItemOne = new BookingItem();
+        BookingItem bookingItemTwo = new BookingItem();
+
+        bookingItemOne.setQuantity(1);
+        bookingItemTwo.setQuantity(1);
 
         bookingItemOne.setStart_datetime(LocalDate.now().plusDays(4l));
         bookingItemTwo.setStart_datetime(LocalDate.now().plusDays(4l));
 
-        bookingItemOne.setEnd_datetime(LocalDate.now().plusDays(5l));
-        bookingItemTwo.setEnd_datetime(LocalDate.now().plusDays(5l));
+        bookingItemOne.setEnd_datetime(LocalDate.now().plusDays(8l));
+        bookingItemTwo.setEnd_datetime(LocalDate.now().plusDays(8l));
 
-        bookingItemOne.setType(BookingTypeEnum.ATTRACTION);
-        bookingItemTwo.setType(BookingTypeEnum.ATTRACTION);
+        bookingItemOne.setType(BookingTypeEnum.ACCOMODATION);
+        bookingItemTwo.setType(BookingTypeEnum.ACCOMODATION);
 
-        bookingItemOne.setActivity_selection("ADULT");
-        bookingItemTwo.setActivity_selection("CHILD");
+        bookingItemOne.setActivity_selection("STANDARD");
+        bookingItemTwo.setActivity_selection("DOUBLE");
 
         bookingItemRepository.save(bookingItemOne);
         bookingItemRepository.save(bookingItemTwo);
@@ -370,24 +449,19 @@ public class BookingService {
 
         booking.setBooking_item_list(bookingItemList);
 
-        Attraction attraction = attractionRepository.findById(1l).get();
-        booking.setAttraction(attraction);
+        Room roomToSave = roomRepository.findById(1l).get();
+        booking.setRoom(roomToSave);
         bookingRepository.save(booking);
 
         Payment payment = new Payment();
+        payment.setPayment_id("1");
         payment.setPayment_amount(new BigDecimal("100"));
         payment.setIs_paid(true);
         payment.setBooking(booking);
         payment.setComission_percentage(new BigDecimal("0.1"));
         paymentRepository.save(payment);
 
-//        Tourist tourist = findTourist(4l);
-//        booking.setTourist_user(tourist);
-        booking.setPayment(payment);
-//        tourist.getBooking_list().add(booking);
-//        touristRepository.save(tourist);
-
-        Local local = findLocal(1l);
+        Local local = findLocal(3l);
         booking.setLocal_user(local);
         local.getBooking_list().add(booking);
         localRepository.save(local);

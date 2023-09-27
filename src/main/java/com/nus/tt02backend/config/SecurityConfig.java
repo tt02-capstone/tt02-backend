@@ -91,7 +91,11 @@ public class SecurityConfig {
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
                 "/vendorStaff/verifyEmail/**",
-                "/booking/tempCreateBooking",
+                "/booking/tempCreateAttractionBooking",
+                "/booking/tempCreateAccommodationBooking",
+                "/accommodation/isRoomAvailableOnDate/**",
+                "/booking/retrieveAllBookings",
+                "/booking/getAllAttractionBookingsByVendor/**",
                 "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()

@@ -65,9 +65,21 @@ public class BookingController {
     }
 
     // To be deleted - for testing purposes
-    @GetMapping("/tempCreateBooking")
-    public ResponseEntity<String> tempCreateBooking() throws NotFoundException {
-        String responseMessage = bookingService.tempCreateBooking();
+    @GetMapping("/tempCreateAttractionBooking")
+    public ResponseEntity<String> tempCreateAttractionBooking() throws NotFoundException {
+        String responseMessage = bookingService.tempCreateAttractionBooking();
         return ResponseEntity.ok(responseMessage);
+    }
+
+    @GetMapping("/tempCreateAccommodationBooking")
+    public ResponseEntity<String> tempCreateAccommodationBooking() throws NotFoundException {
+        String responseMessage = bookingService.tempCreateAccommodationBooking();
+        return ResponseEntity.ok(responseMessage);
+    }
+
+    @GetMapping("/retrieveAllBookings")
+    public ResponseEntity<List<Booking>> retrieveAllBookings() throws NotFoundException {
+        List<Booking> bookingList = bookingService.retrieveAllBookings();
+        return ResponseEntity.ok(bookingList);
     }
 }

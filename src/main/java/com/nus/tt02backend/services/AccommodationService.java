@@ -5,7 +5,7 @@ import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
 import com.nus.tt02backend.models.enums.PriceTierEnum;
 import com.nus.tt02backend.models.enums.AccommodationTypeEnum;
-import com.nus.tt02backend.models.enums.TicketEnum;
+import com.nus.tt02backend.models.enums.RoomTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +28,9 @@ public class AccommodationService {
 
     @Autowired
     VendorStaffRepository vendorStaffRepository;
+
+    @Autowired
+    BookingRepository bookingRepository;
 
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
@@ -151,7 +154,7 @@ public class AccommodationService {
         currentList.add(newAccommodation);
         vendor.setAccommodation_list(currentList); // set new accommodation for the vendor
 
-        vendor.setAttraction_list(null);
+        vendor.setAccommodation_list(null);
         vendor.setWithdrawal_list(null);
         vendor.setVendor_staff_list(null);
 //        vendor.setComment_list(null);
@@ -287,5 +290,100 @@ public class AccommodationService {
         }
 
         return accommodation.getRoom_list();
+    }
+
+    public Accommodation retrieveAccommodationByRoom (Long room_id) throws NotFoundException {
+        Room room = roomRepository.findById(room_id)
+                .orElseThrow(() -> new NotFoundException("Room not found!"));
+
+        List<Accommodation> allAccommodations = retrieveAllAccommodations();
+
+        if (allAccommodations.isEmpty()) {
+            throw new NotFoundException("There are no accommodations!");
+        }
+
+        for (Accommodation accomm : allAccommodations) {
+            List<Room> accommodationRoomList = accomm.getRoom_list();
+
+            if (!accommodationRoomList.isEmpty()) {
+                for (Room r : accommodationRoomList) {
+                    if (r.getRoom_id().equals(room_id)) {
+                        return accomm;
+                    }
+                }
+            }
+        }
+        throw new NotFoundException("Accommodation not found!");
+    }
+
+    // DONE
+    public List<RoomTypeEnum> getRoomTypeByAccommodation(Long accommodation_id) throws NotFoundException {
+        Accommodation accommodation = accommodationRepository.findById(accommodation_id)
+                .orElseThrow(() -> new NotFoundException("Accommodation not found!"));
+
+        List<RoomTypeEnum> roomTypes = new ArrayList<RoomTypeEnum>();
+        if (!accommodation.getRoom_list().isEmpty()) {
+            for (Room r : accommodation.getRoom_list()) {
+                roomTypes.add(r.getRoom_type());
+            }
+        }
+
+        return roomTypes;
+    }
+
+    // NOT DONE
+    public boolean isRoomAvailableOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDate roomDate) throws NotFoundException, BadRequestException {
+
+        Accommodation accommodation = accommodationRepository.findById(accommodation_id)
+                .orElseThrow(() -> new NotFoundException("Accommodation not found!"));
+
+        System.out.println("accommodation" + accommodation);
+
+        long totalRoomCount = accommodation.getRoom_list().stream()
+                .filter(room -> room.getRoom_type() == roomType)
+                .count();
+
+        System.out.println("totalRoomCount" + totalRoomCount);
+
+        // it is failing here
+        List<Booking> allBookings = bookingRepository.findAll();
+        List<Booking> accommodationBookings = new ArrayList<Booking>();
+
+        for (Booking b : allBookings) {
+            b.getPayment().setBooking(null);
+            Accommodation accomm = retrieveAccommodationByRoom(b.getRoom().getRoom_id());
+            System.out.println("Accomm" + accomm);
+            if (accomm.getAccommodation_id().equals(accommodation_id)) {
+                accommodationBookings.add(b);
+            }
+        }
+//
+//        System.out.println("accommodationBookings" + accommodationBookings);
+//
+//        // need to check for roomtype
+//        long bookedRoomsOnThatDate = 0;
+//        for (Booking b : accommodationBookings) {
+//
+//            if (b.getRoom().getRoom_type().equals(roomType)) {
+//
+//                LocalDate checkInDate = b.getStart_datetime().toLocalDate();
+//                LocalDate checkOutDate = b.getEnd_datetime().toLocalDate();
+//
+//                if (!roomDate.isBefore(checkInDate) && !roomDate.isAfter(checkOutDate)) {
+//                    System.out.println("roomDate is within the date range.");
+//
+//                    bookedRoomsOnThatDate++;
+//
+//                } else {
+//                    System.out.println("roomDate is outside the date range.");
+//
+//                }
+//            }
+//
+//
+//        }
+
+//        return totalRoomCount - bookedRoomsOnThatDate > 0;
+        return true;
     }
 }

@@ -23,8 +23,6 @@ public class Payment {
     @JoinColumn(name = "booking_id")
     private Booking booking;
 
-
-
 //    private TicketEnum ticket_type;
 
 }

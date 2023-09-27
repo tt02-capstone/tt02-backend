@@ -4,6 +4,7 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.Accommodation;
+import com.nus.tt02backend.models.enums.RoomTypeEnum;
 import com.nus.tt02backend.services.AccommodationService;
 import com.nus.tt02backend.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,5 +91,15 @@ public class AccommodationController {
     public ResponseEntity<List<Room>> getRoomListByAccommodation(@PathVariable Long accommodationId) throws NotFoundException {
         List<Room> roomList = accommodationService.getRoomListByAccommodation(accommodationId);
         return ResponseEntity.ok(roomList);
+    }
+    @GetMapping("/getRoomTypeByAccommodation/{accommodation_id}")
+    public ResponseEntity<List<RoomTypeEnum>> getRoomTypeByAccommodation(@PathVariable Long accommodation_id) throws NotFoundException {
+        List<RoomTypeEnum> roomTypes = accommodationService.getRoomTypeByAccommodation(accommodation_id);
+        return ResponseEntity.ok(roomTypes);
+    }
+    @GetMapping("/isRoomAvailableOnDate/{accommodation_id}/{roomTypeEnum}/{date}")
+    public ResponseEntity<Boolean> isRoomAvailableOnDate(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable LocalDate date) throws BadRequestException ,NotFoundException {
+        Boolean roomAvailability = accommodationService.isRoomAvailableOnDate(accommodation_id, roomTypeEnum, date);
+        return ResponseEntity.ok(roomAvailability);
     }
 }
