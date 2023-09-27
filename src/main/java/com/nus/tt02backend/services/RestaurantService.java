@@ -11,6 +11,8 @@ import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Service
@@ -114,8 +116,9 @@ public class RestaurantService {
         if (checkR != null) {
             throw new BadRequestException("There is an restaurant listing with the same name, please choose another name!");
         }
-
         restToCreate.setEstimated_price_tier(PriceTierEnum.TIER_0); // set to be 0 cus price is tagged to dish not restaurant
+        restToCreate.setDish_list(null); // default empty
+
         Restaurant newR = restaurantRepository.save(restToCreate);
 
         Vendor vendor = vendorStaff.getVendor();
@@ -167,24 +170,88 @@ public class RestaurantService {
 
         Dish dish = dishRepository.save(newDish);
         r.getDish_list().add(dish);
-        updatePriceTier(dish);
+
+        restaurantRepository.save(r);
+
+        updatePriceTier(r.getDish_list(), r.getRestaurant_id()); // add in the pricing tier
+
         return dish;
     }
 
-    // maybe change spice to be boolean instead of int
+    // update dish
     public Dish updateDish(Long restId, Dish updateDish) throws NotFoundException {
         Restaurant r = getRestaurant(restId);
-        Dish d =  getDish(updateDish.getDish_id());
+        for (Dish d : r.getDish_list()) {
+            if (d.getDish_id().equals(updateDish.getDish_id())) {
+                d.setName(updateDish.getName());
+                d.setPrice(updateDish.getPrice());
+                d.setDescription(updateDish.getDescription());
+                d.setDish_image(updateDish.getDish_image());
+                d.setSpicy(updateDish.getSpicy());
+                d.setIs_signature(updateDish.getIs_signature());
 
+                dishRepository.save(d);
+            }
+        }
+
+        updatePriceTier(r.getDish_list(),restId); // update pricing tier
+
+        return updateDish;
     }
 
-    // update dish
+    public List<Dish> getAllDish() { // for admin
+        return dishRepository.findAll();
+    }
 
     // delete dish
+    public List<Dish> deleteDish(Long restId, Long dishId) throws NotFoundException {
+        Restaurant r = getRestaurant(restId);
+        List<Dish> restDishList = r.getDish_list();
 
-    // pricing tier magic need to call for this everytime during dish CRUD n update to rest + set the new price tier to the rest
-    public void updatePriceTier(Dish dish) {
+        for (Dish d : r.getDish_list()) {
+            if (d.getDish_id().equals(dishId)) {
+                restDishList.remove(d);
+                r.setDish_list(restDishList); // set the updated dish list
+                restaurantRepository.save(r);
+                dishRepository.deleteById(dishId); // remove from the dish table separately
+                break;
+            }
+        }
 
+        updatePriceTier(restDishList,restId); // update pricing tier
+        return restDishList;
+    }
+
+    // pricing magic need to call for this everytime during dish CRUD n update to rest + set the new price tier to the rest
+    public void updatePriceTier(List<Dish> dishList, Long restId) throws NotFoundException {
+        Restaurant r = getRestaurant(restId);
+        BigDecimal total = new BigDecimal("0");
+        for (Dish d : dishList) {
+            total = total.add(d.getPrice());
+        }
+
+        int totalDish = dishList.size();
+        BigDecimal avg = total.divide(BigDecimal.valueOf(totalDish), 2, RoundingMode.HALF_UP);
+
+        BigDecimal tier0 = new BigDecimal("0");
+        BigDecimal tier1 = new BigDecimal("10");
+        BigDecimal tier2 = new BigDecimal("30");
+        BigDecimal tier3 = new BigDecimal("50");
+        BigDecimal tier4 = new BigDecimal("100");
+
+        if (avg.compareTo(tier0) >= 0 && avg.compareTo(tier1) <= 0) {
+            r.setEstimated_price_tier(PriceTierEnum.TIER_1);
+        } else if (avg.compareTo(tier1) >= 0 && avg.compareTo(tier2) <= 0 ) {
+            r.setEstimated_price_tier(PriceTierEnum.TIER_2);
+        } else if (avg.compareTo(tier2) >= 0 && avg.compareTo(tier3) <= 0) {
+            r.setEstimated_price_tier(PriceTierEnum.TIER_3);
+        } else if (avg.compareTo(tier3) >= 0 && avg.compareTo(tier4) <= 0) {
+            r.setEstimated_price_tier(PriceTierEnum.TIER_4);
+        } else {
+            r.setEstimated_price_tier(PriceTierEnum.TIER_5);
+        }
+
+        restaurantRepository.save(r); // update the price tier accordingly
     }
 
     public List<Restaurant> getAllSavedRestaurantForUser(Long userId) throws NotFoundException, BadRequestException {
@@ -202,7 +269,7 @@ public class RestaurantService {
         }
     }
 
-    public Restaurant saveRestaurantForUser(Long userId, Long restId) throws BadRequestException, NotFoundException {
+    public List<Restaurant> saveRestaurantForUser(Long userId, Long restId) throws BadRequestException, NotFoundException {
         Restaurant restToSave = getRestaurant(restId);
         User currentUser = findUser(userId);
         List<Restaurant> savedR = new ArrayList<>();
@@ -224,7 +291,7 @@ public class RestaurantService {
         savedR.add(restToSave);
         userRepository.save(currentUser);
 
-        return restToSave;
+        return savedR;
     }
 
     public List<Restaurant> removeSavedRestaurantForUser(Long userId, Long restId) throws NotFoundException, BadRequestException {
