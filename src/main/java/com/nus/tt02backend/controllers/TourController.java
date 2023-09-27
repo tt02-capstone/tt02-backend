@@ -1,6 +1,7 @@
 package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.models.Attraction;
 import com.nus.tt02backend.models.Tour;
 import com.nus.tt02backend.models.TourType;
 import com.nus.tt02backend.services.TourService;
@@ -39,9 +40,10 @@ public class TourController {
         return ResponseEntity.ok(tourType);
     }
 
-    @PutMapping("/updateTourType")
-    public ResponseEntity<TourType> updateTourType(@RequestBody TourType tourTypeToUpdate) throws BadRequestException {
-        TourType updatedTourType = tourService.updateTourType(tourTypeToUpdate);
+    @PutMapping("/updateTourType/{attractionId}")
+    public ResponseEntity<TourType> updateTourType(@PathVariable Long attractionId, @RequestBody TourType tourTypeToUpdate)
+            throws BadRequestException {
+        TourType updatedTourType = tourService.updateTourType(attractionId, tourTypeToUpdate);
         return ResponseEntity.ok(updatedTourType);
     }
 
@@ -59,6 +61,13 @@ public class TourController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/getAttractionForTourTypeId/{tourTypeId}")
+    public ResponseEntity<Attraction> getAttractionForTourTypeId(@PathVariable Long tourTypeId)
+            throws BadRequestException {
+        Attraction attraction = tourService.getAttractionForTourTypeId(tourTypeId);
+        return ResponseEntity.ok(attraction);
     }
 
     @PostMapping("/createTour/{tourTypeId}")

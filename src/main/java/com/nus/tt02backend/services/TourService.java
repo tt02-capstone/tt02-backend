@@ -73,7 +73,7 @@ public class TourService {
         return tourTypeOptional.get();
     }
 
-    public TourType updateTourType(TourType tourTypeToUpdate) throws BadRequestException {
+    public TourType updateTourType(Long attractionId, TourType tourTypeToUpdate) throws BadRequestException {
         Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeToUpdate.getTour_type_id());
 
         if (tourTypeOptional.isEmpty()) {
@@ -91,6 +91,18 @@ public class TourService {
         tourType.setEstimated_duration(tourTypeToUpdate.getEstimated_duration());
         tourType.setIs_published(tourTypeToUpdate.getIs_published());
         tourTypeRepository.save(tourType);
+
+        Attraction oldAttraction = attractionRepository.getAttractionTiedToTourType(tourType.getTour_type_id());
+        oldAttraction.getTour_type_list().remove(tourType);
+        attractionRepository.save(oldAttraction);
+
+        Optional<Attraction> newAttractionOptional = attractionRepository.findById(attractionId);
+        if (newAttractionOptional.isEmpty()) {
+            throw new BadRequestException("Attraction does not exist!");
+        }
+        Attraction newAttraction = newAttractionOptional.get();
+        newAttraction.getTour_type_list().add(tourType);
+        attractionRepository.save(newAttraction);
 
         return tourType;
     }
@@ -120,6 +132,16 @@ public class TourService {
     public Long getLastTourTypeId() {
         Long lastTourTypeId = tourTypeRepository.findMaxTourTypeId();
         return (lastTourTypeId != null) ? lastTourTypeId : 0L;
+    }
+
+    public Attraction getAttractionForTourTypeId(Long tourTypeId) throws BadRequestException {
+        Attraction attraction = attractionRepository.getAttractionTiedToTourType(tourTypeId);
+
+        if (attraction == null) {
+            throw new BadRequestException("There is no attraction that contains this tour type!");
+        }
+
+        return attraction;
     }
 
     public Long createTour(Long tourTypeId, Tour tour) throws BadRequestException {
