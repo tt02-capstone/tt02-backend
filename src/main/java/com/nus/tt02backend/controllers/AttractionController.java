@@ -116,6 +116,12 @@ public class AttractionController {
         return ResponseEntity.ok(ticketList);
     }
 
+    @GetMapping("/getAllTicketListedByAttractionInTimeRange/{attractionId}/{startDate}/{endDate}")
+    public ResponseEntity<List<TicketPerDay>> getAllTicketListedByAttractionInTimeRange(@PathVariable Long attractionId, @PathVariable LocalDate startDate, @PathVariable LocalDate endDate) throws NotFoundException {
+        List<TicketPerDay> ticketList = attractionService.getAllTicketListedByAttractionInTimeRange(attractionId, startDate, endDate);
+        return ResponseEntity.ok(ticketList);
+    }
+
     // for customer side
     @GetMapping("/getAllTicketListedByAttractionAndDate/{attraction_id}/{date_selected}")
     public ResponseEntity<List<TicketPerDay>> getAllTicketListedByAttractionAndDate(@PathVariable Long attraction_id, @PathVariable LocalDate date_selected) throws NotFoundException {
