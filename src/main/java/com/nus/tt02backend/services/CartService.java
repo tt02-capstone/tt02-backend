@@ -651,6 +651,7 @@ public class CartService {
         newBooking.setActivity_name(bookingToCheckout.getActivity_name());
         newBooking.setAttraction(bookingToCheckout.getAttraction());
         newBooking.setBooking_item_list(bookingItems);
+        newBooking.setQr_code_list(new ArrayList<>());
 
         // Check user type and populate fields accordingly
         if (user instanceof Local) {
