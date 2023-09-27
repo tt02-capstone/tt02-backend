@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -53,8 +54,8 @@ public class Restaurant {
 
     @ElementCollection
     @CollectionTable(name="restaurant_image_list")
-    private ArrayList<String> restaurant_image_list;
+    private List<String> restaurant_image_list;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private ArrayList<Dish> dish_list;
+    private List<Dish> dish_list;
 }
