@@ -94,7 +94,7 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.PUT,
                 "/telecom/**", // to remove
                 "/booking/**", // to remove
-                "user/**").permitAll()
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
                 "/vendorStaff/verifyEmail/**",
                 "/booking/tempCreateBooking",
