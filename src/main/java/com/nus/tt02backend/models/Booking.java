@@ -3,6 +3,7 @@ package com.nus.tt02backend.models;
 
 import com.nus.tt02backend.models.enums.BookingStatusEnum;
 import com.nus.tt02backend.models.enums.BookingTypeEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,6 +36,9 @@ public class Booking {
     private BookingTypeEnum type;
 
     private String activity_name;
+
+    @Enumerated(EnumType.STRING)
+    private UserTypeEnum booked_user;
 
     @OneToOne(mappedBy = "booking" , fetch = FetchType.LAZY)
     private Payment payment;
@@ -69,4 +73,7 @@ public class Booking {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<BookingItem> booking_item_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<QrCode> qr_code_list;
 }

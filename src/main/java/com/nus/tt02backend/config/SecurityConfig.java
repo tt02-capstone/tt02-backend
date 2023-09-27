@@ -86,16 +86,23 @@ public class SecurityConfig {
               "/admin/passwordResetStageThree/**",
               "/vendor/createVendor",
               "/vendorStaff/createVendorStaff",
-              "/accommodation/createAccommodation/**",
-              "/accommodation/createRoom/**",
+              "/telecom/**", // to remove
+              "/accommodation/**", // to remove
+              "/booking/**", // to remove
+              "/attraction/**", // to remove
               "/user/**").permitAll()
+        .requestMatchers(HttpMethod.PUT,
+                "/telecom/**", // to remove
+                "/booking/**", // to remove
+                "/attraction/**", // to remove
+                "/accommodation/**", // to remove
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
                 "/vendorStaff/verifyEmail/**",
-                "/booking/tempCreateAttractionBooking",
-                "/booking/tempCreateAccommodationBooking",
-                "/accommodation/isRoomAvailableOnDate/**",
-                "/booking/retrieveAllBookings",
-                "/booking/getAllAttractionBookingsByVendor/**",
+                "/telecom/**", // to remove
+                "/booking/**", // to remove
+                "/attraction/**", // to remove
+                "/accommodation/**", // to remove
                 "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()
