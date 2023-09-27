@@ -268,7 +268,6 @@ public class AttractionService {
 //        vendor.setPost_list(null);
         vendor.setRestaurant_list(null);
         vendor.setTelecom_list(null);
-        vendor.setDeals_list(null);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
 
@@ -387,7 +386,6 @@ public class AttractionService {
             local.setAccommodation_list(null);
             local.setRestaurant_list(null);
             local.setTelecom_list(null);
-            local.setDeals_list(null);
         } else {
             Tourist tourist = (Tourist) currentUser;
             tourist.setCard_list(null);
@@ -444,7 +442,7 @@ public class AttractionService {
                     local.setAccommodation_list(null);
                     local.setRestaurant_list(null);
                     local.setTelecom_list(null);
-                    local.setDeals_list(null);
+//                    local.setDeals_list(null);
                 } else {
                     Tourist tourist = (Tourist) currentUser;
                     tourist.setCard_list(null);
@@ -643,7 +641,6 @@ public class AttractionService {
         vendor.setVendor_staff_list(null);
         vendor.setRestaurant_list(null);
         vendor.setTelecom_list(null);
-        vendor.setDeals_list(null);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
         attractionRepository.save(attraction);

@@ -12,4 +12,6 @@ public interface DealRepository extends JpaRepository<Deal, Long> {
     @Query("SELECT d FROM Deal d WHERE d.promo_code=?1")
     Deal getDealsByPromoCode(String promocode);
 
+    @Query("SELECT MAX(d.deal_id) FROM Deal d")
+    Long findMaxDealId();
 }

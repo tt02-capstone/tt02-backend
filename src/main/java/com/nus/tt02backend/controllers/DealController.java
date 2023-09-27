@@ -2,10 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.models.Accommodation;
-import com.nus.tt02backend.models.Deal;
-import com.nus.tt02backend.models.Room;
-import com.nus.tt02backend.models.VendorStaff;
+import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.services.AccommodationService;
 import com.nus.tt02backend.services.DealService;
 import com.nus.tt02backend.services.VendorStaffService;
@@ -23,20 +20,49 @@ public class DealController {
     @Autowired
     DealService dealService;
 
-    @GetMapping("{vendorStaffId}")
-    public ResponseEntity<List<Deal>> getDealsbyVendor(@PathVariable Long vendorStaffId )
+    @GetMapping("/getVendorDealList/{vendorId}")
+    public ResponseEntity<List<Deal>> getDealsbyVendor(@PathVariable Long vendorId )
             throws BadRequestException, IllegalArgumentException, NotFoundException {
-        List<Deal> dealList =  dealService.retrieveAllDealsByVendor(vendorStaffId);
+        List<Deal> dealList =  dealService.retrieveAllDealsByVendor(vendorId);
         return ResponseEntity.ok(dealList);
     }
 
-    @PostMapping("create/{vendorStaffId}")
-    public ResponseEntity<Deal> createAccommodation(@PathVariable Long vendorStaffId , @RequestBody Deal dealToCreate)
+    @PostMapping("create/{vendorId}")
+    public ResponseEntity<Deal> createAccommodation(@PathVariable Long vendorId , @RequestBody Deal dealToCreate)
             throws BadRequestException, IllegalArgumentException, NotFoundException {
 
-        VendorStaff vendorStaff = dealService.retrieveVendor(vendorStaffId);
-        Deal newdeal =  dealService.createDeal(vendorStaff, dealToCreate);
+        Vendor vendor = dealService.retrieveVendor(vendorId);
+        Deal newdeal =  dealService.createDeal(vendor, dealToCreate);
         return ResponseEntity.ok(newdeal);
+    }
+
+    @GetMapping("/getAllDealList")
+    public ResponseEntity<List<Deal>> getAllDealeList() {
+        List<Deal> dealList = dealService.getAllDealList();
+        return ResponseEntity.ok(dealList);
+    }
+
+
+    @GetMapping("/getDealById/{dealId}")
+    public ResponseEntity<Deal> getDealById(@PathVariable Long dealId) throws NotFoundException {
+        Deal deal = dealService.getDealById(dealId);
+        return ResponseEntity.ok(deal);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<Deal> update(@RequestBody Deal dealToEdit) throws NotFoundException {
+        Deal deal = dealService.update(dealToEdit);
+        return ResponseEntity.ok(deal);
+    }
+
+    @GetMapping("/getLastDealId")
+    public ResponseEntity<?> getLastDealId() {
+        try {
+            Long lastDealId = dealService.getLastDealId();
+            return ResponseEntity.ok(lastDealId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
     }
 
 }

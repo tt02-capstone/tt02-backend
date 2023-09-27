@@ -1,6 +1,7 @@
 package com.nus.tt02backend.models;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nus.tt02backend.models.enums.DealCategoryEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,9 +26,11 @@ public class Deal {
     private Integer discount_percent;
 
     @Column(nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime start_datetime;
 
     @Column(nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime end_datetime;
 
     @Column(nullable = true, unique = true)
