@@ -27,7 +27,9 @@ public class TourType {
     @Column(nullable = false, length = 400)
     private String description;
 
-    private String image;
+    @ElementCollection
+    @CollectionTable(name="tour_image_list")
+    private List<String> tour_image_list;
 
     @Column(nullable = false)
     private Integer recommended_pax;

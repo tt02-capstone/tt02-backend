@@ -546,6 +546,17 @@ public class AttractionService {
         return attraction.getTicket_per_day_list();
     }
 
+    public List<TicketPerDay> getAllTicketListedByAttractionInTimeRange(Long id, LocalDate startDate, LocalDate endDate) throws NotFoundException {
+        Attraction attraction = attractionRepository.findById(id).orElseThrow(() -> new NotFoundException("Attraction not found!"));
+        List<TicketPerDay> wantedList = new ArrayList<>();
+        for (TicketPerDay t : attraction.getTicket_per_day_list()) {
+            if (!t.getTicket_date().isBefore(startDate) && !t.getTicket_date().isAfter(endDate)) {
+                wantedList.add(t);
+            }
+        }
+        return wantedList;
+    }
+
     public List<TicketPerDay> getAllTicketListedByAttractionAndDate(Long attraction_id,LocalDate inputDate) throws NotFoundException {
         Attraction attraction = attractionRepository.findById(attraction_id)
                 .orElseThrow(() -> new NotFoundException("Attraction not found when getting list of tickets per day!"));

@@ -60,13 +60,10 @@ public class CartService {
     @Autowired
     VendorRepository vendorRepository;
 
-    public Long addCartItems(String user_type, String tourist_email,  String activity_name,
-                             List<CartItem> cartItems) throws NotFoundException, BadRequestException {
+    public Long addCartItems(String user_type, String tourist_email,  String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
         // Need official function to handle different cases
-
         if (user_type.equals("LOCAL")) {
-
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
 
             List<CartBooking> currentCartBookings = currentTourist.getCart_list();
@@ -82,13 +79,10 @@ public class CartService {
                     .findFirst();
 
             if (matchingBooking.isPresent()) {
-
                 CartBooking existingBooking = matchingBooking.get();
-
                 List<CartItem> existingCartItems = existingBooking.getCart_item_list();
 
                 for (CartItem cartItem : cartItems) {
-
                     String activitySelection = cartItem.getActivity_selection();
                     Optional<CartItem> matchingItem = existingCartItems.stream()
                             .filter(cartItemToCheck -> cartItemToCheck.getActivity_selection().equals(activitySelection))
@@ -100,11 +94,9 @@ public class CartService {
                         Integer newQuantity = cartItem.getQuantity() + existingCartItem.getQuantity();
                         existingBooking = updateCartOperation(existingCartItem.getCart_item_id(), existingBooking.getCart_booking_id(),
                                 newQuantity);
-
                         cartBookingRepository.save(existingBooking);
 
                     } else {
-
                         List<TicketPerDay> currentTickets = attractionService.getAllTicketListedByAttractionAndDate(
                                 existingBooking.getAttraction().getAttraction_id(),
                                 cartItems.get(0).getStart_datetime()); // tickets listed based on the date selected
@@ -114,12 +106,7 @@ public class CartService {
 
                         cartItem = cartItemRepository.save(cartItem);
 
-
-
                         // Update relevant ticket in TicketPerDay
-
-
-
                         OptionalInt indexOfMatchingTicket = IntStream.range(0, currentTickets.size())
                                 .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
                                 .findFirst();
@@ -133,42 +120,29 @@ public class CartService {
 
                         } else {
                             throw new NotFoundException("No tickets found for this date!");
-
                         }
+
                         existingCartItems.add(cartItem);
-
                         existingBooking.setCart_item_list(existingCartItems);
-
                         cartBookingRepository.save(existingBooking);
 
                     }
-
-
                 }
 
                 currentCartBookings.set(indexOpt.getAsInt(),existingBooking);
-
                 currentTourist.setCart_list(currentCartBookings);
-
                 localRepository.save(currentTourist);
-
                 return existingBooking.getCart_booking_id();
 
             } else {
-
                 CartBooking cartBookingToCreate = addCartOperation(activity_name,cartItems);
                 currentCartBookings.add(cartBookingToCreate);
                 currentTourist.setCart_list(currentCartBookings);
-
                 localRepository.save(currentTourist);
-
                 return cartBookingToCreate.getCart_booking_id();
-
             }
 
-
         } else if (user_type.equals("TOURIST")) {
-
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
 
             List<CartBooking> currentCartBookings = currentTourist.getCart_list();
@@ -184,13 +158,11 @@ public class CartService {
                     .findFirst();
 
             if (matchingBooking.isPresent()) {
-
                 CartBooking existingBooking = matchingBooking.get();
 
                 List<CartItem> existingCartItems = existingBooking.getCart_item_list();
 
                 for (CartItem cartItem : cartItems) {
-
                     String activitySelection = cartItem.getActivity_selection();
                     Optional<CartItem> matchingItem = existingCartItems.stream()
                             .filter(cartItemToCheck -> cartItemToCheck.getActivity_selection().equals(activitySelection))
@@ -206,7 +178,6 @@ public class CartService {
                         cartBookingRepository.save(existingBooking);
 
                     } else {
-
                         List<TicketPerDay> currentTickets = attractionService.getAllTicketListedByAttractionAndDate(
                                 existingBooking.getAttraction().getAttraction_id(),
                                 cartItems.get(0).getStart_datetime()); // tickets listed based on the date selected
@@ -216,12 +187,7 @@ public class CartService {
 
                         cartItem = cartItemRepository.save(cartItem);
 
-
-
                         // Update relevant ticket in TicketPerDay
-
-
-
                         OptionalInt indexOfMatchingTicket = IntStream.range(0, currentTickets.size())
                                 .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
                                 .findFirst();
@@ -235,58 +201,38 @@ public class CartService {
 
                         } else {
                             throw new NotFoundException("No tickets found for this date!");
-
                         }
+
                         existingCartItems.add(cartItem);
-
                         existingBooking.setCart_item_list(existingCartItems);
-
                         cartBookingRepository.save(existingBooking);
-
                     }
-
-
                 }
 
                 currentCartBookings.set(indexOpt.getAsInt(),existingBooking);
-
                 currentTourist.setCart_list(currentCartBookings);
-
                 touristRepository.save(currentTourist);
-
                 return existingBooking.getCart_booking_id();
 
             } else {
-
                 CartBooking cartBookingToCreate = addCartOperation(activity_name,cartItems);
                 currentCartBookings.add(cartBookingToCreate);
                 currentTourist.setCart_list(currentCartBookings);
-
                 touristRepository.save(currentTourist);
-
                 return cartBookingToCreate.getCart_booking_id();
-
             }
 
         } else {
             throw new BadRequestException("Invalid user type");
         }
-
-
     }
 
-
-    public CartBooking addCartOperation(String activity_name,
-                                        List<CartItem> cartItems) throws NotFoundException {
-
+    public CartBooking addCartOperation(String activity_name, List<CartItem> cartItems) throws NotFoundException {
         Attraction selectedAttraction = attractionRepository.getAttractionByName(activity_name);
-
         LocalDate startDate = cartItems.get(0).getStart_datetime();
         LocalDate endDate = cartItems.get(0).getEnd_datetime();
 
-
         // Get current TicketPerDay
-
         List<TicketPerDay> currentTickets = attractionService.getAllTicketListedByAttractionAndDate(selectedAttraction.getAttraction_id(),
                 cartItems.get(0).getStart_datetime()); // tickets listed based on the date selected
         if (currentTickets.isEmpty()) {
@@ -294,17 +240,13 @@ public class CartService {
         }
 
         List<CartItem> addedCartItems = new ArrayList<>();
+
         for (CartItem cartItemToCreate : cartItems) {
-
             // [LOG1] To include code to check for existing cartItem
-
-
             CartItem newCartItem = cartItemRepository.save(cartItemToCreate);
-
             addedCartItems.add(newCartItem);
 
             // Update relevant ticket in TicketPerDay
-
             String activitySelection = cartItemToCreate.getActivity_selection();
 
             OptionalInt indexOfMatchingTicket = IntStream.range(0, currentTickets.size())
@@ -320,25 +262,18 @@ public class CartService {
 
             } else {
                 throw new NotFoundException("No tickets found for this date!");
-
             }
-
         }
 
         // [LOG1] To check if booking exists
         CartBooking cartBookingToCreate = new CartBooking();
         cartBookingToCreate.setStart_datetime(startDate.atStartOfDay());
         cartBookingToCreate.setEnd_datetime(endDate.atStartOfDay());
-
         cartBookingToCreate.setType(BookingTypeEnum.ATTRACTION);
         cartBookingToCreate.setActivity_name(selectedAttraction.getName());
         cartBookingToCreate.setAttraction(selectedAttraction);
         cartBookingToCreate.setCart_item_list(addedCartItems);
-
-
         cartBookingRepository.save(cartBookingToCreate);
-
-
 
         // Save Attraction
         List<TicketPerDay> updatedList = new ArrayList<>();
@@ -350,37 +285,24 @@ public class CartService {
         attractionRepository.save(selectedAttraction);
 
         return cartBookingToCreate;
-
     }
 
     public List<CartBooking> viewCart(String user_type, String tourist_email) throws BadRequestException {
-
-
-
         if (user_type.equals("LOCAL")) {
-
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
-
             return currentTourist.getCart_list();
-
 
         } else if (user_type.equals("TOURIST")) {
-
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
-
             return currentTourist.getCart_list();
+
         } else {
             throw new BadRequestException("Invalid user type");
         }
-
-
     }
 
-    public List<Long> deleteCartItems(String user_type, String tourist_email,
-                                      List<Long> cart_booking_ids) throws NotFoundException, BadRequestException {
-
+    public List<Long> deleteCartItems(String user_type, String tourist_email, List<Long> cart_booking_ids) throws NotFoundException, BadRequestException {
         if (user_type.equals("LOCAL")) {
-
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
 
             List<CartBooking> cartBookingsToDelete = deleteCartOperation(cart_booking_ids);
@@ -397,13 +319,10 @@ public class CartService {
             currentTourist.setCart_list(updatedCartBookings);
 
             localRepository.save(currentTourist);
-
             cartBookingRepository.deleteAll(cartBookingsToDelete);
-
             return cart_booking_ids;
 
         } else if (user_type.equals("TOURIST")) {
-
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
 
             List<CartBooking> cartBookingsToDelete = deleteCartOperation(cart_booking_ids);
@@ -414,21 +333,14 @@ public class CartService {
                     .toList();
 
             currentTourist.setCart_list(updatedCartBookings);
-
             cartBookingRepository.deleteAll(cartBookingsToDelete);
-
             touristRepository.save(currentTourist);
-
             cartBookingRepository.deleteAll(cartBookingsToDelete);
 
             return cart_booking_ids;
         } else {
             throw new BadRequestException("Invalid user type");
         }
-
-
-
-
     }
 
     public List<CartBooking> deleteCartOperation(List<Long> cart_booking_ids) throws NotFoundException {
@@ -464,7 +376,6 @@ public class CartService {
             }
 
             cartBookingToDelete.setCart_item_list(new ArrayList<>());
-
             cartItemRepository.deleteAll(cartItemsToDelete);
 
             List<TicketPerDay> updatedList = new ArrayList<>();
@@ -478,12 +389,8 @@ public class CartService {
         return cartBookingsToDelete;
     }
 
-
-    public Long updateCartItem(String user_type, String tourist_email, Long cart_item_id, Long cart_booking_id,
-                               Integer quantity) throws NotFoundException, BadRequestException {
-
+    public Long updateCartItem(String user_type, String tourist_email, Long cart_item_id, Long cart_booking_id, Integer quantity) throws NotFoundException, BadRequestException {
         if (user_type.equals("LOCAL")) {
-
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
 
             CartBooking cartBooking = updateCartOperation(cart_item_id, cart_booking_id, quantity);
@@ -498,17 +405,12 @@ public class CartService {
                 cartBookingsToUpdate.remove(indexCartBooking.getAsInt());
                 cartBookingRepository.delete(cartBooking);
             } else {
-
                 cartBookingsToUpdate.set(indexCartBooking.getAsInt(), cartBooking);
-
                 currentTourist.setCart_list(cartBookingsToUpdate);
-
                 localRepository.save(currentTourist);
-
             }
 
         } else if (user_type.equals("TOURIST")) {
-
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
 
             CartBooking cartBooking = updateCartOperation(cart_item_id, cart_booking_id, quantity);
@@ -522,40 +424,28 @@ public class CartService {
             if (cartBooking.getCart_item_list().isEmpty()) {
                 cartBookingsToUpdate.remove(indexCartBooking.getAsInt());
                 cartBookingRepository.delete(cartBooking);
+
             } else {
-
                 cartBookingsToUpdate.set(indexCartBooking.getAsInt(), cartBooking);
-
                 currentTourist.setCart_list(cartBookingsToUpdate);
-
                 touristRepository.save(currentTourist);
-
             }
-
-
-
-
 
         } else {
             throw new BadRequestException("Invalid user type");
         }
 
-
         return cart_item_id;
     }
 
-    public CartBooking updateCartOperation(Long cart_item_id, Long cart_booking_id,
-                                           Integer quantity) throws NotFoundException, BadRequestException {
+    public CartBooking updateCartOperation(Long cart_item_id, Long cart_booking_id, Integer quantity) throws NotFoundException, BadRequestException {
 
         Optional<CartBooking> cartBookingOptional = cartBookingRepository.findCartBookingById(cart_booking_id);
         Optional<CartItem> cartItemOptional = cartItemRepository.findCartItemById(cart_item_id);
 
-
         if (cartBookingOptional.isPresent() && cartItemOptional.isPresent()) {
             CartBooking cartBooking = cartBookingOptional.get();
             CartItem cartItem = cartItemOptional.get();
-
-
 
             Attraction selected_attraction = cartBooking.getAttraction();
 
@@ -571,8 +461,6 @@ public class CartService {
 
             Integer changeInQuantity = quantity - cartItem.getQuantity();
 
-
-
             if (indexOfMatchingTicket.isPresent()) {
                 Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
                 TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
@@ -585,9 +473,6 @@ public class CartService {
                     throw new BadRequestException("Insufficient Inventory for Ticket Type: " +
                             currentTicket.getTicket_type());
                 }
-
-
-
             } else {
                 throw new NotFoundException("No tickets found for this date!");
             }
@@ -607,35 +492,21 @@ public class CartService {
 
             if (quantity <= 0) {
                 cartItemsToUpdate.remove(indexOpt.getAsInt());
-
                 cartItemRepository.delete(cartItem);
 
-
             } else {
-
                 cartItem.setQuantity(quantity);
-
                 cartItemRepository.save(cartItem);
-
-
                 cartItemsToUpdate.set(indexOpt.getAsInt(), cartItem); // To check for present
-
             }
 
-
-
             cartBooking.setCart_item_list(cartItemsToUpdate);
-
             cartBookingRepository.save(cartBooking);
-
-
-
             return cartBooking;
 
         } else {
             throw new NotFoundException("No cart item found!");
         }
-
     }
 
     public List<Long> checkout(String user_type, String tourist_email, String payment_method_id,
@@ -643,7 +514,6 @@ public class CartService {
                                List<Long> booking_ids) throws StripeException, BadRequestException {
 
         if (user_type.equals("LOCAL")) {
-
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
 
             List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
@@ -655,7 +525,6 @@ public class CartService {
             List<Booking> createdBookings = new ArrayList<>();
 
             List<Long> createdBookingIds = new ArrayList<>();
-
 
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal amountPayable = BigDecimal.valueOf(0);
@@ -671,7 +540,6 @@ public class CartService {
                     newBookingItem.setActivity_selection(cartItem.getActivity_selection());
                     bookingItemRepository.save(newBookingItem);
                     bookingItems.add(newBookingItem);
-
                 }
 
                 Booking newBooking = new Booking();
@@ -728,32 +596,20 @@ public class CartService {
 
 //                Map<String, Object> transferDataParams = new HashMap<>();
 //                transferDataParams.put("destination", vendor.getStripe_account_id());
-//
+
 //                paymentParams.put("transfer_data", transferDataParams);
-
-
 
 //                paymentParams.put(
 //                        "application_fee_amount",
 //                        commissionCharge
 //                );
 
-
-
-
-
-
-
-
-                PaymentIntent paymentIntent =
-                        PaymentIntent.create(paymentParams);
+                PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
 
                 vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
 
                 bookingPayment.setPayment_id(paymentIntent.getId());
                 paymentRepository.save(bookingPayment);
-
-
 
                 bookingPayment.setBooking(newBooking);
                 newBooking.setPayment(bookingPayment);
@@ -765,20 +621,12 @@ public class CartService {
                 processedPayments.add(bookingPayment);
             }
             List<Booking> currentBookings = currentTourist.getBooking_list();
-
-
             currentBookings.addAll(createdBookings);
-
             currentTourist.setBooking_list(currentBookings);
 
-
             List<CartBooking> currentCartBookings = currentTourist.getCart_list();
-
             currentCartBookings.removeAll(bookingsToCheckout);
-
             currentTourist.setCart_list(currentCartBookings);
-
-
             localRepository.save(currentTourist);
 
 //            List<Booking> latestBookings = currentTourist.getBooking_list();
@@ -789,12 +637,9 @@ public class CartService {
 //                    bookingIds.add(booking.getBooking_id()); // Assuming getBookingId() is the getter for booking_id
 //                }
 //            }
-
-
             return createdBookingIds;
 
         } else if (user_type.equals("TOURIST")) {
-
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
 
             List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
@@ -802,14 +647,10 @@ public class CartService {
             BigDecimal totalAmountPayable = BigDecimal.valueOf(totalPrice).setScale(2, RoundingMode.HALF_UP);
 
             List<Payment> processedPayments = new ArrayList<>();
-
             List<Booking> createdBookings = new ArrayList<>();
-
             List<Long> createdBookingIds = new ArrayList<>();
 
-
             // Pay vendors?
-
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal amountPayable = BigDecimal.valueOf(0);
                 List<BookingItem> bookingItems = new ArrayList<>();
@@ -824,7 +665,6 @@ public class CartService {
                     newBookingItem.setActivity_selection(cartItem.getActivity_selection());
                     bookingItemRepository.save(newBookingItem);
                     bookingItems.add(newBookingItem);
-
                 }
 
                 Booking newBooking = new Booking();
@@ -849,12 +689,7 @@ public class CartService {
 
                 BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
 
-
-
-
-
-                Map<String, Object> automaticPaymentMethods =
-                        new HashMap<>();
+                Map<String, Object> automaticPaymentMethods = new HashMap<>();
                 automaticPaymentMethods.put("enabled", true);
 
                 Map<String, Object> paymentParams = new HashMap<>();
@@ -864,6 +699,7 @@ public class CartService {
                         "automatic_payment_methods",
                         automaticPaymentMethods
                 );
+
                 paymentParams.put(
                         "confirm",
                         true
@@ -888,29 +724,16 @@ public class CartService {
 //
 //                paymentParams.put("transfer_data", transferDataParams);
 
-
-
 //                paymentParams.put(
 //                        "application_fee_amount",
 //                        commissionCharge
 //                );
 
-
-
-
-
-
-
-
-                PaymentIntent paymentIntent =
-                        PaymentIntent.create(paymentParams);
-
+                PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
                 vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
 
                 bookingPayment.setPayment_id(paymentIntent.getId());
                 paymentRepository.save(bookingPayment);
-
-
 
                 bookingPayment.setBooking(newBooking);
                 newBooking.setPayment(bookingPayment);
@@ -921,33 +744,24 @@ public class CartService {
                 createdBookingIds.add(newBooking.getBooking_id());
                 processedPayments.add(bookingPayment);
             }
+
             List<Booking> currentBookings = currentTourist.getBooking_list();
 
             if (currentBookings == null) {
                 currentBookings = new ArrayList<>(); // Initialize as an empty list if null
             }
+
             currentBookings.addAll(createdBookings);
             currentTourist.setBooking_list(currentBookings);
 
-
             List<CartBooking> currentCartBookings = currentTourist.getCart_list();
-
             currentCartBookings.removeAll(bookingsToCheckout);
-
             currentTourist.setCart_list(currentCartBookings);
 
-
             touristRepository.save(currentTourist);
-
             return createdBookingIds;
-
-
         } else {
             throw new BadRequestException("Invalid user type");
         }
-
-
     }
-
-
 }

@@ -87,16 +87,22 @@ public class SecurityConfig {
               "/vendor/createVendor",
               "/vendorStaff/createVendorStaff",
               "/telecom/**", // to remove
-              "/accommodation/createAccommodation/**", // to remove
-              "/accommodation/createRoom/**", // to remove
+              "/accommodation/**", // to remove
+              "/booking/**", // to remove
+              "/attraction/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
                 "/telecom/**", // to remove
-                "user/**").permitAll()
+                "/booking/**", // to remove
+                "/attraction/**", // to remove
+                "/accommodation/**", // to remove
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
                 "/vendorStaff/verifyEmail/**",
-                "/booking/tempCreateBooking",
                 "/telecom/**", // to remove
+                "/booking/**", // to remove
+                "/attraction/**", // to remove
+                "/accommodation/**", // to remove
                 "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()
