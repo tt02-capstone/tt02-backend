@@ -185,8 +185,7 @@ public class RestaurantService {
             if (d.getDish_id().equals(updateDish.getDish_id())) {
                 d.setName(updateDish.getName());
                 d.setPrice(updateDish.getPrice());
-                d.setDescription(updateDish.getDescription());
-                d.setDish_image(updateDish.getDish_image());
+                d.setDish_type(updateDish.getDish_type());
                 d.setSpicy(updateDish.getSpicy());
                 d.setIs_signature(updateDish.getIs_signature());
 

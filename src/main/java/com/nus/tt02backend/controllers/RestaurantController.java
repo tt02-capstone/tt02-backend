@@ -110,8 +110,6 @@ public class RestaurantController {
 
     @GetMapping("/nearbyRestaurantReccom/{locationEnum}")
     public ResponseEntity<List<Restaurant>> nearbyRestaurantReccom(@PathVariable GenericLocationEnum locationEnum) throws NotFoundException {
-        System.out.println("testing");
-        System.out.println(locationEnum);
         List<Restaurant> rList = restaurantService.nearbyRestaurantReccom(locationEnum);
         return ResponseEntity.ok(rList);
     }
