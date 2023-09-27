@@ -104,8 +104,6 @@ public class AccommodationService {
 
                 if (input.getRoom_id() == null) {
                     Room roomToCreate = new Room();
-
-                    roomToCreate.setRoom_number(input.getRoom_number());
                     roomToCreate.setAmenities_description(input.getAmenities_description());
                     roomToCreate.setNum_of_pax(input.getNum_of_pax());
                     roomToCreate.setRoom_type(input.getRoom_type());
@@ -115,8 +113,6 @@ public class AccommodationService {
                     update_room_list.add(roomToCreate);
                 } else {
                     Room room = roomRepository.findById(input.getRoom_id()).orElseThrow(() -> new NotFoundException("Room Not Found!"));
-
-                    room.setRoom_number(input.getRoom_number());
                     room.setAmenities_description(input.getAmenities_description());
                     room.setNum_of_pax(input.getNum_of_pax());
                     room.setRoom_type(input.getRoom_type());
@@ -197,40 +193,64 @@ public class AccommodationService {
     }
 
     public List<Room> createRoomList(List<Room> room_list) throws BadRequestException {
+
         List<Room> create_room_list = new ArrayList<Room>();
 
         for (Room input : room_list) {
 
             Room roomToCreate = new Room();
-
-            roomToCreate.setRoom_number(input.getRoom_number());
             roomToCreate.setAmenities_description(input.getAmenities_description());
             roomToCreate.setNum_of_pax(input.getNum_of_pax());
             roomToCreate.setRoom_type(input.getRoom_type());
-
-            // TO EDIT
-            // price need to do price tier est ?
             roomToCreate.setPrice(input.getPrice());
 
             roomRepository.save(roomToCreate);
 
             create_room_list.add(roomToCreate);
+
+        }
+
+        // update price tier
+
+        return create_room_list;
+    }
+
+    public List<Room> createRoomListExistingAccommodation(Accommodation accommodation, List<Room> room_list) throws BadRequestException, NotFoundException {
+
+        List<Room> create_room_list = new ArrayList<Room>();
+        List<Room> existing_room_list = accommodation.getRoom_list();
+
+        for (Room input : room_list) {
+
+            Room roomToCreate = new Room();
+            roomToCreate.setAmenities_description(input.getAmenities_description());
+            roomToCreate.setNum_of_pax(input.getNum_of_pax());
+            roomToCreate.setRoom_type(input.getRoom_type());
+            roomToCreate.setPrice(input.getPrice());
+
+            roomRepository.save(roomToCreate);
+
+            create_room_list.add(roomToCreate);
+
+        }
+
+        if (existing_room_list.isEmpty()) {
+            PriceTierEnum updatedTier = priceTierEstimation(create_room_list);
+
+            accommodation.setRoom_list(create_room_list);
+            accommodation.setEstimated_price_tier(updatedTier);
+        } else {
+            existing_room_list.addAll(create_room_list);
+            PriceTierEnum updatedTier = priceTierEstimation(existing_room_list);
+
+            accommodation.setRoom_list(existing_room_list);
+            accommodation.setEstimated_price_tier(updatedTier);
         }
 
         return create_room_list;
     }
 
     public Room createRoom(Accommodation accommodation, Room roomToCreate) throws BadRequestException {
-
-        List<Room> existingRoomList = accommodation.getRoom_list();
-
-        if (!existingRoomList.isEmpty()) {
-            for (Room roomToCheck : existingRoomList) {
-                if (roomToCheck.getRoom_number().equals(roomToCreate.getRoom_number())) {
-                    throw new BadRequestException("There is a room listing with the same room number, please choose another number!");
-                }
-            }
-        }
 
         Room newRoom = roomRepository.save(roomToCreate);
 

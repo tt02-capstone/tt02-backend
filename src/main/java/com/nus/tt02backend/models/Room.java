@@ -19,8 +19,8 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long room_id;
 
-    @Column(nullable = false)
-    private String room_number;
+//    @Column(nullable = false)
+//    private String room_number;
 
     @Column(nullable = false, length = 400)
     private String amenities_description;
@@ -34,12 +34,4 @@ public class Room {
     @Enumerated(EnumType.STRING)
     private RoomTypeEnum room_type;
 
-    public Room(String room_number, String amenities_description,
-                Integer num_of_pax, BigDecimal price, RoomTypeEnum room_type) {
-        this.room_number = room_number;
-        this.amenities_description = amenities_description;
-        this.num_of_pax = num_of_pax;
-        this.price = price;
-        this.room_type = room_type;
-    }
 }
