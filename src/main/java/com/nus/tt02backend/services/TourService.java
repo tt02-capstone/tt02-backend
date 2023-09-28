@@ -219,6 +219,23 @@ public class TourService {
         return tour;
     }
 
+    public String deleteTour(Long tourIdToDelete) throws BadRequestException {
+        Optional<Tour> tourOptional = tourRepository.findById(tourIdToDelete);
+
+        if (tourOptional.isEmpty()) {
+            throw new BadRequestException("Tour does not exist!");
+        }
+
+        Tour tour = tourOptional.get();
+        TourType tourType = tourTypeRepository.getTourTypeTiedToTour(tour.getTour_id());
+
+        tourType.getTour_list().remove(tour);
+        tourTypeRepository.save(tourType);
+        tourRepository.deleteById(tour.getTour_id());
+
+        return "Tour successfully deleted";
+    }
+
     /*
     public Long createTour(Long tourTypeId, Tour tour) throws BadRequestException {
 
