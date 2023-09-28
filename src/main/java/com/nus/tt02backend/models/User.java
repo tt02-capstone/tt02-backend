@@ -56,7 +56,4 @@ public class User {
         this.is_blocked = is_blocked;
         this.user_type = user_type;
     }
-
-
-
 }

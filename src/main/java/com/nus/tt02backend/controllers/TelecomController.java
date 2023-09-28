@@ -45,9 +45,27 @@ public class TelecomController {
         return ResponseEntity.ok(telecom);
     }
 
+    @GetMapping("/getPublishedTelecomList")
+    public ResponseEntity<List<Telecom>> getPublishedTelecomList() {
+        List<Telecom> list = telecomService.getPublishedTelecomList();
+        return ResponseEntity.ok(list);
+    }
+
     @PutMapping("/update")
     public ResponseEntity<Telecom> update(@RequestBody Telecom telecomToEdit) throws NotFoundException {
         Telecom telecom = telecomService.update(telecomToEdit);
         return ResponseEntity.ok(telecom);
+    }
+
+    @PutMapping("/toggleSaveTelecom/{userId}/{telecomId}")
+    public ResponseEntity<List<Telecom>> toggleSaveTelecom(@PathVariable Long userId, @PathVariable Long telecomId) throws NotFoundException {
+        List<Telecom> list = telecomService.toggleSaveTelecom(userId, telecomId);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getUserSavedTelecom/{userId}")
+    public ResponseEntity<List<Telecom>> getPublishedTelecomList(@PathVariable Long userId) throws NotFoundException {
+        List<Telecom> list = telecomService.getUserSavedTelecom(userId);
+        return ResponseEntity.ok(list);
     }
 }
