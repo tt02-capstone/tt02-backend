@@ -468,9 +468,9 @@ public class AttractionService {
         throw new NotFoundException("Attraction not found in the saved list!");
     }
 
-    private TicketPerDay attractionContainsTicketForDate(List<TicketPerDay> list, LocalDate date) {
+    private TicketPerDay attractionContainsTicketForDate(List<TicketPerDay> list, LocalDate date, TicketEnum type) {
         for (TicketPerDay t : list) {
-            if (t.getTicket_date().isEqual(date)) return t;
+            if (t.getTicket_date().isEqual(date) && t.getTicket_type() == type) return t;
         }
         return null;
     }
@@ -487,7 +487,7 @@ public class AttractionService {
         for (int i = 0; i <= duration; i++) {
             LocalDate ticketDate = startDate.plusDays(i);
             // check if there is an entity created for that day, if so update instead of creating a new one
-            TicketPerDay ticket = attractionContainsTicketForDate(ticketList, ticketDate);
+            TicketPerDay ticket = attractionContainsTicketForDate(ticketList, ticketDate, ticketType);
             if (ticket != null) {
                 ticket.setTicket_count(ticketCount);
                 ticketPerDayRepository.save(ticket);
