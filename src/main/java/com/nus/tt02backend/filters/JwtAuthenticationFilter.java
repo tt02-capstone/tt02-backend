@@ -62,6 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException ex) {
             final String authHeader = request.getHeader("Authorization");
+            System.out.println("ExpiredJwtException AuthHeader" + authHeader);
             String requestURL = request.getRequestURL().toString();
             if (!requestURL.contains("refreshToken") ||StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ") ) {
                 System.out.println("In ExpiredJwtException");
