@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -100,6 +101,14 @@ public class TourController {
     public ResponseEntity<String> deleteTour(@PathVariable Long tourIdToDelete) throws BadRequestException {
         String responseMessage = tourService.deleteTour(tourIdToDelete);
         return ResponseEntity.ok(responseMessage);
+    }
+
+    @GetMapping("/getAllTourTypesByAttraction/{attractionId}/{dateSelected}")
+    public ResponseEntity<List<TourType>> getAllTourTypesByAttraction(@PathVariable Long attractionId,
+                                                                      @PathVariable LocalDateTime dateSelected)
+            throws BadRequestException {
+        List<TourType> tourTypes = tourService.getAllTourTypesByAttraction(attractionId, dateSelected);
+        return ResponseEntity.ok(tourTypes);
     }
 
     /*
