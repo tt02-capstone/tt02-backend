@@ -438,8 +438,13 @@ public class AccommodationService {
             }
         }
 
+        if (minAvailableRooms == Long.MAX_VALUE) {
+            minAvailableRooms = 0;
+        }
+
         return minAvailableRooms;
     }
+
     private long getTotalRoomCountForType(Accommodation accommodation, RoomTypeEnum roomType) {
         return accommodation.getRoom_list().stream()
                 .filter(room -> room.getRoom_type() == roomType)
