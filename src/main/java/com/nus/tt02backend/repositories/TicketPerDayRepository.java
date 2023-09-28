@@ -5,8 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface TicketPerDayRepository extends JpaRepository<TicketPerDay, Long> {
 
+    @Query("SELECT t FROM TicketPerDay t Where t.ticket_date = ?1")
+    TicketPerDay getTicketPerDayByDate(LocalDate date);
 }

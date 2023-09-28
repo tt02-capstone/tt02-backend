@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -23,6 +24,12 @@ public class TelecomService {
     TelecomRepository telecomRepository;
     @Autowired
     VendorRepository vendorRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    TouristRepository touristRepository;
+    @Autowired
+    LocalRepository localRepository;
 
     public Telecom create(Telecom telecom, Long vendorId) throws NotFoundException {
 
@@ -67,6 +74,12 @@ public class TelecomService {
         }
     }
 
+    public List<Telecom> getPublishedTelecomList() {
+
+        List<Telecom> list = telecomRepository.getPublishedTelecomList();
+        return list;
+    }
+
     public Telecom update(Telecom telecomToEdit) throws NotFoundException {
 
         Optional<Telecom> telecomOptional = telecomRepository.findById(telecomToEdit.getTelecom_id());
@@ -89,6 +102,67 @@ public class TelecomService {
 
         } else {
             throw new NotFoundException("Telecom not found!");
+        }
+    }
+
+    public List<Telecom> toggleSaveTelecom(Long userId, Long telecomId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<Telecom> telecomOptional = telecomRepository.findById(telecomId);
+
+        if (userOptional.isPresent() && telecomOptional.isPresent()) {
+            User user = userOptional.get();
+            Telecom telecom = telecomOptional.get();
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getTelecom_list() == null) tourist.setTelecom_list(new ArrayList<>());
+
+                if (tourist.getTelecom_list().contains(telecom)) { // remove from saved listing
+                    tourist.getTelecom_list().remove(telecom);
+                } else {
+                    tourist.getTelecom_list().add(telecom);
+                }
+                touristRepository.save(tourist);
+                return tourist.getTelecom_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getTelecom_list() == null) local.setTelecom_list(new ArrayList<>());
+
+                if (local.getTelecom_list().contains(telecom)) { // remove from saved listing
+                    local.getTelecom_list().remove(telecom);
+                } else {
+                    local.getTelecom_list().add(telecom);
+                }
+                localRepository.save(local);
+                return local.getTelecom_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User or telecom is not found!");
+        }
+    }
+
+    public List<Telecom> getUserSavedTelecom(Long userId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getTelecom_list() == null) return new ArrayList<>();
+                return tourist.getTelecom_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getTelecom_list() == null) return new ArrayList<>();
+                return local.getTelecom_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User not found!");
         }
     }
 }
