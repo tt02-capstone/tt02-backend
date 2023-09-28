@@ -10,6 +10,9 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long>{
 
     @Query("SELECT MAX(a.attraction_id) FROM Attraction a")
     Long findMaxAttractionId();
+
+    @Query("SELECT a FROM Attraction a JOIN a.tour_type_list t WHERE t.tour_type_id=?1")
+    Attraction getAttractionTiedToTourType(Long tourTypeId);
 }
 
 
