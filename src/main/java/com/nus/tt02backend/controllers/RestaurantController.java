@@ -69,17 +69,24 @@ public class RestaurantController {
         return ResponseEntity.ok(r);
     }
 
+    @GetMapping ("/getDish/{dishId}")
+    public ResponseEntity<Dish> getDish(@PathVariable Long dishId )
+            throws NotFoundException {
+        Dish d =  restaurantService.getDish(dishId);
+        return ResponseEntity.ok(d);
+    }
+
     @PostMapping ("/addDish/{restId}")
-    public ResponseEntity<Dish> addDish(@PathVariable Long restId ,@RequestBody Dish newDish)
+    public ResponseEntity<List<Dish>> addDish(@PathVariable Long restId ,@RequestBody Dish newDish)
             throws BadRequestException, NotFoundException {
-        Dish d =  restaurantService.addDish(restId,newDish);
+        List<Dish> d =  restaurantService.addDish(restId,newDish);
         return ResponseEntity.ok(d);
     }
 
     @PutMapping ("/updateDish/{restId}")
-    public ResponseEntity<Dish> updateDish(@PathVariable Long restId ,@RequestBody Dish updateDish)
+    public ResponseEntity<List<Dish>> updateDish(@PathVariable Long restId ,@RequestBody Dish updateDish)
             throws NotFoundException {
-        Dish d =  restaurantService.updateDish(restId,updateDish);
+        List<Dish> d =  restaurantService.updateDish(restId,updateDish);
         return ResponseEntity.ok(d);
     }
 

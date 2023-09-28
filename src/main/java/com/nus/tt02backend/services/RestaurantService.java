@@ -158,7 +158,7 @@ public class RestaurantService {
         return d;
     }
 
-    public Dish addDish(Long restId, Dish newDish) throws BadRequestException, NotFoundException {
+    public List<Dish> addDish(Long restId, Dish newDish) throws BadRequestException, NotFoundException {
         Restaurant r = getRestaurant(restId);
         if (!r.getDish_list().isEmpty()) {
             for (Dish d : r.getDish_list()) {
@@ -175,11 +175,11 @@ public class RestaurantService {
 
         updatePriceTier(r.getDish_list(), r.getRestaurant_id()); // add in the pricing tier
 
-        return dish;
+        return r.getDish_list();
     }
 
     // update dish
-    public Dish updateDish(Long restId, Dish updateDish) throws NotFoundException {
+    public List<Dish> updateDish(Long restId, Dish updateDish) throws NotFoundException {
         Restaurant r = getRestaurant(restId);
         for (Dish d : r.getDish_list()) {
             if (d.getDish_id().equals(updateDish.getDish_id())) {
@@ -195,7 +195,7 @@ public class RestaurantService {
 
         updatePriceTier(r.getDish_list(),restId); // update pricing tier
 
-        return updateDish;
+        return r.getDish_list();
     }
 
     public List<Dish> getAllDish() { // for admin
