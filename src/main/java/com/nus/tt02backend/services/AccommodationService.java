@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AccommodationService {
@@ -111,6 +112,7 @@ public class AccommodationService {
                     roomToCreate.setNum_of_pax(input.getNum_of_pax());
                     roomToCreate.setRoom_type(input.getRoom_type());
                     roomToCreate.setPrice(input.getPrice());
+                    roomToCreate.setQuantity(input.getQuantity());
 
                     roomRepository.save(roomToCreate);
                     update_room_list.add(roomToCreate);
@@ -120,6 +122,7 @@ public class AccommodationService {
                     room.setNum_of_pax(input.getNum_of_pax());
                     room.setRoom_type(input.getRoom_type());
                     room.setPrice(input.getPrice());
+                    room.setQuantity(input.getQuantity());
 
                     roomRepository.save(room);
                     update_room_list.add(room);
@@ -210,6 +213,7 @@ public class AccommodationService {
             roomToCreate.setNum_of_pax(input.getNum_of_pax());
             roomToCreate.setRoom_type(input.getRoom_type());
             roomToCreate.setPrice(input.getPrice());
+            roomToCreate.setQuantity(input.getQuantity());
 
             roomRepository.save(roomToCreate);
 
@@ -362,21 +366,51 @@ public class AccommodationService {
     }
 
     // NOT DONE
-    public boolean isRoomAvailableOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
-
+    public boolean isRoomAvailableOnDateRange(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime checkInDateTime, LocalDateTime checkOutDateTime) throws NotFoundException, BadRequestException {
         System.out.println("accommodation_id" + accommodation_id);
         Accommodation accommodation = retrieveAccommodation(accommodation_id);
 
         System.out.println("accommodation" + accommodation);
+        List<LocalDate> dateRange = checkInDateTime.toLocalDate().datesUntil(checkOutDateTime.toLocalDate().plusDays(1)).collect(Collectors.toList());
 
-        long totalRoomCount = accommodation.getRoom_list().stream()
-                .filter(room -> room.getRoom_type() == roomType)
-                .count();
+        long totalRoomCount = 0;
+        List<Room> roomList = accommodation.getRoom_list();
+        for (Room r : roomList) {
+            if (r.getRoom_type().equals(roomType)) {
+                totalRoomCount = r.getQuantity().longValue();
+                break;
+            }
+        }
+
+//        long totalRoomCount = accommodation.getRoom_list().stream()
+//                .filter(room -> room.getRoom_type() == roomType)
+//                .mapToLong(Room::getQuantity)
+//                .sum();
 
         System.out.println("totalRoomCount" + totalRoomCount);
 
-        Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(accommodation_id, roomType, roomDateTime);
+        for (int i = 0; i < dateRange.size(); i++) {
+            LocalDate date = dateRange.get(i);
+            LocalDateTime roomDateTime;
 
-        return totalRoomCount - bookedRoomsOnThatDate > 0;
+            if (i == 0) {
+                // First day, use check-in time
+                roomDateTime = checkInDateTime;
+            } else if (i == dateRange.size() - 1) {
+                // Last day, use check-out time
+                roomDateTime = checkOutDateTime;
+            } else {
+                // Other days, use midnight
+                roomDateTime = date.atStartOfDay();
+            }
+
+            Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(accommodation_id, roomType, roomDateTime);
+
+            if (totalRoomCount - bookedRoomsOnThatDate <= 0) {
+                return false; // Room not available on at least one day
+            }
+        }
+
+        return true; // Room is available for the entire date range
     }
 }
