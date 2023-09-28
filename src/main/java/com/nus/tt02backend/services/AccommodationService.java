@@ -365,7 +365,6 @@ public class AccommodationService {
         return bookedRoomsOnThatDate;
     }
 
-    // NOT DONE
     public boolean isRoomAvailableOnDateRange(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime checkInDateTime, LocalDateTime checkOutDateTime) throws NotFoundException, BadRequestException {
         System.out.println("accommodation_id" + accommodation_id);
         Accommodation accommodation = retrieveAccommodation(accommodation_id);
@@ -381,11 +380,6 @@ public class AccommodationService {
                 break;
             }
         }
-
-//        long totalRoomCount = accommodation.getRoom_list().stream()
-//                .filter(room -> room.getRoom_type() == roomType)
-//                .mapToLong(Room::getQuantity)
-//                .sum();
 
         System.out.println("totalRoomCount" + totalRoomCount);
 
@@ -413,4 +407,44 @@ public class AccommodationService {
 
         return true; // Room is available for the entire date range
     }
+
+    public long getMinAvailableRoomsOnDateRange(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime checkInDateTime, LocalDateTime checkOutDateTime) throws NotFoundException, BadRequestException {
+        Accommodation accommodation = retrieveAccommodation(accommodation_id);
+        List<LocalDate> dateRange = checkInDateTime.toLocalDate().datesUntil(checkOutDateTime.toLocalDate().plusDays(1)).collect(Collectors.toList());
+
+        long minAvailableRooms = Long.MAX_VALUE; // Initialize with a large value
+
+        for (int i = 0; i < dateRange.size(); i++) {
+            LocalDate date = dateRange.get(i);
+            LocalDateTime roomDateTime;
+
+            if (i == 0) {
+                // First day, use check-in time
+                roomDateTime = checkInDateTime;
+            } else if (i == dateRange.size() - 1) {
+                // Last day, use check-out time
+                roomDateTime = checkOutDateTime;
+            } else {
+                // Other days, use midnight
+                roomDateTime = date.atStartOfDay();
+            }
+
+            Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(accommodation_id, roomType, roomDateTime);
+
+            long availableRoomsOnThatDate = getTotalRoomCountForType(accommodation, roomType) - bookedRoomsOnThatDate;
+
+            if (availableRoomsOnThatDate < minAvailableRooms) {
+                minAvailableRooms = availableRoomsOnThatDate;
+            }
+        }
+
+        return minAvailableRooms;
+    }
+    private long getTotalRoomCountForType(Accommodation accommodation, RoomTypeEnum roomType) {
+        return accommodation.getRoom_list().stream()
+                .filter(room -> room.getRoom_type() == roomType)
+                .mapToLong(room -> room.getQuantity().longValue())
+                .sum();
+    }
+
 }

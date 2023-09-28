@@ -110,4 +110,10 @@ public class AccommodationController {
         Boolean isRoomAvailable = accommodationService.isRoomAvailableOnDateRange(accommodation_id, roomTypeEnum, checkInDateTime, checkOutDateTime);
         return ResponseEntity.ok(isRoomAvailable);
     }
+
+    @GetMapping("/getMinAvailableRoomsOnDateRange/{accommodation_id}/{roomTypeEnum}/{checkInDateTime}/{checkOutDateTime}")
+    public ResponseEntity<Long> getMinAvailableRoomsOnDateRange(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable LocalDateTime checkInDateTime, @PathVariable LocalDateTime checkOutDateTime) throws BadRequestException ,NotFoundException {
+        Long numRoomsAvailable = accommodationService.getMinAvailableRoomsOnDateRange(accommodation_id, roomTypeEnum, checkInDateTime, checkOutDateTime);
+        return ResponseEntity.ok(numRoomsAvailable);
+    }
 }
