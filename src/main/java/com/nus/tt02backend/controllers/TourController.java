@@ -71,8 +71,42 @@ public class TourController {
     }
 
     @PostMapping("/createTour/{tourTypeId}")
+    public ResponseEntity<Tour> createTour(@PathVariable Long tourTypeId,
+                                           @RequestBody Tour tourToCreate) throws BadRequestException {
+        Tour createdTour = tourService.createTour(tourTypeId, tourToCreate);
+        return ResponseEntity.ok(createdTour);
+    }
+
+    @GetMapping("/getAllToursByTourType/{tourTypeId}")
+    public ResponseEntity<List<Tour>> getAllToursByTourType(@PathVariable Long tourTypeId) throws BadRequestException {
+        List<Tour> tours = tourService.getAllToursByTourType(tourTypeId);
+        return ResponseEntity.ok(tours);
+    }
+
+    @GetMapping("/getTourByTourId/{tourId}")
+    public ResponseEntity<Tour> getTourByTourId(@PathVariable Long tourId) throws BadRequestException {
+        Tour tour = tourService.getTourByTourId(tourId);
+        return ResponseEntity.ok(tour);
+    }
+
+    @PutMapping("/updateTour")
+    public ResponseEntity<Tour> updateTour(@RequestBody Tour tourToUpdate)
+            throws BadRequestException {
+        Tour updatedTour = tourService.updateTour(tourToUpdate);
+        return ResponseEntity.ok(updatedTour);
+    }
+
+    @DeleteMapping("/deleteTour/{tourIdToDelete}")
+    public ResponseEntity<String> deleteTour(@PathVariable Long tourIdToDelete) throws BadRequestException {
+        String responseMessage = tourService.deleteTour(tourIdToDelete);
+        return ResponseEntity.ok(responseMessage);
+    }
+
+    /*
+    @PostMapping("/createTour/{tourTypeId}")
     public ResponseEntity<Long> createTour(@PathVariable Long tourTypeId, @RequestBody Tour tour) throws BadRequestException {
         Long tourId = tourService.createTour(tourTypeId, tour);
         return ResponseEntity.ok(tourId);
     }
+    */
 }
