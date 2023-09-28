@@ -78,14 +78,6 @@ public class AccommodationController {
         }
     }
 
-    @PostMapping("createRoomListExistingAccommodation/{accommodationId}")
-    public ResponseEntity<List<Room>> createRoomListExistingAccommodation(@PathVariable Long accommodationId , @RequestBody List<Room> roomListToCreate)
-            throws BadRequestException, IllegalArgumentException, NotFoundException {
-
-        Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
-        List<Room> roomList =  accommodationService.createRoomListExistingAccommodation(accommodation,roomListToCreate);
-        return ResponseEntity.ok(roomList);
-    }
 
     @PostMapping("createRoom/{accommodationId}")
     public ResponseEntity<Room> createRoom(@PathVariable Long accommodationId , @RequestBody Room roomToCreate)

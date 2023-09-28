@@ -32,6 +32,9 @@ public class AccommodationService {
     @Autowired
     BookingRepository bookingRepository;
 
+    @Autowired
+    VendorRepository vendorRepository;
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -150,7 +153,7 @@ public class AccommodationService {
         currentList.add(newAccommodation);
         vendor.setAccommodation_list(currentList); // set new accommodation for the vendor
 
-        vendor.setAccommodation_list(null);
+        //vendor.setAccommodation_list(null);
         vendor.setWithdrawal_list(null);
         vendor.setVendor_staff_list(null);
 //        vendor.setComment_list(null);
@@ -158,6 +161,10 @@ public class AccommodationService {
         vendor.setRestaurant_list(null);
         vendor.setTelecom_list(null);
         vendor.setDeals_list(null);
+
+        vendorRepository.save(vendor);
+
+        vendorStaff.setVendor(vendor);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
 
@@ -215,40 +222,6 @@ public class AccommodationService {
         return create_room_list;
     }
 
-    public List<Room> createRoomListExistingAccommodation(Accommodation accommodation, List<Room> room_list) throws BadRequestException, NotFoundException {
-
-        List<Room> create_room_list = new ArrayList<Room>();
-        List<Room> existing_room_list = accommodation.getRoom_list();
-
-        for (Room input : room_list) {
-
-            Room roomToCreate = new Room();
-            roomToCreate.setAmenities_description(input.getAmenities_description());
-            roomToCreate.setNum_of_pax(input.getNum_of_pax());
-            roomToCreate.setRoom_type(input.getRoom_type());
-            roomToCreate.setPrice(input.getPrice());
-
-            roomRepository.save(roomToCreate);
-
-            create_room_list.add(roomToCreate);
-
-        }
-
-        if (existing_room_list.isEmpty()) {
-            PriceTierEnum updatedTier = priceTierEstimation(create_room_list);
-
-            accommodation.setRoom_list(create_room_list);
-            accommodation.setEstimated_price_tier(updatedTier);
-        } else {
-            existing_room_list.addAll(create_room_list);
-            PriceTierEnum updatedTier = priceTierEstimation(existing_room_list);
-
-            accommodation.setRoom_list(existing_room_list);
-            accommodation.setEstimated_price_tier(updatedTier);
-        }
-
-        return create_room_list;
-    }
 
     public Room createRoom(Accommodation accommodation, Room roomToCreate) throws BadRequestException {
 
