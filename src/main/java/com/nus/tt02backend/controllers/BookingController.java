@@ -72,6 +72,13 @@ public class BookingController {
         return ResponseEntity.ok(booking);
     }
 
+    // not to be used by frontend
+    @PostMapping("/createRoomBooking/{roomId}")
+    public ResponseEntity<Booking> createRoomBooking(@PathVariable Long roomId, @RequestBody Booking newBooking) throws NotFoundException {
+        Booking booking = bookingService.createRoomBooking(roomId, newBooking);
+        return ResponseEntity.ok(booking);
+    }
+
     @GetMapping("/retrieveAllBookings")
     public ResponseEntity<List<Booking>> retrieveAllBookings() throws NotFoundException {
         List<Booking> bookingList = bookingService.retrieveAllBookings();

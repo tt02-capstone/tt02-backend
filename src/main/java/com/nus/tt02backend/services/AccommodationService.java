@@ -352,10 +352,10 @@ public class AccommodationService {
     }
 
     // NOT DONE
-    public boolean isRoomAvailableOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDate roomDate) throws NotFoundException, BadRequestException {
+    public boolean isRoomAvailableOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
 
-        Accommodation accommodation = accommodationRepository.findById(accommodation_id)
-                .orElseThrow(() -> new NotFoundException("Accommodation not found!"));
+        System.out.println("accommodation_id" + accommodation_id);
+        Accommodation accommodation = retrieveAccommodation(accommodation_id);
 
         System.out.println("accommodation" + accommodation);
 
@@ -365,45 +365,32 @@ public class AccommodationService {
 
         System.out.println("totalRoomCount" + totalRoomCount);
 
-        // it is failing here
         List<Booking> allBookings = bookingRepository.findAll();
         List<Booking> accommodationBookings = new ArrayList<Booking>();
 
         for (Booking b : allBookings) {
-            b.getPayment().setBooking(null);
             Accommodation accomm = retrieveAccommodationByRoom(b.getRoom().getRoom_id());
-            System.out.println("Accomm" + accomm);
             if (accomm.getAccommodation_id().equals(accommodation_id)) {
                 accommodationBookings.add(b);
             }
         }
-//
-//        System.out.println("accommodationBookings" + accommodationBookings);
-//
-//        // need to check for roomtype
-//        long bookedRoomsOnThatDate = 0;
-//        for (Booking b : accommodationBookings) {
-//
-//            if (b.getRoom().getRoom_type().equals(roomType)) {
-//
-//                LocalDate checkInDate = b.getStart_datetime().toLocalDate();
-//                LocalDate checkOutDate = b.getEnd_datetime().toLocalDate();
-//
-//                if (!roomDate.isBefore(checkInDate) && !roomDate.isAfter(checkOutDate)) {
-//                    System.out.println("roomDate is within the date range.");
-//
-//                    bookedRoomsOnThatDate++;
-//
-//                } else {
-//                    System.out.println("roomDate is outside the date range.");
-//
-//                }
-//            }
-//
-//
-//        }
 
-//        return totalRoomCount - bookedRoomsOnThatDate > 0;
-        return true;
+        long bookedRoomsOnThatDate = 0;
+
+        for (Booking b : accommodationBookings) {
+            if (b.getRoom().getRoom_type().equals(roomType)) {
+                LocalDateTime checkInDateTime = b.getStart_datetime();
+                LocalDateTime checkOutDateTime = b.getEnd_datetime();
+
+                if (!roomDateTime.isBefore(checkInDateTime) && !roomDateTime.isAfter(checkOutDateTime)) {
+                    System.out.println("roomDateTime is within the date range.");
+                    bookedRoomsOnThatDate++;
+                } else {
+                    System.out.println("roomDateTime is outside the date range.");
+                }
+            }
+        }
+
+        return totalRoomCount - bookedRoomsOnThatDate > 0;
     }
 }

@@ -43,6 +43,9 @@ public class BookingService {
     AttractionRepository attractionRepository;
 
     @Autowired
+    AttractionRepository accommodationRepository;
+
+    @Autowired
     UserRepository userRepository;
 
     @Autowired
@@ -482,6 +485,33 @@ public class BookingService {
 
         } else {
             throw new NotFoundException("Telecom not found!");
+        }
+    }
+
+    public Booking createRoomBooking(Long roomId, Booking booking) throws NotFoundException {
+
+        Optional<Room> roomOptional = roomRepository.findById(roomId);
+
+        if (roomOptional.isPresent()) {
+            Payment payment = booking.getPayment();
+            paymentRepository.save(payment);
+
+            for (BookingItem bi : booking.getBooking_item_list()) {
+                bookingItemRepository.save(bi);
+            }
+
+            Room room = roomOptional.get();
+            booking.setRoom(room);
+            bookingRepository.save(booking);
+
+            payment.setBooking(booking);
+            paymentRepository.save(payment);
+
+            booking.getPayment().setBooking(null);
+            return booking;
+
+        } else {
+            throw new NotFoundException("Accommodation not found!");
         }
     }
 }

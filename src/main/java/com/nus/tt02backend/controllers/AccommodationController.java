@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -106,9 +106,9 @@ public class AccommodationController {
         List<RoomTypeEnum> roomTypes = accommodationService.getRoomTypeByAccommodation(accommodation_id);
         return ResponseEntity.ok(roomTypes);
     }
-    @GetMapping("/isRoomAvailableOnDate/{accommodation_id}/{roomTypeEnum}/{date}")
-    public ResponseEntity<Boolean> isRoomAvailableOnDate(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable LocalDate date) throws BadRequestException ,NotFoundException {
-        Boolean roomAvailability = accommodationService.isRoomAvailableOnDate(accommodation_id, roomTypeEnum, date);
+    @GetMapping("/isRoomAvailableOnDate/{accommodation_id}/{roomTypeEnum}/{dateTime}")
+    public ResponseEntity<Boolean> isRoomAvailableOnDate(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable LocalDateTime dateTime) throws BadRequestException ,NotFoundException {
+        Boolean roomAvailability = accommodationService.isRoomAvailableOnDate(accommodation_id, roomTypeEnum, dateTime);
         return ResponseEntity.ok(roomAvailability);
     }
 }
