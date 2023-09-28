@@ -152,6 +152,16 @@ public class TourService {
         }
 
         TourType tourType = tourTypeOptional.get();
+
+        for (Tour existingTour : tourType.getTour_list()) {
+            if (existingTour.getDate().toLocalDate().equals(tourToCreate.getDate().toLocalDate())
+                    && existingTour.getStart_time().isBefore(tourToCreate.getStart_time())
+                    && existingTour.getEnd_time().isAfter(tourToCreate.getStart_time())) {
+
+                throw new BadRequestException("There is an existing tour that clashes with the timeslot!");
+            }
+        }
+
         Tour createdTour = tourRepository.save(tourToCreate);
         tourType.getTour_list().add(createdTour);
         tourTypeRepository.save(tourType);
