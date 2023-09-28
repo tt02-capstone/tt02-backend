@@ -9,7 +9,4 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface TicketPerDayRepository extends JpaRepository<TicketPerDay, Long> {
-
-    @Query("SELECT t FROM TicketPerDay t Where t.ticket_date = ?1")
-    TicketPerDay getTicketPerDayByDate(LocalDate date);
 }
