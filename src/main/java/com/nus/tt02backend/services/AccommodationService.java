@@ -351,19 +351,12 @@ public class AccommodationService {
         return roomTypes;
     }
 
-    // NOT DONE
-    public boolean isRoomAvailableOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
+    public Long getNumOfBookingsOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
 
         System.out.println("accommodation_id" + accommodation_id);
         Accommodation accommodation = retrieveAccommodation(accommodation_id);
 
         System.out.println("accommodation" + accommodation);
-
-        long totalRoomCount = accommodation.getRoom_list().stream()
-                .filter(room -> room.getRoom_type() == roomType)
-                .count();
-
-        System.out.println("totalRoomCount" + totalRoomCount);
 
         List<Booking> allBookings = bookingRepository.findAll();
         List<Booking> accommodationBookings = new ArrayList<Booking>();
@@ -390,6 +383,26 @@ public class AccommodationService {
                 }
             }
         }
+
+        System.out.println("bookedRoomsOnThatDate" + bookedRoomsOnThatDate);
+        return bookedRoomsOnThatDate;
+    }
+
+    // NOT DONE
+    public boolean isRoomAvailableOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
+
+        System.out.println("accommodation_id" + accommodation_id);
+        Accommodation accommodation = retrieveAccommodation(accommodation_id);
+
+        System.out.println("accommodation" + accommodation);
+
+        long totalRoomCount = accommodation.getRoom_list().stream()
+                .filter(room -> room.getRoom_type() == roomType)
+                .count();
+
+        System.out.println("totalRoomCount" + totalRoomCount);
+
+        Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(accommodation_id, roomType, roomDateTime);
 
         return totalRoomCount - bookedRoomsOnThatDate > 0;
     }

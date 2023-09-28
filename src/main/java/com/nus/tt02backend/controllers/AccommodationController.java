@@ -10,6 +10,7 @@ import com.nus.tt02backend.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -105,6 +106,12 @@ public class AccommodationController {
     public ResponseEntity<List<RoomTypeEnum>> getRoomTypeByAccommodation(@PathVariable Long accommodation_id) throws NotFoundException {
         List<RoomTypeEnum> roomTypes = accommodationService.getRoomTypeByAccommodation(accommodation_id);
         return ResponseEntity.ok(roomTypes);
+    }
+
+    @GetMapping("/getNumOfBookingsOnDate/{accommodation_id}/{roomTypeEnum}/{dateTime}")
+    public ResponseEntity<Long> getNumOfBookingsOnDate(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTime) throws BadRequestException ,NotFoundException {
+        Long numOfBookings = accommodationService.getNumOfBookingsOnDate(accommodation_id, roomTypeEnum, dateTime);
+        return ResponseEntity.ok(numOfBookings);
     }
     @GetMapping("/isRoomAvailableOnDate/{accommodation_id}/{roomTypeEnum}/{dateTime}")
     public ResponseEntity<Boolean> isRoomAvailableOnDate(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable LocalDateTime dateTime) throws BadRequestException ,NotFoundException {
