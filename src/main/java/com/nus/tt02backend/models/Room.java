@@ -34,4 +34,6 @@ public class Room {
     @Enumerated(EnumType.STRING)
     private RoomTypeEnum room_type;
 
+    private Integer quantity;
+
 }
