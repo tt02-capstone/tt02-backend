@@ -156,7 +156,7 @@ public class AccommodationService {
         currentList.add(newAccommodation);
         vendor.setAccommodation_list(currentList); // set new accommodation for the vendor
 
-        //vendor.setAccommodation_list(null);
+        vendor.setAttraction_list(null);
         vendor.setWithdrawal_list(null);
         vendor.setVendor_staff_list(null);
 //        vendor.setComment_list(null);
@@ -214,6 +214,7 @@ public class AccommodationService {
             roomToCreate.setRoom_type(input.getRoom_type());
             roomToCreate.setPrice(input.getPrice());
             roomToCreate.setQuantity(input.getQuantity());
+            roomToCreate.setRoom_image(input.getRoom_image());
 
             roomRepository.save(roomToCreate);
 
@@ -231,8 +232,12 @@ public class AccommodationService {
 
         Room newRoom = roomRepository.save(roomToCreate);
 
+        System.out.println("newRoom" + newRoom);
+
         List<Room> currentList = accommodation.getRoom_list();
         currentList.add(newRoom);
+
+        System.out.println("currentList" + currentList);
 
         accommodation.setRoom_list(currentList); // set updated room list for the accommodation
         System.out.println(accommodation.getRoom_list());
@@ -276,6 +281,11 @@ public class AccommodationService {
     public Long getLastAccommodationId() {
         Long lastAccommodationId = accommodationRepository.findMaxAccommodationId();
         return (lastAccommodationId != null) ? lastAccommodationId : 0L; // Default to 0 if no accommodations exist
+    }
+
+    public Long getLastRoomId() {
+        Long lastRoomId = roomRepository.findMaxRoomId();
+        return (lastRoomId != null) ? lastRoomId : 0L; // Default to 0 if no rooms exist
     }
 
     public List<Room> getRoomListByAccommodation(Long accommodationId) throws NotFoundException {
@@ -451,5 +461,4 @@ public class AccommodationService {
                 .mapToLong(room -> room.getQuantity().longValue())
                 .sum();
     }
-
 }

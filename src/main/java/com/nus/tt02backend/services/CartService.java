@@ -46,6 +46,8 @@ public class CartService {
     VendorRepository vendorRepository;
     @Autowired
     TelecomRepository telecomRepository;
+    @Autowired
+    RoomRepository roomRepository;
 
     public Long addCartItems(String user_type, String tourist_email,  String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
@@ -386,7 +388,20 @@ public class CartService {
                 cartBookingToDelete.getCart_item_list().clear();
                 cartItemRepository.delete(temp);
                 cartBookingRepository.delete(cartBookingToDelete);
+            // might need to edit more
+            } else if (cartBookingToDelete.getType() == BookingTypeEnum.ACCOMMODATION) {
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                tourist.getCart_list().remove(cartBookingToDelete);
+            } else {
+                Local local = (Local) user;
+                local.getCart_list().remove(cartBookingToDelete);
             }
+            CartItem temp = cartBookingToDelete.getCart_item_list().get(0);
+            cartBookingToDelete.getCart_item_list().clear();
+            cartItemRepository.delete(temp);
+            cartBookingRepository.delete(cartBookingToDelete);
+        }
         }
 
         return cartBookingsToDelete;
@@ -551,6 +566,38 @@ public class CartService {
         }
 
         cartBooking.setTelecom(telecom);
+        cartBookingRepository.save(cartBooking);
+
+        if (user instanceof Local) {
+            Local local = (Local) user;
+            if (local.getCart_list() == null) local.setCart_list(new ArrayList<>());
+            local.getCart_list().add(cartBooking);
+            localRepository.save(local);
+            return cartBooking.getCart_booking_id();
+
+        } else if (user instanceof Tourist) {
+            Tourist tourist = (Tourist) user;
+            if (tourist.getCart_list() == null) tourist.setCart_list(new ArrayList<>());
+            tourist.getCart_list().add(cartBooking);
+            touristRepository.save(tourist);
+            return cartBooking.getCart_booking_id();
+
+        } else {
+            throw new NotFoundException("User is not tourist or local!");
+        }
+    }
+
+    public Long addRoomToCart(Long userId, Long roomId, CartBooking cartBooking) throws NotFoundException {
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found!"));
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new NotFoundException("Room not found!"));
+
+        List<CartItem> list = cartBooking.getCart_item_list();
+        for (CartItem c : list) {
+            cartItemRepository.save(c);
+        }
+
+        cartBooking.setRoom(room);
         cartBookingRepository.save(cartBooking);
 
         if (user instanceof Local) {

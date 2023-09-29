@@ -6,6 +6,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import com.nus.tt02backend.models.enums.RoomTypeEnum;
 
 @Data
@@ -36,4 +38,5 @@ public class Room {
 
     private Integer quantity;
 
+    private String room_image;
 }

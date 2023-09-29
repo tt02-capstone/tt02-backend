@@ -79,8 +79,17 @@ public class AccommodationController {
         }
     }
 
+    @GetMapping("/getLastRoomId")
+    public ResponseEntity<?> getLastRoomId() {
+        try {
+            Long lastRoomId = accommodationService.getLastRoomId();
+            return ResponseEntity.ok(lastRoomId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
 
-    @PostMapping("createRoom/{accommodationId}")
+    @PostMapping("/createRoom/{accommodationId}")
     public ResponseEntity<Room> createRoom(@PathVariable Long accommodationId , @RequestBody Room roomToCreate)
             throws BadRequestException, IllegalArgumentException, NotFoundException {
 
@@ -94,6 +103,13 @@ public class AccommodationController {
         List<Room> roomList = accommodationService.getRoomListByAccommodation(accommodationId);
         return ResponseEntity.ok(roomList);
     }
+
+    @GetMapping("/retrieveAccommodationByRoom/{room_id}")
+    public ResponseEntity<Accommodation> retrieveAccommodationByRoom(@PathVariable Long room_id) throws BadRequestException ,NotFoundException {
+        Accommodation accommodation = accommodationService.retrieveAccommodationByRoom(room_id);
+        return ResponseEntity.ok(accommodation);
+    }
+
     @GetMapping("/getRoomTypeByAccommodation/{accommodation_id}")
     public ResponseEntity<List<RoomTypeEnum>> getRoomTypeByAccommodation(@PathVariable Long accommodation_id) throws NotFoundException {
         List<RoomTypeEnum> roomTypes = accommodationService.getRoomTypeByAccommodation(accommodation_id);

@@ -67,6 +67,12 @@ public class CartController {
         return ResponseEntity.ok(id);
     }
 
+    @PostMapping("/addRoomToCart/{userId}/{roomId}")
+    public ResponseEntity<Long> addRoomToCart(@PathVariable Long userId, @PathVariable Long roomId, @RequestBody CartBooking cartBooking) throws NotFoundException {
+        Long id = cartService.addRoomToCart(userId, roomId, cartBooking);
+        return ResponseEntity.ok(id);
+    }
+
     @PostMapping("/checkout/{user_type}/{tourist_email}/{payment_method_id}/{totalPrice}")
     public ResponseEntity<List<Long>> checkout(@PathVariable String user_type,
                                                @PathVariable String tourist_email,
