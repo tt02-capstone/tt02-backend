@@ -89,7 +89,6 @@ public class AccommodationService {
 //        vendor.setPost_list(null);
         vendor.setRestaurant_list(null);
         vendor.setTelecom_list(null);
-        vendor.setDeals_list(null);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
 
