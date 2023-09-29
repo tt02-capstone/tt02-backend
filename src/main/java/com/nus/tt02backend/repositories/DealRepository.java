@@ -2,6 +2,7 @@ package com.nus.tt02backend.repositories;
 
 import com.nus.tt02backend.models.Accommodation;
 import com.nus.tt02backend.models.Deal;
+import com.nus.tt02backend.models.Telecom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,4 +15,7 @@ public interface DealRepository extends JpaRepository<Deal, Long> {
 
     @Query("SELECT MAX(d.deal_id) FROM Deal d")
     Long findMaxDealId();
+
+    @Query("SELECT d FROM Deal d WHERE d.is_published = true")
+    List<Deal> getPublishedDealList();
 }

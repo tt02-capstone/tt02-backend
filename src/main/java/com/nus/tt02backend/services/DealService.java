@@ -22,6 +22,14 @@ public class DealService {
     @Autowired
     VendorRepository vendorRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    TouristRepository touristRepository;
+
+    @Autowired
+    LocalRepository localRepository;
     public Vendor retrieveVendor(Long vendorId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
@@ -75,6 +83,10 @@ public class DealService {
         }
     }
 
+    public List<Deal> getPublishedDealList() {
+        return dealRepository.getPublishedDealList();
+    }
+
     public List<Deal> getAllDealList() {
         return dealRepository.findAll();
     }
@@ -105,6 +117,68 @@ public class DealService {
 
         } else {
             throw new NotFoundException("Deal not found!");
+        }
+    }
+
+    public List<Deal> toggleSaveDeal(Long userId, Long dealId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<Deal> dealOptional = dealRepository.findById(dealId);
+
+        if (userOptional.isPresent() && dealOptional.isPresent()) {
+            User user = userOptional.get();
+            Deal deal = dealOptional.get();
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getDeal_list() == null) tourist.setDeal_list(new ArrayList<>());
+
+                if (tourist.getDeal_list().contains(deal)) { // remove from saved listing
+                    tourist.getDeal_list().remove(deal);
+                } else {
+                    tourist.getDeal_list().add(deal);
+                }
+                touristRepository.save(tourist);
+                return tourist.getDeal_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getDeals_list() == null) {
+                    local.setDeals_list(new ArrayList<>());
+                }
+                if (local.getDeals_list().contains(deal)) { // remove from saved listing
+                    local.getDeals_list().remove(deal);
+                } else {
+                    local.getDeals_list().add(deal);
+                }
+                localRepository.save(local);
+                return local.getDeals_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User or deal is not found!");
+        }
+    }
+
+    public List<Deal> getUserSavedDeal(Long userId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getDeal_list() == null) return new ArrayList<>();
+                return tourist.getDeal_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getDeals_list() == null) return new ArrayList<>();
+                return local.getDeals_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User not found!");
         }
     }
 
