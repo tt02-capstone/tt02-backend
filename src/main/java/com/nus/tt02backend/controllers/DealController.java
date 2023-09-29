@@ -36,6 +36,11 @@ public class DealController {
         return ResponseEntity.ok(newdeal);
     }
 
+    @GetMapping("/getPublishedDealList")
+    public ResponseEntity<List<Deal>> getPublishedDealList() {
+        List<Deal> list = dealService.getPublishedDealList();
+        return ResponseEntity.ok(list);
+    }
     @GetMapping("/getAllDealList")
     public ResponseEntity<List<Deal>> getAllDealeList() {
         List<Deal> dealList = dealService.getAllDealList();
@@ -63,6 +68,18 @@ public class DealController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @PutMapping("/toggleSaveDeal/{userId}/{dealId}")
+    public ResponseEntity<List<Deal>> toggleSaveDeal(@PathVariable Long userId, @PathVariable Long dealId) throws NotFoundException {
+        List<Deal> list = dealService.toggleSaveDeal(userId, dealId);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getUserSavedDeal/{userId}")
+    public ResponseEntity<List<Deal>> getPublishedDealList(@PathVariable Long userId) throws NotFoundException {
+        List<Deal> list = dealService.getUserSavedDeal(userId);
+        return ResponseEntity.ok(list);
     }
 
 }
