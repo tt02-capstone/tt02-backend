@@ -250,13 +250,22 @@ public class TourService {
         for (TourType tourType : listOfAllTourTypes) {
             if (tourType.getIs_published()) {
                 List<Tour> listOfAllTours = tourType.getTour_list();
-
+                List<Tour> tempTours = new ArrayList<Tour>();
+                Boolean matchingTour = false;
                 for (Tour tour : listOfAllTours) {
                     if (tour.getDate().toLocalDate().equals(dateSelected.toLocalDate())) {
-                        listOfAvailableTourTypes.add(tourType);
-                        break;
+                        matchingTour = true;
+                        tempTours.add(tour);
                     }
                 }
+
+                if (matchingTour) {
+                    tourType.getTour_list().clear();
+                    tourType.getTour_list().addAll(tempTours);
+                    listOfAvailableTourTypes.add(tourType);
+                }
+
+                tempTours.clear();
             }
         }
 
