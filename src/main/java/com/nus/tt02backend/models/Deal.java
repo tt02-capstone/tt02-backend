@@ -1,6 +1,7 @@
 package com.nus.tt02backend.models;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nus.tt02backend.models.enums.DealCategoryEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,6 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -24,12 +26,14 @@ public class Deal {
     private Integer discount_percent;
 
     @Column(nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime start_datetime;
 
     @Column(nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime end_datetime;
 
-    @Column(nullable = true)
+    @Column(nullable = true, unique = true)
     private String promo_code;
 
     @Column(nullable = false)
@@ -37,7 +41,7 @@ public class Deal {
 
     @ElementCollection
     @CollectionTable(name="deal_image_list")
-    private ArrayList<String> deal_image_list = new ArrayList<>();
+    private List<String> deal_image_list;
 
     @Column(nullable = false)
     private Boolean is_published;

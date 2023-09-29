@@ -20,11 +20,11 @@ public class Tour {
     private Long tour_id;
 
     @Column(nullable = false)
-    private LocalDateTime start_datetime;
+    private LocalDateTime date;
 
     @Column(nullable = false)
-    private LocalDateTime end_datetime;
+    private LocalDateTime start_time;
 
-    @Column(nullable = false, precision = 19, scale = 2)
-    private Long tour_guide_id;
+    @Column(nullable = false)
+    private LocalDateTime end_time;
 }
