@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -53,23 +54,8 @@ public class Restaurant {
 
     @ElementCollection
     @CollectionTable(name="restaurant_image_list")
-    private ArrayList<String> restaurant_image_list;
+    private List<String> restaurant_image_list;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private ArrayList<Dish> dish_list;
-
-    public Restaurant(Long restaurant_id, String name, String description, String address, String opening_hours, String contact_num, Boolean is_published, Integer suggested_duration, RestaurantEnum restaurant_type, GenericLocationEnum generic_location, PriceTierEnum estimated_price_tier, ArrayList<String> image_list) {
-        this.restaurant_id = restaurant_id;
-        this.name = name;
-        this.description = description;
-        this.address = address;
-        this.opening_hours = opening_hours;
-        this.contact_num = contact_num;
-        this.is_published = is_published;
-        this.suggested_duration = suggested_duration;
-        this.restaurant_type = restaurant_type;
-        this.generic_location = generic_location;
-        this.estimated_price_tier = estimated_price_tier;
-        this.restaurant_image_list = image_list;
-    }
+    private List<Dish> dish_list;
 }

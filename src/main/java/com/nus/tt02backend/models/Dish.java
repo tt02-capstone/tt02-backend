@@ -1,6 +1,7 @@
 package com.nus.tt02backend.models;
 
 
+import com.nus.tt02backend.models.enums.DishTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,23 +24,29 @@ public class Dish {
     private String name;
 
     @Column(nullable = false)
-    private String description;
-
-    @Column(nullable = false)
     private BigDecimal price;
 
     @Column(nullable = false)
-    private Integer spice_level;
+    private Boolean spicy;
 
     @Column(nullable = false)
     private Boolean is_signature;
 
-    @Column(nullable = false)
-    private Boolean is_chef_recommendation;
+    @Enumerated(EnumType.STRING)
+    private DishTypeEnum dish_type;
 
-    @ElementCollection
-    @CollectionTable(name="dish_image_list")
-    private ArrayList<String> dish_image_list;
+//    @Column(nullable = false)
+//    private String description;
+
+//    @Column(nullable = false)
+//    private String dish_image;
+
+//    @Column(nullable = false)
+//    private Boolean is_chef_recommendation;
+
+//    @ElementCollection
+//    @CollectionTable(name="dish_image_list")
+//    private ArrayList<String> dish_image_list;
 
 
 }

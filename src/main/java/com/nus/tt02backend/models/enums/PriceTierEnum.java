@@ -1,6 +1,7 @@
 package com.nus.tt02backend.models.enums;
 
 public enum PriceTierEnum {
+    TIER_0,
     TIER_1,
     TIER_2,
     TIER_3,

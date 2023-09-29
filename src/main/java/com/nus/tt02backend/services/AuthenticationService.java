@@ -44,6 +44,7 @@ public class AuthenticationService {
     public JwtRefreshResponse refreshToken(HttpServletRequest request) throws BadRequestException, NotFoundException {
         try {
             DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+            System.out.println("Claims" + claims);
             Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
             String userEmail = expectedMap.get("sub").toString();
             UserDetails userDetails = userDetailsImpl.loadUserByUsername(userEmail);

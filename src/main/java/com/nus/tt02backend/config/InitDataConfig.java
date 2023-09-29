@@ -56,6 +56,7 @@ public class InitDataConfig implements CommandLineRunner {
             local.setDate_of_birth(new Date());
             local.setWallet_balance(new BigDecimal(0));
             local.setCountry_code("+65");
+            local.setEmail_verified(true);
             local.setMobile_num("98989898");
             localRepository.save(local);
         }
@@ -70,6 +71,7 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setPassport_num("A111111");
             tourist.setDate_of_birth(new Date());
             tourist.setCountry_code("+65");
+            tourist.setEmail_verified(true);
             tourist.setMobile_num("9797979797");
             touristRepository.save(tourist);
         }
@@ -90,7 +92,7 @@ public class InitDataConfig implements CommandLineRunner {
             VendorStaff vendorStaff = new VendorStaff();
             vendorStaff.setEmail("vendor@gmail.com");
             vendorStaff.setEmail_verified(true);
-            vendorStaff.setName("Na Yeon");
+            vendorStaff.setName("Na Yeon"); //ewww
             vendorStaff.setPassword(passwordEncoder.encode("password1!"));
             vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
             vendorStaff.setIs_blocked(false);
@@ -98,6 +100,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setIs_master_account(true);
             vendorStaff.setVendor(vendor);
             vendorStaffRepository.save(vendorStaff);
+            log.debug("created Vendor user - {}", vendorStaff);
         }
     }
 }
