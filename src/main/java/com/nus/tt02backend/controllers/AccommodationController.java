@@ -111,4 +111,16 @@ public class AccommodationController {
         Boolean roomAvailability = accommodationService.isRoomAvailableOnDate(accommodation_id, roomTypeEnum, date);
         return ResponseEntity.ok(roomAvailability);
     }
+
+    @PutMapping("/toggleSaveAccommodation/{userId}/{accommodationId}")
+    public ResponseEntity<List<Accommodation>> toggleSaveAccommodation(@PathVariable Long userId, @PathVariable Long accommodationId) throws NotFoundException {
+        List<Accommodation> list = accommodationService.toggleSaveAccommodation(userId, accommodationId);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getUserSavedAccommodation/{userId}")
+    public ResponseEntity<List<Accommodation>> getPublishedAccommodationList(@PathVariable Long userId) throws NotFoundException {
+        List<Accommodation> list = accommodationService.getUserSavedAccommodation(userId);
+        return ResponseEntity.ok(list);
+    }
 }

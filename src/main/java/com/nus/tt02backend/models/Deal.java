@@ -8,6 +8,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -37,7 +38,7 @@ public class Deal {
 
     @ElementCollection
     @CollectionTable(name="deal_image_list")
-    private ArrayList<String> deal_image_list = new ArrayList<>();
+    private List<String> deal_image_list;
 
     @Column(nullable = false)
     private Boolean is_published;
