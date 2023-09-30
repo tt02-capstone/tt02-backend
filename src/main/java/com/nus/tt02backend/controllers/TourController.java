@@ -47,6 +47,12 @@ public class TourController {
         return ResponseEntity.ok(tourType);
     }
 
+    @GetMapping("/getAllTourTypesCreated")
+    public ResponseEntity<List<TourType>> getAllTourTypesCreated() {
+        List<TourType> tourTypes = tourService.getAllTourTypesCreated();
+        return ResponseEntity.ok(tourTypes);
+    }
+
     @PutMapping("/updateTourType/{attractionId}")
     public ResponseEntity<TourType> updateTourType(@PathVariable Long attractionId, @RequestBody TourType tourTypeToUpdate)
             throws BadRequestException {

@@ -64,6 +64,10 @@ public class TourService {
         return localOptional.get().getTour_type_list();
     }
 
+    public List<TourType> getAllTourTypesCreated() {
+        return tourTypeRepository.findAll();
+    }
+
     public TourType getTourTypeByTourTypeId(Long tourTypeId) throws BadRequestException {
         Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeId);
 
@@ -159,7 +163,9 @@ public class TourService {
                     && (existingTour.getStart_time().isBefore(tourToCreate.getStart_time())
                     && existingTour.getEnd_time().isAfter(tourToCreate.getStart_time())
                     || (existingTour.getStart_time().isBefore(tourToCreate.getEnd_time())
-                    && existingTour.getEnd_time().isAfter(tourToCreate.getEnd_time()))
+                    && existingTour.getEnd_time().isAfter(tourToCreate.getEnd_time())
+                    || (existingTour.getStart_time().isAfter(tourToCreate.getStart_time())
+                    && existingTour.getEnd_time().isBefore(tourToCreate.getEnd_time())))
             )) {
                 throw new BadRequestException("There is an existing tour that clashes with the timeslot!");
             }
@@ -206,7 +212,9 @@ public class TourService {
                     && (existingTour.getStart_time().isBefore(tourToUpdate.getStart_time())
                     && existingTour.getEnd_time().isAfter(tourToUpdate.getStart_time())
                     || (existingTour.getStart_time().isBefore(tourToUpdate.getEnd_time())
-                    && existingTour.getEnd_time().isAfter(tourToUpdate.getEnd_time()))
+                    && existingTour.getEnd_time().isAfter(tourToUpdate.getEnd_time())
+                    || (existingTour.getStart_time().isAfter(tourToUpdate.getStart_time())
+                    && existingTour.getEnd_time().isBefore(tourToUpdate.getEnd_time())))
             )) {
                 throw new BadRequestException("There is an existing tour that clashes with the timeslot!");
             }
