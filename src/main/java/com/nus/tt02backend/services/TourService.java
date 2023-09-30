@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -234,6 +235,41 @@ public class TourService {
         tourRepository.deleteById(tour.getTour_id());
 
         return "Tour successfully deleted";
+    }
+
+    public List<TourType> getAllTourTypesByAttraction(Long attractionId, LocalDateTime dateSelected) throws BadRequestException {
+        Optional<Attraction> attractionOptional = attractionRepository.findById(attractionId);
+
+        if (attractionOptional.isEmpty()) {
+            throw new BadRequestException("Attraction does not exist!");
+        }
+
+        Attraction attraction = attractionOptional.get();
+        List<TourType> listOfAllTourTypes = attraction.getTour_type_list();
+        List<TourType> listOfAvailableTourTypes = new ArrayList<TourType>();
+        for (TourType tourType : listOfAllTourTypes) {
+            if (tourType.getIs_published()) {
+                List<Tour> listOfAllTours = tourType.getTour_list();
+                List<Tour> tempTours = new ArrayList<Tour>();
+                Boolean matchingTour = false;
+                for (Tour tour : listOfAllTours) {
+                    if (tour.getDate().toLocalDate().equals(dateSelected.toLocalDate())) {
+                        matchingTour = true;
+                        tempTours.add(tour);
+                    }
+                }
+
+                if (matchingTour) {
+                    tourType.getTour_list().clear();
+                    tourType.getTour_list().addAll(tempTours);
+                    listOfAvailableTourTypes.add(tourType);
+                }
+
+                tempTours.clear();
+            }
+        }
+
+        return listOfAvailableTourTypes;
     }
 
     /*

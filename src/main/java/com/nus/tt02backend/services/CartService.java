@@ -46,8 +46,10 @@ public class CartService {
     VendorRepository vendorRepository;
     @Autowired
     TelecomRepository telecomRepository;
+    @Autowired
+    TourRepository tourRepository;
 
-    public Long addCartItems(String user_type, String tourist_email,  String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
+    public Long addCartItems(String user_type, String tourist_email, String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
         // Need official function to handle different cases
         if (user_type.equals("LOCAL")) {
@@ -98,15 +100,17 @@ public class CartService {
                                 .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
                                 .findFirst();
 
-                        if (indexOfMatchingTicket.isPresent()) {
-                            Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
-                            TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
-                            currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItem.getQuantity());
-                            ticketPerDayRepository.save(currentTicket);
-                            currentTickets.set(foundTicketIndex, currentTicket);
+                        if (cartItem.getType() != BookingTypeEnum.TOUR) {
+                            if (indexOfMatchingTicket.isPresent()) {
+                                Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
+                                TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
+                                currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItem.getQuantity());
+                                ticketPerDayRepository.save(currentTicket);
+                                currentTickets.set(foundTicketIndex, currentTicket);
 
-                        } else {
-                            throw new NotFoundException("No tickets found for this date!");
+                            } else {
+                                throw new NotFoundException("No tickets found for this date!");
+                            }
                         }
 
                         existingCartItems.add(cartItem);
@@ -116,13 +120,13 @@ public class CartService {
                     }
                 }
 
-                currentCartBookings.set(indexOpt.getAsInt(),existingBooking);
+                currentCartBookings.set(indexOpt.getAsInt(), existingBooking);
                 currentTourist.setCart_list(currentCartBookings);
                 localRepository.save(currentTourist);
                 return existingBooking.getCart_booking_id();
 
             } else {
-                CartBooking cartBookingToCreate = addCartOperation(activity_name,cartItems);
+                CartBooking cartBookingToCreate = addCartOperation(activity_name, cartItems);
                 currentCartBookings.add(cartBookingToCreate);
                 currentTourist.setCart_list(currentCartBookings);
                 localRepository.save(currentTourist);
@@ -169,7 +173,7 @@ public class CartService {
                                 existingBooking.getAttraction().getAttraction_id(),
                                 cartItems.get(0).getStart_datetime()); // tickets listed based on the date selected
                         if (currentTickets.isEmpty()) {
-                            throw new NotFoundException("No tickets found for this date!");
+                            throw new NotFoundException("No tickets found for this date that you trying to selected an attraction for !");
                         }
 
                         cartItem = cartItemRepository.save(cartItem);
@@ -179,16 +183,29 @@ public class CartService {
                                 .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
                                 .findFirst();
 
-                        if (indexOfMatchingTicket.isPresent()) {
-                            Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
-                            TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
-                            currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItem.getQuantity());
-                            ticketPerDayRepository.save(currentTicket);
-                            currentTickets.set(foundTicketIndex, currentTicket);
+                        if (cartItem.getType() != BookingTypeEnum.TOUR) {
+                            if (indexOfMatchingTicket.isPresent()) {
+                                Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
+                                TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
+                                currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItem.getQuantity());
+                                ticketPerDayRepository.save(currentTicket);
+                                currentTickets.set(foundTicketIndex, currentTicket);
 
-                        } else {
-                            throw new NotFoundException("No tickets found for this date!");
+                            } else {
+                                throw new NotFoundException("No tickets found for this date when trying to update ticket count !");
+                            }
                         }
+
+//                        if (indexOfMatchingTicket.isPresent()) {
+//                            Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
+//                            TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
+//                            currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItem.getQuantity());
+//                            ticketPerDayRepository.save(currentTicket);
+//                            currentTickets.set(foundTicketIndex, currentTicket);
+//
+//                        } else {
+//                            throw new NotFoundException("No tickets found for this date when trying to update ticket count !");
+//                        }
 
                         existingCartItems.add(cartItem);
                         existingBooking.setCart_item_list(existingCartItems);
@@ -196,13 +213,13 @@ public class CartService {
                     }
                 }
 
-                currentCartBookings.set(indexOpt.getAsInt(),existingBooking);
+                currentCartBookings.set(indexOpt.getAsInt(), existingBooking);
                 currentTourist.setCart_list(currentCartBookings);
                 touristRepository.save(currentTourist);
                 return existingBooking.getCart_booking_id();
 
             } else {
-                CartBooking cartBookingToCreate = addCartOperation(activity_name,cartItems);
+                CartBooking cartBookingToCreate = addCartOperation(activity_name, cartItems);
                 currentCartBookings.add(cartBookingToCreate);
                 currentTourist.setCart_list(currentCartBookings);
                 touristRepository.save(currentTourist);
@@ -240,15 +257,17 @@ public class CartService {
                     .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
                     .findFirst();
 
-            if (indexOfMatchingTicket.isPresent()) {
-                Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
-                TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
-                currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItemToCreate.getQuantity());
-                ticketPerDayRepository.save(currentTicket);
-                currentTickets.set(foundTicketIndex, currentTicket);
+            if (cartItemToCreate.getType() != BookingTypeEnum.TOUR) {
+                if (indexOfMatchingTicket.isPresent()) {
+                    Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
+                    TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
+                    currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItemToCreate.getQuantity());
+                    ticketPerDayRepository.save(currentTicket);
+                    currentTickets.set(foundTicketIndex, currentTicket);
 
-            } else {
-                throw new NotFoundException("No tickets found for this date!");
+                } else {
+                    throw new NotFoundException("No tickets found for this date!");
+                }
             }
         }
 
@@ -311,13 +330,13 @@ public class CartService {
 
         } else if (user_type.equals("TOURIST")) {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
-
             List<CartBooking> cartBookingsToDelete = deleteCartOperation(cart_booking_ids, currentTourist);
 
             List<CartBooking> updatedCartBookings = currentTourist.getCart_list()
                     .stream()
                     .filter(cart -> !cart_booking_ids.contains(cart.getCart_booking_id()))
                     .toList();
+
 
             currentTourist.setCart_list(updatedCartBookings);
             cartBookingRepository.deleteAll(cartBookingsToDelete);
@@ -344,23 +363,24 @@ public class CartService {
                 List<TicketPerDay> currentTickets = attractionService.
                         getAllTicketListedByAttractionAndDate(selected_attraction.getAttraction_id(),
                                 cartItemsToDelete.get(0).getStart_datetime());
+
                 for (CartItem cartItemToDelete : cartItemsToDelete) {
+                    if (cartItemToDelete.getType() == BookingTypeEnum.ATTRACTION) { // to cater to deleting of tours as tours do not have tickets donnid to do indexmatching
+                        String activitySelection = cartItemToDelete.getActivity_selection();
+                        OptionalInt indexOfMatchingTicket = IntStream.range(0, currentTickets.size())
+                                .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
+                                .findFirst();
 
-                    String activitySelection = cartItemToDelete.getActivity_selection();
+                        if (indexOfMatchingTicket.isPresent()) {
+                            Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
+                            TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
+                            currentTicket.setTicket_count(currentTicket.getTicket_count() + cartItemToDelete.getQuantity());
+                            ticketPerDayRepository.save(currentTicket);
+                            currentTickets.set(foundTicketIndex, currentTicket);
 
-                    OptionalInt indexOfMatchingTicket = IntStream.range(0, currentTickets.size())
-                            .filter(index -> currentTickets.get(index).getTicket_type().name().equals(activitySelection))
-                            .findFirst();
-
-                    if (indexOfMatchingTicket.isPresent()) {
-                        Integer foundTicketIndex = indexOfMatchingTicket.getAsInt();
-                        TicketPerDay currentTicket = currentTickets.get(foundTicketIndex);
-                        currentTicket.setTicket_count(currentTicket.getTicket_count() + cartItemToDelete.getQuantity());
-                        ticketPerDayRepository.save(currentTicket);
-                        currentTickets.set(foundTicketIndex, currentTicket);
-
-                    } else {
-                        throw new NotFoundException("No tickets found for this date!");
+                        } else {
+                            throw new NotFoundException("No tickets found for this date when deleting items from cart!");
+                        }
                     }
                 }
 
@@ -386,6 +406,7 @@ public class CartService {
                 cartBookingToDelete.getCart_item_list().clear();
                 cartItemRepository.delete(temp);
                 cartBookingRepository.delete(cartBookingToDelete);
+
             }
         }
 
@@ -572,6 +593,37 @@ public class CartService {
         }
     }
 
+    public Long addTourToCart(Long userId, Long tourId, CartBooking cartBooking) throws NotFoundException {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found!"));
+        Tour tour = tourRepository.findById(tourId).orElseThrow(() -> new NotFoundException("Tour not found!"));
+
+        List<CartItem> list = cartBooking.getCart_item_list();
+        for (CartItem c : list) {
+            cartItemRepository.save(c);
+        }
+
+        cartBooking.setTour(tour);
+        cartBookingRepository.save(cartBooking);
+
+        if (user instanceof Local) {
+            Local local = (Local) user;
+            if (local.getCart_list() == null) local.setCart_list(new ArrayList<>());
+            local.getCart_list().add(cartBooking);
+            localRepository.save(local);
+            return cartBooking.getCart_booking_id();
+
+        } else if (user instanceof Tourist) {
+            Tourist tourist = (Tourist) user;
+            if (tourist.getCart_list() == null) tourist.setCart_list(new ArrayList<>());
+            tourist.getCart_list().add(cartBooking);
+            touristRepository.save(tourist);
+            return cartBooking.getCart_booking_id();
+
+        } else {
+            throw new NotFoundException("User is not tourist or local!");
+        }
+    }
+
     public List<Long> checkout(String user_type, String tourist_email, String payment_method_id,
                                Float totalPrice,
                                List<Long> booking_ids) throws StripeException, BadRequestException {
@@ -593,7 +645,7 @@ public class CartService {
                 BigDecimal amountPayable = BigDecimal.valueOf(0);
                 List<BookingItem> bookingItems = new ArrayList<>();
                 Attraction selected_attraction = bookingToCheckout.getAttraction();
-                for (CartItem cartItem: bookingToCheckout.getCart_item_list()) {
+                for (CartItem cartItem : bookingToCheckout.getCart_item_list()) {
                     amountPayable = amountPayable.add(cartItem.getPrice());
                     BookingItem newBookingItem = new BookingItem();
                     newBookingItem.setQuantity(cartItem.getQuantity());
@@ -718,7 +770,7 @@ public class CartService {
                 BigDecimal amountPayable = BigDecimal.valueOf(0);
                 List<BookingItem> bookingItems = new ArrayList<>();
                 Attraction selected_attraction = bookingToCheckout.getAttraction();
-                for (CartItem cartItem: bookingToCheckout.getCart_item_list()) {
+                for (CartItem cartItem : bookingToCheckout.getCart_item_list()) {
                     amountPayable = amountPayable.add(cartItem.getPrice());
                     BookingItem newBookingItem = new BookingItem();
                     newBookingItem.setQuantity(cartItem.getQuantity());
