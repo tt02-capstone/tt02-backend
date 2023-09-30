@@ -64,6 +64,10 @@ public class TourService {
         return localOptional.get().getTour_type_list();
     }
 
+    public List<TourType> getAllTourTypesCreated() {
+        return tourTypeRepository.findAll();
+    }
+
     public TourType getTourTypeByTourTypeId(Long tourTypeId) throws BadRequestException {
         Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeId);
 
