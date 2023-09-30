@@ -703,7 +703,7 @@ public class CartService {
         } else if (Objects.equals(activity_type, "TELECOM")) {
             newBooking.setTelecom(bookingToCheckout.getTelecom());
         } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
-            newBooking.setRoom(bookingToCheckout.getRoom()); // Likely will change
+            newBooking.setRoom(bookingToCheckout.getRoom());
         }else if (Objects.equals(activity_type, "TOUR")) {
             newBooking.setTour(bookingToCheckout.getTour());
         }
@@ -768,8 +768,8 @@ public class CartService {
 
             vendor = vendorRepository.findVendorByTelecomName(newBooking.getTelecom().getName());
         } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
-            System.out.println("TBD");
-            vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
+
+            vendor = vendorRepository.findVendorByAccommodationName(newBooking.getActivity_name());
         }else if (Objects.equals(activity_type, "TOUR")) {
             System.out.println("TBD");
             vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
