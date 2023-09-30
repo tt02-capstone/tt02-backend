@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @CrossOrigin
@@ -112,7 +113,7 @@ public class TourController {
     public ResponseEntity<List<TourType>> getAllTourTypesByAttraction(@PathVariable Long attractionId,
                                                                       @PathVariable String dateSelected)
             throws BadRequestException, ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z", Locale.ENGLISH);
         Date date = dateFormat.parse(dateSelected);
         Instant instant = date.toInstant();
         LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
