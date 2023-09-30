@@ -115,12 +115,6 @@ public class RestaurantController {
         return ResponseEntity.ok(rList);
     }
 
-    @GetMapping("/nearbyRestaurantReccom/{locationEnum}")
-    public ResponseEntity<List<Restaurant>> nearbyRestaurantReccom(@PathVariable GenericLocationEnum locationEnum) throws NotFoundException {
-        List<Restaurant> rList = restaurantService.nearbyRestaurantReccom(locationEnum);
-        return ResponseEntity.ok(rList);
-    }
-
     @GetMapping("/getLastRestId")
     public ResponseEntity<?> getLastRestId() {
         try {
@@ -129,6 +123,18 @@ public class RestaurantController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/nearbyRestaurantRecommendation/{locationEnum}")
+    public ResponseEntity<List<Restaurant>> nearbyRestaurantRecommendation(@PathVariable GenericLocationEnum locationEnum) throws NotFoundException {
+        List<Restaurant> rList = restaurantService.nearbyRestaurantRecommendation(locationEnum);
+        return ResponseEntity.ok(rList);
+    }
+
+    @GetMapping("/nearbyRestaurantRecommendationWithId/{locationEnum}/{restId}")
+    public ResponseEntity<List<Restaurant>> nearbyRestaurantRecommendationWithId(@PathVariable GenericLocationEnum locationEnum, @PathVariable Long restId) throws NotFoundException {
+        List<Restaurant> rList = restaurantService.nearbyRestaurantRecommendation(locationEnum,restId);
+        return ResponseEntity.ok(rList);
     }
 
 }
