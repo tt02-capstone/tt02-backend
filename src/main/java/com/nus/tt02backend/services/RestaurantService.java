@@ -316,7 +316,13 @@ public class RestaurantService {
         throw new NotFoundException("Restaurant not found in the saved list!");
     }
 
-    public List<Restaurant> nearbyRestaurantReccom (GenericLocationEnum locationNow) throws NotFoundException {
+
+    public Long getLastRestId() {
+        Long lastRestId = restaurantRepository.findMaxRestaurantId();
+        return (lastRestId != null) ? lastRestId : 0L;
+    }
+
+    public List<Restaurant> nearbyRestaurantRecommendation (GenericLocationEnum locationNow) throws NotFoundException {
         List<Restaurant> rList = getAllPublishedRestaurant();
         List<Restaurant> filterList = new ArrayList<>();
 
@@ -331,15 +337,32 @@ public class RestaurantService {
         }
 
         if (filterList.isEmpty()) {
-            throw new NotFoundException("No restaurant to recommend near this location!");
+            return new ArrayList<>(); // no restaurant nearby within the same location
         } else {
-            return filterList; // will do the shuffling in another method
+            return filterList;
         }
     }
 
-    public Long getLastRestId() {
-        Long lastRestId = restaurantRepository.findMaxRestaurantId();
-        return (lastRestId != null) ? lastRestId : 0L;
+    // another same method which take in restId
+    public List<Restaurant> nearbyRestaurantRecommendation (GenericLocationEnum locationNow, Long restId) throws NotFoundException {
+        List<Restaurant> rList = getAllPublishedRestaurant();
+        List<Restaurant> filterList = new ArrayList<>();
+
+        if (rList.isEmpty()) {
+            throw new NotFoundException("No restaurants are created!");
+        } else {
+            for (Restaurant r : rList) {
+                if (r.getGeneric_location() == locationNow && !r.getRestaurant_id().equals(restId)) {
+                    filterList.add(r);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return filterList;
+        }
     }
 
 

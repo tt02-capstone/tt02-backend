@@ -302,31 +302,6 @@ public class AttractionService {
         attractionRepository.save(attraction);
     }
 
-    public List<Attraction> relatedAttractionRecommendation (Long currentAttractionId) throws NotFoundException {
-        Attraction currentAttraction = retrieveAttraction(currentAttractionId);
-        GenericLocationEnum location = currentAttraction.getGeneric_location();
-
-        List<Attraction> publishedList = retrieveAllPublishedAttraction(); // recommendation cannot be based on hidden listings
-        List<Attraction> recommendedAttractionList = new ArrayList<>();
-
-        if (!publishedList.isEmpty()) {
-            for (Attraction a : publishedList) {
-                if (!a.getAttraction_id().equals(currentAttractionId) && a.getGeneric_location() == location) {
-                    recommendedAttractionList.add(a);
-                }
-            }
-        } else {
-            throw new NotFoundException("List of attractions is empty!");
-        }
-
-        if (recommendedAttractionList.isEmpty()) {
-            throw new NotFoundException("No recommended attractions for this listing!");
-        } else {
-            Collections.shuffle(recommendedAttractionList, new Random()); // anyhow shuffle so it wont keep return the same things
-            return recommendedAttractionList.subList(0,2); // take the first 2 will update accordingly ltr on
-        }
-    }
-
     public List<Attraction> retrieveAllSavedAttractionsForTouristAndLocal(Long userId) throws NotFoundException, BadRequestException {
         UserTypeEnum touristType = UserTypeEnum.TOURIST;
         UserTypeEnum localType = UserTypeEnum.LOCAL;
@@ -625,8 +600,6 @@ public class AttractionService {
         if (currentList.isEmpty()) {
             throw new NotFoundException("No tickets found for this date!");
         } else {
-//            System.out.println(tickets_to_check);
-//            System.out.println(currentList);
             for (TicketPerDay ticketToCheck : tickets_to_check) {
                 TicketPerDay findTicketType = currentList.stream()
                         .filter(t -> t.getTicket_type().equals(ticketToCheck.getTicket_type()) && t.getTicket_per_day_id().equals(ticketToCheck.getTicket_per_day_id()))
@@ -707,11 +680,51 @@ public class AttractionService {
         if (filteredList.isEmpty()) {
             throw new NotFoundException("No Seasonal Activity now!");
         } else {
-//            System.out.print("get seasonal");
-//            System.out.println(filteredList.get(0));
             return filteredList.get(0);
         }
 
+    }
+
+    public List<Attraction> nearbyAttrRecommendation (GenericLocationEnum locationNow) throws NotFoundException {
+        List<Attraction> aList = retrieveAllPublishedAttraction();
+        List<Attraction> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No attractions are created!");
+        } else {
+            for (Attraction a : aList) {
+                if (a.getGeneric_location() == locationNow) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>(); // no attraction nearby within the same location
+        } else {
+            return filterList;
+        }
+    }
+
+    public List<Attraction> nearbyAttrRecommendation (GenericLocationEnum locationNow, Long attrId) throws NotFoundException {
+        List<Attraction> aList = retrieveAllPublishedAttraction();
+        List<Attraction> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No attractions are created!");
+        } else {
+            for (Attraction a : aList) {
+                if (a.getGeneric_location() == locationNow && !a.getAttraction_id().equals(attrId)) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return filterList;
+        }
     }
 
 }
