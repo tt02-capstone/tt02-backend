@@ -14,8 +14,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 @Service
@@ -48,6 +51,9 @@ public class CartService {
     TelecomRepository telecomRepository;
     @Autowired
     TourRepository tourRepository;
+
+    @Autowired
+    TourTypeRepository tourTypeRepository;
 
     public Long addCartItems(String user_type, String tourist_email, String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
@@ -700,6 +706,43 @@ public class CartService {
         //ACCOMODATION, TELECOM, ATTRACTION, TOUR
         if (Objects.equals(activity_type, "ATTRACTION")) {
             newBooking.setAttraction(bookingToCheckout.getAttraction());
+            Optional<BookingItem> optionalBookingItem = bookingItems.stream()
+                    .filter(bookingItem -> "TOUR".equals(String.valueOf(bookingItem.getType())))
+                    .findFirst();
+
+            if (optionalBookingItem.isPresent()) {
+                BookingItem tour_booking = optionalBookingItem.get();
+                LocalDateTime tour_date = bookingToCheckout.getStart_datetime();
+                String tour_details = tour_booking.getActivity_selection();
+                Pattern pattern = Pattern.compile("(.+) \\((.+) - (.+)\\)");
+
+                // Create a Matcher and apply the pattern to the formatted string
+                Matcher matcher = pattern.matcher(tour_details);
+
+                if (matcher.matches()) {
+                    String selectedTourTypeName = matcher.group(1);
+                    String startTimeStr= matcher.group(2);
+                    String endTimeStr = matcher.group(3);
+
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+
+                    // Parse start and end times into LocalTime objects
+                    LocalTime startTime = LocalTime.parse(startTimeStr, formatter);
+                    LocalTime endTime = LocalTime.parse(endTimeStr , formatter);
+
+                    // Assuming today's date for simplicity, you can change it as needed
+                    LocalDateTime startDateTime = LocalDateTime.of(tour_date.toLocalDate(), startTime);
+                    LocalDateTime endDateTime = LocalDateTime.of(tour_date.toLocalDate(), endTime);
+
+                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
+
+                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date, startDateTime, endDateTime);
+
+                    newBooking.setTour(tour);
+                }
+
+
+            }
         } else if (Objects.equals(activity_type, "TELECOM")) {
             newBooking.setTelecom(bookingToCheckout.getTelecom());
         } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
@@ -762,8 +805,15 @@ public class CartService {
 
         String activity_type = String.valueOf(newBooking.getType());
         Vendor vendor = null;
+        Local local = null;
         if (Objects.equals(activity_type, "ATTRACTION")) {
             vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
+            if (!(newBooking.getTour() == null)) {
+                local = localRepository.findLocalByTour(newBooking.getTour());
+                // To re-calculate payoutAmount as it needs to be separate
+
+                // Calculate based on individual booking item and separate Tour and Attraction tickets
+            }
         } else if (Objects.equals(activity_type, "TELECOM")) {
 
             vendor = vendorRepository.findVendorByTelecomName(newBooking.getTelecom().getName());
@@ -774,8 +824,16 @@ public class CartService {
             System.out.println("TBD");
             vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
         }
-       
-        vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+
+        // To add condition
+        if (!(vendor == null)) {
+            vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+        }
+
+        if (!(local == null)) {
+            // To re-calculate
+            local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
+        }
 
         bookingPayment.setPayment_id(paymentIntent.getId());
 
