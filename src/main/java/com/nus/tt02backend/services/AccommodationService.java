@@ -530,4 +530,27 @@ public class AccommodationService {
                 .mapToLong(room -> room.getQuantity().longValue())
                 .sum();
     }
+
+    public Room updateRoom(Room room) throws NotFoundException {
+        Optional<Room> currentRoomOptional = roomRepository.findById(room.getRoom_id());
+
+        if (currentRoomOptional.isPresent()) {
+            Room currentRoom = currentRoomOptional.get();
+            currentRoom.setAmenities_description(room.getAmenities_description());
+            currentRoom.setNum_of_pax(room.getNum_of_pax());
+            currentRoom.setRoom_type(room.getRoom_type());
+            currentRoom.setPrice(room.getPrice());
+            currentRoom.setQuantity(room.getQuantity());
+
+            roomRepository.save(currentRoom);
+
+
+
+
+
+        } else {
+            throw new NotFoundException("Room Not Found!");
+        }
+        return room;
+    }
 }
