@@ -1,5 +1,6 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.dto.AvailableRoomCountResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
@@ -8,6 +9,7 @@ import com.nus.tt02backend.models.enums.AccommodationTypeEnum;
 import com.nus.tt02backend.models.enums.RoomTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -524,10 +526,51 @@ public class AccommodationService {
         return minAvailableRooms;
     }
 
+    public List<AvailableRoomCountResponse> getNumOf0AvailableRoomsListOnDateRange(Long id, LocalDate start, LocalDate end) throws NotFoundException, BadRequestException {
+        Accommodation accommodation = retrieveAccommodation(id);
+        List<LocalDate> dateRange = start.datesUntil(end.plusDays(1)).collect(Collectors.toList());
+
+        List<AvailableRoomCountResponse> list = new ArrayList<>();
+
+        for (int i = 0; i < dateRange.size(); i++) {
+            LocalDate date = dateRange.get(i);
+            LocalDateTime roomDateTime = date.atStartOfDay();
+
+            for (RoomTypeEnum r : RoomTypeEnum.values()) {
+                Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(id, r, roomDateTime);
+                int count = (int) (getTotalRoomCountForType(accommodation, r) - bookedRoomsOnThatDate);
+                list.add(new AvailableRoomCountResponse(accommodation.getName(), date, r, count));
+            }
+        }
+
+        return list;
+    }
+
     private long getTotalRoomCountForType(Accommodation accommodation, RoomTypeEnum roomType) {
         return accommodation.getRoom_list().stream()
                 .filter(room -> room.getRoom_type() == roomType)
                 .mapToLong(room -> room.getQuantity().longValue())
                 .sum();
+    }
+
+    public Room updateRoom(Room room) throws NotFoundException {
+        Optional<Room> currentRoomOptional = roomRepository.findById(room.getRoom_id());
+
+        if (currentRoomOptional.isPresent()) {
+            Room currentRoom = currentRoomOptional.get();
+            currentRoom.setAmenities_description(room.getAmenities_description());
+            currentRoom.setRoom_image(room.getRoom_image());
+            currentRoom.setNum_of_pax(room.getNum_of_pax());
+            currentRoom.setRoom_type(room.getRoom_type());
+            currentRoom.setPrice(room.getPrice());
+            currentRoom.setQuantity(room.getQuantity());
+
+            roomRepository.save(currentRoom);
+
+
+        } else {
+            throw new NotFoundException("Room Not Found!");
+        }
+        return room;
     }
 }
