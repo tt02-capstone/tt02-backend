@@ -231,15 +231,12 @@ public class AccommodationService {
 
         Room newRoom = roomRepository.save(roomToCreate);
 
-        System.out.println("newRoom" + newRoom);
-
         List<Room> currentList = accommodation.getRoom_list();
         currentList.add(newRoom);
-
-        System.out.println("currentList" + currentList);
-
         accommodation.setRoom_list(currentList); // set updated room list for the accommodation
-        System.out.println(accommodation.getRoom_list());
+
+        PriceTierEnum updatedTier = priceTierEstimation(currentList);
+        accommodation.setEstimated_price_tier(updatedTier);
 
         accommodationRepository.save(accommodation); // save the updated accommodation
 
