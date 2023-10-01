@@ -32,9 +32,9 @@ public interface LocalRepository extends JpaRepository<Local, Long> {
     @Query("SELECT l FROM Local l JOIN l.tour_type_list t WHERE t.tour_type_id=?1")
     Local getLocalTiedToTourType(Long tourTypeId);
 
-//    @Query("SELECT l FROM Local l " +
-//            "JOIN l.tourTypes tt " +
-//            "JOIN tt.tourList t " +
-//            "WHERE t = :tour")
-//    Local findLocalByTour(@Param("tour") Tour tour);
+    @Query("SELECT l FROM Local l " +
+            "JOIN l.tour_type_list tt " +
+            "JOIN tt.tour_list t " +
+            "WHERE t = :tour")
+    Local findLocalByTour(@Param("tour") Tour tour);
 }

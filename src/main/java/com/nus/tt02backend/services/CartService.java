@@ -853,38 +853,52 @@ public class CartService {
         String activity_type = String.valueOf(newBooking.getType());
         Vendor vendor = null;
         Local local = null;
+
         if (Objects.equals(activity_type, "ATTRACTION")) {
             vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
-//            if (!(newBooking.getTour() == null)) {
-//                local = localRepository.findLocalByTour(newBooking.getTour());
-//                // To re-calculate payoutAmount as it needs to be separate
-//
-//                // Calculate based on individual booking item and separate Tour and Attraction tickets
-//            }
+            if (!(newBooking.getTour() == null)) {
+                local = localRepository.findLocalByTour(newBooking.getTour());
+
+                List<BookingItem> bookingItems = newBooking.getBooking_item_list();
+                BigDecimal local_earnings = BigDecimal.valueOf(0);
+                BigDecimal vendor_earnings = BigDecimal.valueOf(0);
+                TourType selected_tourType = tourTypeRepository.getTourTypeTiedToTour(newBooking.getTour().getTour_id());
+
+                for (BookingItem bookingItem : bookingItems) {
+                    if (Objects.equals(String.valueOf(bookingItem.getType()), "TOUR")) {
+                        BigDecimal tour_earnings = selected_tourType.getPrice().multiply(BigDecimal.valueOf(bookingItem.getQuantity()));
+                        local_earnings = local_earnings.add(tour_earnings.subtract(tour_earnings.multiply(commission)));
+                        BigDecimal attraction_earnings = totalAmountPayable.subtract(tour_earnings);
+                        vendor_earnings = vendor_earnings.add(attraction_earnings.subtract(attraction_earnings.multiply(commission)));
+                        vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+                        local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
+
+                    }
+                }
+
+
+            } else {
+                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+            }
         } else if (Objects.equals(activity_type, "TELECOM")) {
 
             vendor = vendorRepository.findVendorByTelecomName(newBooking.getTelecom().getName());
+            vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
         } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
 
             vendor = vendorRepository.findVendorByAccommodationName(newBooking.getActivity_name());
-        }else if (Objects.equals(activity_type, "TOUR")) {
-            System.out.println("TBD");
-            vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
-        }
-
-        // To add condition
-        if (!(vendor == null)) {
             vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
-        }
+        }else if (Objects.equals(activity_type, "TOUR")) {
 
-        if (!(local == null)) {
-            // To re-calculate
+            local = localRepository.findLocalByTour(newBooking.getTour());
             local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
         }
 
+
+
         bookingPayment.setPayment_id(paymentIntent.getId());
 
-        // Assuming paymentRepository is accessible here
+
         paymentRepository.save(bookingPayment);
 
         return bookingPayment;
