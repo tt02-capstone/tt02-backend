@@ -361,7 +361,7 @@ public class CartService {
         List<CartBooking> cartBookingsToDelete = cartBookingRepository.findCartBookingsByIds(cart_booking_ids);
 
         for (CartBooking cartBookingToDelete : cartBookingsToDelete) {
-            System.out.println("aaa: " + cartBookingToDelete.getCart_booking_id());
+
             if (cartBookingToDelete.getType() == BookingTypeEnum.ATTRACTION) {
 
                 Attraction selected_attraction = cartBookingToDelete.getAttraction();
@@ -768,24 +768,24 @@ public class CartService {
 
                 if (matcher.matches()) {
                     String selectedTourTypeName = matcher.group(1);
-                    String startTimeStr= matcher.group(2);
-                    String endTimeStr = matcher.group(3);
+                    String startTimeStr= matcher.group(2).replaceAll("\\s", "");
+                    String endTimeStr = matcher.group(3).replaceAll("\\s", "");
+                    System.out.println(startTimeStr + ' ' +  endTimeStr);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
 
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
-
-                    // Parse start and end times into LocalTime objects
+                    // Bug
                     LocalTime startTime = LocalTime.parse(startTimeStr, formatter);
                     LocalTime endTime = LocalTime.parse(endTimeStr , formatter);
 
-                    // Assuming today's date for simplicity, you can change it as needed
+
                     LocalDateTime startDateTime = LocalDateTime.of(tour_date.toLocalDate(), startTime);
                     LocalDateTime endDateTime = LocalDateTime.of(tour_date.toLocalDate(), endTime);
 
-//                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
-//
-//                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date, startDateTime, endDateTime);
-//
-//                    newBooking.setTour(tour);
+                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
+
+                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, startDateTime, startDateTime, endDateTime);
+
+                    newBooking.setTour(tour);
                 }
 
 
@@ -794,7 +794,7 @@ public class CartService {
             newBooking.setTelecom(bookingToCheckout.getTelecom());
         } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
             newBooking.setRoom(bookingToCheckout.getRoom());
-        }else if (Objects.equals(activity_type, "TOUR")) {
+        }   else if (Objects.equals(activity_type, "TOUR")) {
             newBooking.setTour(bookingToCheckout.getTour());
         }
 
