@@ -10,7 +10,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @CrossOrigin
@@ -38,6 +45,12 @@ public class TourController {
             throws BadRequestException {
         TourType tourType = tourService.getTourTypeByTourTypeId(tourTypeId);
         return ResponseEntity.ok(tourType);
+    }
+
+    @GetMapping("/getAllTourTypesCreated")
+    public ResponseEntity<List<TourType>> getAllTourTypesCreated() {
+        List<TourType> tourTypes = tourService.getAllTourTypesCreated();
+        return ResponseEntity.ok(tourTypes);
     }
 
     @PutMapping("/updateTourType/{attractionId}")
@@ -100,6 +113,19 @@ public class TourController {
     public ResponseEntity<String> deleteTour(@PathVariable Long tourIdToDelete) throws BadRequestException {
         String responseMessage = tourService.deleteTour(tourIdToDelete);
         return ResponseEntity.ok(responseMessage);
+    }
+
+    @GetMapping("/getAllTourTypesByAttraction/{attractionId}/{dateSelected}")
+    public ResponseEntity<List<TourType>> getAllTourTypesByAttraction(@PathVariable Long attractionId,
+                                                                      @PathVariable String dateSelected)
+            throws BadRequestException, ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z", Locale.ENGLISH);
+        Date date = dateFormat.parse(dateSelected);
+        Instant instant = date.toInstant();
+        LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        List<TourType> tourTypes = tourService.getAllTourTypesByAttraction(attractionId, localDateTime);
+        return ResponseEntity.ok(tourTypes);
     }
 
     /*

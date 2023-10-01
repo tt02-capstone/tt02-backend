@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.ListingTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -57,5 +58,15 @@ public class Accommodation {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Room> room_list;
+
+    @Enumerated(EnumType.STRING)
+    private ListingTypeEnum listing_type;
+
+    @PrePersist
+    public void prePersist() {
+        if (listing_type == null) {
+            listing_type = ListingTypeEnum.ACCOMMODATION;
+        }
+    }
 
 }

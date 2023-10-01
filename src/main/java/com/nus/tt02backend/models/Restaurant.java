@@ -2,6 +2,7 @@ package com.nus.tt02backend.models;
 
 
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
+import com.nus.tt02backend.models.enums.ListingTypeEnum;
 import com.nus.tt02backend.models.enums.PriceTierEnum;
 import com.nus.tt02backend.models.enums.RestaurantEnum;
 import jakarta.persistence.*;
@@ -58,4 +59,14 @@ public class Restaurant {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Dish> dish_list;
+
+    @Enumerated(EnumType.STRING)
+    private ListingTypeEnum listing_type;
+
+    @PrePersist
+    public void prePersist() {
+        if (listing_type == null) {
+            listing_type = ListingTypeEnum.RESTAURANT;
+        }
+    }
 }
