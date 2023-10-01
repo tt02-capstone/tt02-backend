@@ -144,4 +144,13 @@ public class AccommodationController {
         List<Accommodation> list = accommodationService.getUserSavedAccommodation(userId);
         return ResponseEntity.ok(list);
     }
+
+    @PutMapping("/updateRoom/{accommodationId}")
+    public ResponseEntity<Room> updateRoom(@PathVariable Long accommodationId , @RequestBody Room roomToUpate)
+            throws BadRequestException, IllegalArgumentException, NotFoundException {
+
+        Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
+        Room room =  accommodationService.updateRoom(roomToUpate);
+        return ResponseEntity.ok(room);
+    }
 }
