@@ -733,7 +733,7 @@ public class CartService {
             newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
             newBookingItem.setType(cartItem.getType());
             newBookingItem.setActivity_selection(cartItem.getActivity_selection());
-            bookingItemRepository.save(newBookingItem);  // Assuming bookingItemRepository is accessible here
+            bookingItemRepository.save(newBookingItem);
             bookingItems.add(newBookingItem);
         }
         return bookingItems;
@@ -811,7 +811,7 @@ public class CartService {
         }
 
         // Save the new booking
-        bookingRepository.save(newBooking);  // Assuming bookingRepository is accessible here
+        bookingRepository.save(newBooking);
 
         return newBooking;
     }
@@ -885,9 +885,11 @@ public class CartService {
             vendor = vendorRepository.findVendorByTelecomName(newBooking.getTelecom().getName());
             vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
         } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
-
             vendor = vendorRepository.findVendorByAccommodationName(newBooking.getActivity_name());
-            vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+            if (!(vendor == null)) {
+                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+            }
+
         }else if (Objects.equals(activity_type, "TOUR")) {
 
             local = localRepository.findLocalByTour(newBooking.getTour());
