@@ -8,7 +8,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -45,9 +44,6 @@ public class Deal {
 
     @Column(nullable = false)
     private Boolean is_published;
-
-    @Column(nullable = true)
-    private Date publish_date;
 
     @Enumerated(EnumType.STRING)
     private DealCategoryEnum deal_type;
