@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AccommodationService {
@@ -33,12 +34,15 @@ public class AccommodationService {
     BookingRepository bookingRepository;
 
     @Autowired
+    VendorRepository vendorRepository;
+
+    @Autowired
     UserRepository userRepository;
     @Autowired
     TouristRepository touristRepository;
     @Autowired
     LocalRepository localRepository;
-    
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -115,6 +119,7 @@ public class AccommodationService {
                     roomToCreate.setNum_of_pax(input.getNum_of_pax());
                     roomToCreate.setRoom_type(input.getRoom_type());
                     roomToCreate.setPrice(input.getPrice());
+                    roomToCreate.setQuantity(input.getQuantity());
 
                     roomRepository.save(roomToCreate);
                     update_room_list.add(roomToCreate);
@@ -124,6 +129,7 @@ public class AccommodationService {
                     room.setNum_of_pax(input.getNum_of_pax());
                     room.setRoom_type(input.getRoom_type());
                     room.setPrice(input.getPrice());
+                    room.setQuantity(input.getQuantity());
 
                     roomRepository.save(room);
                     update_room_list.add(room);
@@ -157,14 +163,17 @@ public class AccommodationService {
         currentList.add(newAccommodation);
         vendor.setAccommodation_list(currentList); // set new accommodation for the vendor
 
-        vendor.setAccommodation_list(null);
+        vendor.setAttraction_list(null);
         vendor.setWithdrawal_list(null);
         vendor.setVendor_staff_list(null);
 //        vendor.setComment_list(null);
 //        vendor.setPost_list(null);
         vendor.setRestaurant_list(null);
-        vendor.setAccommodation_list(null);
-        vendor.setDeals_list(null);
+        vendor.setTelecom_list(null);
+
+        vendorRepository.save(vendor);
+
+        vendorStaff.setVendor(vendor);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
 
@@ -210,6 +219,8 @@ public class AccommodationService {
             roomToCreate.setNum_of_pax(input.getNum_of_pax());
             roomToCreate.setRoom_type(input.getRoom_type());
             roomToCreate.setPrice(input.getPrice());
+            roomToCreate.setQuantity(input.getQuantity());
+            roomToCreate.setRoom_image(input.getRoom_image());
 
             roomRepository.save(roomToCreate);
 
@@ -222,47 +233,17 @@ public class AccommodationService {
         return create_room_list;
     }
 
-    public List<Room> createRoomListExistingAccommodation(Accommodation accommodation, List<Room> room_list) throws BadRequestException, NotFoundException {
-
-        List<Room> create_room_list = new ArrayList<Room>();
-        List<Room> existing_room_list = accommodation.getRoom_list();
-
-        for (Room input : room_list) {
-
-            Room roomToCreate = new Room();
-            roomToCreate.setAmenities_description(input.getAmenities_description());
-            roomToCreate.setNum_of_pax(input.getNum_of_pax());
-            roomToCreate.setRoom_type(input.getRoom_type());
-            roomToCreate.setPrice(input.getPrice());
-
-            roomRepository.save(roomToCreate);
-
-            create_room_list.add(roomToCreate);
-
-        }
-
-        if (existing_room_list.isEmpty()) {
-            PriceTierEnum updatedTier = priceTierEstimation(create_room_list);
-
-            accommodation.setRoom_list(create_room_list);
-            accommodation.setEstimated_price_tier(updatedTier);
-        } else {
-            existing_room_list.addAll(create_room_list);
-            PriceTierEnum updatedTier = priceTierEstimation(existing_room_list);
-
-            accommodation.setRoom_list(existing_room_list);
-            accommodation.setEstimated_price_tier(updatedTier);
-        }
-
-        return create_room_list;
-    }
 
     public Room createRoom(Accommodation accommodation, Room roomToCreate) throws BadRequestException {
 
         Room newRoom = roomRepository.save(roomToCreate);
 
+        System.out.println("newRoom" + newRoom);
+
         List<Room> currentList = accommodation.getRoom_list();
         currentList.add(newRoom);
+
+        System.out.println("currentList" + currentList);
 
         accommodation.setRoom_list(currentList); // set updated room list for the accommodation
         System.out.println(accommodation.getRoom_list());
@@ -306,6 +287,11 @@ public class AccommodationService {
     public Long getLastAccommodationId() {
         Long lastAccommodationId = accommodationRepository.findMaxAccommodationId();
         return (lastAccommodationId != null) ? lastAccommodationId : 0L; // Default to 0 if no accommodations exist
+    }
+
+    public Long getLastRoomId() {
+        Long lastRoomId = roomRepository.findMaxRoomId();
+        return (lastRoomId != null) ? lastRoomId : 0L; // Default to 0 if no rooms exist
     }
 
     public List<Room> getRoomListByAccommodation(Long accommodationId) throws NotFoundException {
@@ -421,59 +407,127 @@ public class AccommodationService {
     }
 
 
-    // NOT DONE
-    public boolean isRoomAvailableOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDate roomDate) throws NotFoundException, BadRequestException {
+    public Long getNumOfBookingsOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
 
-        Accommodation accommodation = accommodationRepository.findById(accommodation_id)
-                .orElseThrow(() -> new NotFoundException("Accommodation not found!"));
+        System.out.println("accommodation_id" + accommodation_id);
+        Accommodation accommodation = retrieveAccommodation(accommodation_id);
 
         System.out.println("accommodation" + accommodation);
 
-        long totalRoomCount = accommodation.getRoom_list().stream()
-                .filter(room -> room.getRoom_type() == roomType)
-                .count();
-
-        System.out.println("totalRoomCount" + totalRoomCount);
-
-        // it is failing here
         List<Booking> allBookings = bookingRepository.findAll();
         List<Booking> accommodationBookings = new ArrayList<Booking>();
 
         for (Booking b : allBookings) {
-            b.getPayment().setBooking(null);
             Accommodation accomm = retrieveAccommodationByRoom(b.getRoom().getRoom_id());
-            System.out.println("Accomm" + accomm);
             if (accomm.getAccommodation_id().equals(accommodation_id)) {
                 accommodationBookings.add(b);
             }
         }
-//
-//        System.out.println("accommodationBookings" + accommodationBookings);
-//
-//        // need to check for roomtype
-//        long bookedRoomsOnThatDate = 0;
-//        for (Booking b : accommodationBookings) {
-//
-//            if (b.getRoom().getRoom_type().equals(roomType)) {
-//
-//                LocalDate checkInDate = b.getStart_datetime().toLocalDate();
-//                LocalDate checkOutDate = b.getEnd_datetime().toLocalDate();
-//
-//                if (!roomDate.isBefore(checkInDate) && !roomDate.isAfter(checkOutDate)) {
-//                    System.out.println("roomDate is within the date range.");
-//
-//                    bookedRoomsOnThatDate++;
-//
-//                } else {
-//                    System.out.println("roomDate is outside the date range.");
-//
-//                }
-//            }
-//
-//
-//        }
 
-//        return totalRoomCount - bookedRoomsOnThatDate > 0;
-        return true;
+        long bookedRoomsOnThatDate = 0;
+
+        for (Booking b : accommodationBookings) {
+            if (b.getRoom().getRoom_type().equals(roomType)) {
+                LocalDateTime checkInDateTime = b.getStart_datetime();
+                LocalDateTime checkOutDateTime = b.getEnd_datetime();
+
+                if (!roomDateTime.isBefore(checkInDateTime) && !roomDateTime.isAfter(checkOutDateTime)) {
+                    System.out.println("roomDateTime is within the date range.");
+                    bookedRoomsOnThatDate++;
+                } else {
+                    System.out.println("roomDateTime is outside the date range.");
+                }
+            }
+        }
+
+        System.out.println("bookedRoomsOnThatDate" + bookedRoomsOnThatDate);
+        return bookedRoomsOnThatDate;
+    }
+
+    public boolean isRoomAvailableOnDateRange(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime checkInDateTime, LocalDateTime checkOutDateTime) throws NotFoundException, BadRequestException {
+        System.out.println("accommodation_id" + accommodation_id);
+        Accommodation accommodation = retrieveAccommodation(accommodation_id);
+
+        System.out.println("accommodation" + accommodation);
+        List<LocalDate> dateRange = checkInDateTime.toLocalDate().datesUntil(checkOutDateTime.toLocalDate().plusDays(1)).collect(Collectors.toList());
+
+        long totalRoomCount = 0;
+        List<Room> roomList = accommodation.getRoom_list();
+        for (Room r : roomList) {
+            if (r.getRoom_type().equals(roomType)) {
+                totalRoomCount = r.getQuantity().longValue();
+                break;
+            }
+        }
+
+        System.out.println("totalRoomCount" + totalRoomCount);
+
+        for (int i = 0; i < dateRange.size(); i++) {
+            LocalDate date = dateRange.get(i);
+            LocalDateTime roomDateTime;
+
+            if (i == 0) {
+                // First day, use check-in time
+                roomDateTime = checkInDateTime;
+            } else if (i == dateRange.size() - 1) {
+                // Last day, use check-out time
+                roomDateTime = checkOutDateTime;
+            } else {
+                // Other days, use midnight
+                roomDateTime = date.atStartOfDay();
+            }
+
+            Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(accommodation_id, roomType, roomDateTime);
+
+            if (totalRoomCount - bookedRoomsOnThatDate <= 0) {
+                return false; // Room not available on at least one day
+            }
+        }
+
+        return true; // Room is available for the entire date range
+    }
+
+    public long getMinAvailableRoomsOnDateRange(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime checkInDateTime, LocalDateTime checkOutDateTime) throws NotFoundException, BadRequestException {
+        Accommodation accommodation = retrieveAccommodation(accommodation_id);
+        List<LocalDate> dateRange = checkInDateTime.toLocalDate().datesUntil(checkOutDateTime.toLocalDate().plusDays(1)).collect(Collectors.toList());
+
+        long minAvailableRooms = Long.MAX_VALUE; // Initialize with a large value
+
+        for (int i = 0; i < dateRange.size(); i++) {
+            LocalDate date = dateRange.get(i);
+            LocalDateTime roomDateTime;
+
+            if (i == 0) {
+                // First day, use check-in time
+                roomDateTime = checkInDateTime;
+            } else if (i == dateRange.size() - 1) {
+                // Last day, use check-out time
+                roomDateTime = checkOutDateTime;
+            } else {
+                // Other days, use midnight
+                roomDateTime = date.atStartOfDay();
+            }
+
+            Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(accommodation_id, roomType, roomDateTime);
+
+            long availableRoomsOnThatDate = getTotalRoomCountForType(accommodation, roomType) - bookedRoomsOnThatDate;
+
+            if (availableRoomsOnThatDate < minAvailableRooms) {
+                minAvailableRooms = availableRoomsOnThatDate;
+            }
+        }
+
+        if (minAvailableRooms == Long.MAX_VALUE) {
+            minAvailableRooms = 0;
+        }
+
+        return minAvailableRooms;
+    }
+
+    private long getTotalRoomCountForType(Accommodation accommodation, RoomTypeEnum roomType) {
+        return accommodation.getRoom_list().stream()
+                .filter(room -> room.getRoom_type() == roomType)
+                .mapToLong(room -> room.getQuantity().longValue())
+                .sum();
     }
 }

@@ -10,8 +10,9 @@ import com.nus.tt02backend.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -78,16 +79,17 @@ public class AccommodationController {
         }
     }
 
-    @PostMapping("createRoomListExistingAccommodation/{accommodationId}")
-    public ResponseEntity<List<Room>> createRoomListExistingAccommodation(@PathVariable Long accommodationId , @RequestBody List<Room> roomListToCreate)
-            throws BadRequestException, IllegalArgumentException, NotFoundException {
-
-        Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
-        List<Room> roomList =  accommodationService.createRoomListExistingAccommodation(accommodation,roomListToCreate);
-        return ResponseEntity.ok(roomList);
+    @GetMapping("/getLastRoomId")
+    public ResponseEntity<?> getLastRoomId() {
+        try {
+            Long lastRoomId = accommodationService.getLastRoomId();
+            return ResponseEntity.ok(lastRoomId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
     }
 
-    @PostMapping("createRoom/{accommodationId}")
+    @PostMapping("/createRoom/{accommodationId}")
     public ResponseEntity<Room> createRoom(@PathVariable Long accommodationId , @RequestBody Room roomToCreate)
             throws BadRequestException, IllegalArgumentException, NotFoundException {
 
@@ -101,15 +103,34 @@ public class AccommodationController {
         List<Room> roomList = accommodationService.getRoomListByAccommodation(accommodationId);
         return ResponseEntity.ok(roomList);
     }
+
+    @GetMapping("/retrieveAccommodationByRoom/{room_id}")
+    public ResponseEntity<Accommodation> retrieveAccommodationByRoom(@PathVariable Long room_id) throws BadRequestException ,NotFoundException {
+        Accommodation accommodation = accommodationService.retrieveAccommodationByRoom(room_id);
+        return ResponseEntity.ok(accommodation);
+    }
+
     @GetMapping("/getRoomTypeByAccommodation/{accommodation_id}")
     public ResponseEntity<List<RoomTypeEnum>> getRoomTypeByAccommodation(@PathVariable Long accommodation_id) throws NotFoundException {
         List<RoomTypeEnum> roomTypes = accommodationService.getRoomTypeByAccommodation(accommodation_id);
         return ResponseEntity.ok(roomTypes);
     }
-    @GetMapping("/isRoomAvailableOnDate/{accommodation_id}/{roomTypeEnum}/{date}")
-    public ResponseEntity<Boolean> isRoomAvailableOnDate(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable LocalDate date) throws BadRequestException ,NotFoundException {
-        Boolean roomAvailability = accommodationService.isRoomAvailableOnDate(accommodation_id, roomTypeEnum, date);
-        return ResponseEntity.ok(roomAvailability);
+
+    @GetMapping("/getNumOfBookingsOnDate/{accommodation_id}/{roomTypeEnum}/{dateTime}")
+    public ResponseEntity<Long> getNumOfBookingsOnDate(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTime) throws BadRequestException ,NotFoundException {
+        Long numOfBookings = accommodationService.getNumOfBookingsOnDate(accommodation_id, roomTypeEnum, dateTime);
+        return ResponseEntity.ok(numOfBookings);
+    }
+    @GetMapping("/isRoomAvailableOnDateRange/{accommodation_id}/{roomTypeEnum}/{checkInDateTime}/{checkOutDateTime}")
+    public ResponseEntity<Boolean> isRoomAvailableOnDateRange(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable LocalDateTime checkInDateTime, @PathVariable LocalDateTime checkOutDateTime) throws BadRequestException ,NotFoundException {
+        Boolean isRoomAvailable = accommodationService.isRoomAvailableOnDateRange(accommodation_id, roomTypeEnum, checkInDateTime, checkOutDateTime);
+        return ResponseEntity.ok(isRoomAvailable);
+    }
+
+    @GetMapping("/getMinAvailableRoomsOnDateRange/{accommodation_id}/{roomTypeEnum}/{checkInDateTime}/{checkOutDateTime}")
+    public ResponseEntity<Long> getMinAvailableRoomsOnDateRange(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkInDateTime, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkOutDateTime) throws BadRequestException ,NotFoundException {
+        Long numRoomsAvailable = accommodationService.getMinAvailableRoomsOnDateRange(accommodation_id, roomTypeEnum, checkInDateTime, checkOutDateTime);
+        return ResponseEntity.ok(numRoomsAvailable);
     }
 
     @PutMapping("/toggleSaveAccommodation/{userId}/{accommodationId}")

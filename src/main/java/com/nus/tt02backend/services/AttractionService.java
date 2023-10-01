@@ -268,7 +268,6 @@ public class AttractionService {
 //        vendor.setPost_list(null);
         vendor.setRestaurant_list(null);
         vendor.setTelecom_list(null);
-        vendor.setDeals_list(null);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
 
@@ -301,31 +300,6 @@ public class AttractionService {
         }
 
         attractionRepository.save(attraction);
-    }
-
-    public List<Attraction> relatedAttractionRecommendation (Long currentAttractionId) throws NotFoundException {
-        Attraction currentAttraction = retrieveAttraction(currentAttractionId);
-        GenericLocationEnum location = currentAttraction.getGeneric_location();
-
-        List<Attraction> publishedList = retrieveAllPublishedAttraction(); // recommendation cannot be based on hidden listings
-        List<Attraction> recommendedAttractionList = new ArrayList<>();
-
-        if (!publishedList.isEmpty()) {
-            for (Attraction a : publishedList) {
-                if (!a.getAttraction_id().equals(currentAttractionId) && a.getGeneric_location() == location) {
-                    recommendedAttractionList.add(a);
-                }
-            }
-        } else {
-            throw new NotFoundException("List of attractions is empty!");
-        }
-
-        if (recommendedAttractionList.isEmpty()) {
-            throw new NotFoundException("No recommended attractions for this listing!");
-        } else {
-            Collections.shuffle(recommendedAttractionList, new Random()); // anyhow shuffle so it wont keep return the same things
-            return recommendedAttractionList.subList(0,2); // take the first 2 will update accordingly ltr on
-        }
     }
 
     public List<Attraction> retrieveAllSavedAttractionsForTouristAndLocal(Long userId) throws NotFoundException, BadRequestException {
@@ -381,13 +355,11 @@ public class AttractionService {
             local.setCart_list(null);
             local.setSupport_ticket_list(null);
             local.setBooking_list(null);
-            local.setTour_list(null);
             local.setTour_type_list(null);
             local.setAttraction_list(null);
             local.setAccommodation_list(null);
             local.setRestaurant_list(null);
             local.setTelecom_list(null);
-            local.setDeals_list(null);
         } else {
             Tourist tourist = (Tourist) currentUser;
             tourist.setCard_list(null);
@@ -438,13 +410,12 @@ public class AttractionService {
                     local.setCart_list(null);
                     local.setSupport_ticket_list(null);
                     local.setBooking_list(null);
-                    local.setTour_list(null);
                     local.setTour_type_list(null);
                     local.setAttraction_list(null);
                     local.setAccommodation_list(null);
                     local.setRestaurant_list(null);
                     local.setTelecom_list(null);
-                    local.setDeals_list(null);
+//                    local.setDeals_list(null);
                 } else {
                     Tourist tourist = (Tourist) currentUser;
                     tourist.setCard_list(null);
@@ -468,40 +439,73 @@ public class AttractionService {
         throw new NotFoundException("Attraction not found in the saved list!");
     }
 
+    private TicketPerDay attractionContainsTicketForDate(List<TicketPerDay> list, LocalDate date, TicketEnum type) {
+        for (TicketPerDay t : list) {
+            if (t.getTicket_date().isEqual(date) && t.getTicket_type() == type) return t;
+        }
+        return null;
+    }
+
     public List<TicketPerDay> createTicketsPerDayList(LocalDate startDate, LocalDate endDate, TicketEnum ticketType, int ticketCount, Long attraction_id) throws NotFoundException {
         Attraction attraction = attractionRepository.findById(attraction_id)
                 .orElseThrow(() -> new NotFoundException("Attraction not found when saving ticket per day!"));
 
-        List<TicketPerDay> createdTickets = new ArrayList<>();
-        List<TicketPerDay> previouslyCreated = new ArrayList<>();
-
-        if (!attraction.getTicket_per_day_list().isEmpty()) {
-            previouslyCreated = attraction.getTicket_per_day_list();
-        }
-
         long duration = ChronoUnit.DAYS.between(startDate, endDate);
+
+        if (attraction.getTicket_per_day_list() == null) attraction.setTicket_per_day_list(new ArrayList<>());
+        List<TicketPerDay> ticketList = attraction.getTicket_per_day_list();
 
         for (int i = 0; i <= duration; i++) {
             LocalDate ticketDate = startDate.plusDays(i);
-            TicketPerDay ticketPerDay = new TicketPerDay();
-            ticketPerDay.setTicket_count(ticketCount);
-            ticketPerDay.setTicket_date(ticketDate);
-            ticketPerDay.setTicket_type(ticketType);
-
-            ticketPerDayRepository.save(ticketPerDay);
-
-            createdTickets.add(ticketPerDay);
+            // check if there is an entity created for that day, if so update instead of creating a new one
+            TicketPerDay ticket = attractionContainsTicketForDate(ticketList, ticketDate, ticketType);
+            if (ticket != null) {
+                ticket.setTicket_count(ticketCount);
+                ticketPerDayRepository.save(ticket);
+            } else { // create new entity
+                ticket = new TicketPerDay();
+                ticket.setTicket_count(ticketCount);
+                ticket.setTicket_date(ticketDate);
+                ticket.setTicket_type(ticketType);
+                ticketPerDayRepository.save(ticket);
+                ticketList.add(ticket);
+            }
         }
-
-        if (!previouslyCreated.isEmpty()) {
-            previouslyCreated.addAll(createdTickets);
-            attraction.setTicket_per_day_list(previouslyCreated);
-        } else {
-            attraction.setTicket_per_day_list(createdTickets);
-        }
-
         attractionRepository.save(attraction);
-        return createdTickets;
+
+        return ticketList;
+
+//        Old Code by Ci En
+//        List<TicketPerDay> createdTickets = new ArrayList<>();
+//        List<TicketPerDay> previouslyCreated = new ArrayList<>();
+//
+//        if (!attraction.getTicket_per_day_list().isEmpty()) {
+//            previouslyCreated = attraction.getTicket_per_day_list();
+//        }
+//
+//        long duration = ChronoUnit.DAYS.between(startDate, endDate);
+//
+//        for (int i = 0; i <= duration; i++) {
+//            LocalDate ticketDate = startDate.plusDays(i);
+//            TicketPerDay ticketPerDay = new TicketPerDay();
+//            ticketPerDay.setTicket_count(ticketCount);
+//            ticketPerDay.setTicket_date(ticketDate);
+//            ticketPerDay.setTicket_type(ticketType);
+//
+//            ticketPerDayRepository.save(ticketPerDay);
+//
+//            createdTickets.add(ticketPerDay);
+//        }
+//
+//        if (!previouslyCreated.isEmpty()) {
+//            previouslyCreated.addAll(createdTickets);
+//            attraction.setTicket_per_day_list(previouslyCreated);
+//        } else {
+//            attraction.setTicket_per_day_list(createdTickets);
+//        }
+//
+//        attractionRepository.save(attraction);
+//        return createdTickets;
     }
 
     public List<TicketPerDay> updateTicketsPerDay(Long attraction_id, TicketPerDay toUpdateTicket) throws NotFoundException {
@@ -596,8 +600,6 @@ public class AttractionService {
         if (currentList.isEmpty()) {
             throw new NotFoundException("No tickets found for this date!");
         } else {
-//            System.out.println(tickets_to_check);
-//            System.out.println(currentList);
             for (TicketPerDay ticketToCheck : tickets_to_check) {
                 TicketPerDay findTicketType = currentList.stream()
                         .filter(t -> t.getTicket_type().equals(ticketToCheck.getTicket_type()) && t.getTicket_per_day_id().equals(ticketToCheck.getTicket_per_day_id()))
@@ -654,7 +656,6 @@ public class AttractionService {
         vendor.setVendor_staff_list(null);
         vendor.setRestaurant_list(null);
         vendor.setTelecom_list(null);
-        vendor.setDeals_list(null);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
         attractionRepository.save(attraction);
@@ -679,11 +680,51 @@ public class AttractionService {
         if (filteredList.isEmpty()) {
             throw new NotFoundException("No Seasonal Activity now!");
         } else {
-//            System.out.print("get seasonal");
-//            System.out.println(filteredList.get(0));
             return filteredList.get(0);
         }
 
+    }
+
+    public List<Attraction> nearbyAttrRecommendation (GenericLocationEnum locationNow) throws NotFoundException {
+        List<Attraction> aList = retrieveAllPublishedAttraction();
+        List<Attraction> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No attractions are created!");
+        } else {
+            for (Attraction a : aList) {
+                if (a.getGeneric_location() == locationNow) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>(); // no attraction nearby within the same location
+        } else {
+            return filterList;
+        }
+    }
+
+    public List<Attraction> nearbyAttrRecommendation (GenericLocationEnum locationNow, Long attrId) throws NotFoundException {
+        List<Attraction> aList = retrieveAllPublishedAttraction();
+        List<Attraction> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No attractions are created!");
+        } else {
+            for (Attraction a : aList) {
+                if (a.getGeneric_location() == locationNow && !a.getAttraction_id().equals(attrId)) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return filterList;
+        }
     }
 
 }

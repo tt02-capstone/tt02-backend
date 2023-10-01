@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface RoomRepository extends JpaRepository<Room, Long>{
 
+    @Query("SELECT MAX(r.room_id) FROM Room r")
+    Long findMaxRoomId();
 }
 
 

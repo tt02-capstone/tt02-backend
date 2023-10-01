@@ -43,6 +43,9 @@ public class BookingService {
     AttractionRepository attractionRepository;
 
     @Autowired
+    AttractionRepository accommodationRepository;
+
+    @Autowired
     UserRepository userRepository;
 
     @Autowired
@@ -170,7 +173,30 @@ public class BookingService {
     }
 
     public List<Booking> retrieveAllBookings() {
-        return bookingRepository.findAll();
+
+        List<Booking> listToReturn = new ArrayList<Booking>();
+        List<Booking> bookingList = bookingRepository.findAll();
+
+        for (Booking b : bookingList) {
+            System.out.println("hello");
+            b.getPayment().setBooking(null);
+
+            if (b.getLocal_user() != null) {
+                Local local = b.getLocal_user();
+                local.setBooking_list(null);
+            } else if (b.getTourist_user() != null) {
+                Tourist tourist = b.getTourist_user();
+                tourist.setBooking_list(null);
+            }
+
+            System.out.println("b" + b);
+            System.out.println("b.getPayment()" + b);
+
+            listToReturn.add(b);
+            System.out.println("Set to null alr" + b);
+        }
+
+        return listToReturn;
     }
 
     public Booking getBookingByBookingId(Long bookingId) throws NotFoundException {
@@ -482,6 +508,34 @@ public class BookingService {
 
         } else {
             throw new NotFoundException("Telecom not found!");
+        }
+    }
+
+    public Booking createRoomBooking(Long roomId, Booking booking) throws NotFoundException {
+
+        Optional<Room> roomOptional = roomRepository.findById(roomId);
+
+        if (roomOptional.isPresent()) {
+            Payment payment = booking.getPayment();
+            paymentRepository.save(payment);
+
+            for (BookingItem bi : booking.getBooking_item_list()) {
+                bookingItemRepository.save(bi);
+            }
+
+            Room room = roomOptional.get();
+            booking.setRoom(room);
+            bookingRepository.save(booking);
+
+            payment.setBooking(booking);
+            paymentRepository.save(payment);
+
+            booking.getPayment().setBooking(null);
+            bookingRepository.save(booking);
+            return booking;
+
+        } else {
+            throw new NotFoundException("Accommodation not found!");
         }
     }
 }

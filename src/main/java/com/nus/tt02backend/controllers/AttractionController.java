@@ -2,12 +2,14 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.*;
+import com.nus.tt02backend.models.enums.GenericLocationEnum;
 import com.nus.tt02backend.models.enums.TicketEnum;
 import com.nus.tt02backend.services.AttractionService;
 import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.w3c.dom.Attr;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -64,12 +66,6 @@ public class AttractionController {
         VendorStaff vendorStaff = attractionService.retrieveVendor(vendorStaffId);
         attractionService.updateAttraction(vendorStaff, attractionToUpdate);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/getAttractionRecommendation/{currentAttractionId}")
-    public ResponseEntity<List<Attraction>> getAttractionByVendor(@PathVariable Long currentAttractionId) throws NotFoundException {
-        List<Attraction> attractionRecommendationList = attractionService.relatedAttractionRecommendation(currentAttractionId);
-        return ResponseEntity.ok(attractionRecommendationList);
     }
 
     @GetMapping("/getSavedAttractionListForTouristAndLocal/{userId}")
@@ -153,7 +149,6 @@ public class AttractionController {
     @PostMapping ("createSeasonalActivity/{vendorStaffId}/{attractionId}")
     public ResponseEntity<Attraction> createSeasonalActivity(@PathVariable Long vendorStaffId , @PathVariable Long attractionId ,@RequestBody SeasonalActivity activityToCreate)
             throws NotFoundException, BadRequestException  {
-
         VendorStaff vendorStaff = attractionService.retrieveVendor(vendorStaffId);
         Attraction attraction =  attractionService.createSeasonalActivity(vendorStaff,attractionId, activityToCreate);
         return ResponseEntity.ok(attraction);
@@ -164,4 +159,17 @@ public class AttractionController {
         SeasonalActivity sa = attractionService.getSeasonalActivity(attraction_id);
         return ResponseEntity.ok(sa);
     }
+
+    @GetMapping("/nearbyAttrRecommendation/{locationEnum}")
+    public ResponseEntity<List<Attraction>> nearbyAttrRecommendation(@PathVariable GenericLocationEnum locationEnum) throws NotFoundException {
+        List<Attraction> aList = attractionService.nearbyAttrRecommendation(locationEnum);
+        return ResponseEntity.ok(aList);
+    }
+
+    @GetMapping("/nearbyAttrRecommendationWithId/{locationEnum}/{attrId}")
+    public ResponseEntity<List<Attraction>> nearbyAttrRecommendationWithId(@PathVariable GenericLocationEnum locationEnum, @PathVariable Long attrId) throws NotFoundException {
+        List<Attraction> aList = attractionService.nearbyAttrRecommendation(locationEnum,attrId);
+        return ResponseEntity.ok(aList);
+    }
+
 }
