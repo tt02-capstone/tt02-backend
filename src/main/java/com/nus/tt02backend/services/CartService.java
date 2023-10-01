@@ -768,21 +768,44 @@ public class CartService {
 
                 if (matcher.matches()) {
                     String selectedTourTypeName = matcher.group(1);
-                    String startTimeStr= matcher.group(2).replaceAll("\\s", "");
-                    String endTimeStr = matcher.group(3).replaceAll("\\s", "");
+                    String startTimeStr= matcher.group(2);
+                    String endTimeStr = matcher.group(3);
                     System.out.println(startTimeStr + ' ' +  endTimeStr);
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm");
+                    String[] start_parts = startTimeStr.split(" ");
+                    String[] end_parts = endTimeStr.split(" ");
+                    startTimeStr = start_parts[0];
+                    endTimeStr = end_parts[0];
+
 
                     // Bug
-                    LocalTime startTime = LocalTime.parse(startTimeStr, formatter);
-                    LocalTime endTime = LocalTime.parse(endTimeStr , formatter);
+                    //LocalTime startTime = LocalTime.parse(startTimeStr, formatter);
+                    //LocalTime endTime = LocalTime.parse(endTimeStr , formatter);
+
+                    String[] startHourMinute = startTimeStr.split(":");
+                    String[] endHourMinute = endTimeStr.split(":");
+
+                    LocalTime startTime = LocalTime.of(Integer.parseInt(startHourMinute[0]), Integer.parseInt(startHourMinute[1]));
+                    LocalTime endTime = LocalTime.of(Integer.parseInt(endHourMinute[0]), Integer.parseInt(endHourMinute[1]));
+                    if ("PM".equals(start_parts[1])) {
+                        startTime = startTime.plusHours(12);
+                    }
+
+                    if ("PM".equals(end_parts[1])) {
+                        endTime =endTime.plusHours(12);
+                    }
+
+
 
 
                     LocalDateTime startDateTime = LocalDateTime.of(tour_date.toLocalDate(), startTime);
                     LocalDateTime endDateTime = LocalDateTime.of(tour_date.toLocalDate(), endTime);
 
+                    System.out.println(startTime);
+                    System.out.println(startDateTime);
+                    System.out.println(endDateTime);
                     TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
-
+                    System.out.println(tourTypeRepository.findTourInTourType(selected_tourType, startDateTime, startDateTime, endDateTime));
                     Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, startDateTime, startDateTime, endDateTime);
 
                     newBooking.setTour(tour);
