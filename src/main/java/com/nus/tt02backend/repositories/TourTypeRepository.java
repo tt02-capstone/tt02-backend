@@ -21,15 +21,15 @@ public interface TourTypeRepository extends JpaRepository<TourType, Long> {
     TourType findByName(@Param("name") String name);
 
 
-    @Query("SELECT t " +
-            "FROM TourType tt " +
-            "JOIN tt.tourList t " +
-            "WHERE tt = :tourType " +
-            "AND t.date = :date " +
-            "AND t.start_time = :startTime " +
-            "AND t.end_time = :endTime")
-    Tour findTourInTourType(@Param("tourType") TourType tourType,
-                            @Param("date") LocalDateTime date,
-                            @Param("startTime") LocalDateTime startTime,
-                            @Param("endTime") LocalDateTime endTime);
+//    @Query("SELECT t " +
+//            "FROM TourType tt " +
+//            "JOIN tt.tourList t " +
+//            "WHERE tt = :tourType " +
+//            "AND t.date = :date " +
+//            "AND t.start_time = :startTime " +
+//            "AND t.end_time = :endTime")
+//    Tour findTourInTourType(@Param("tourType") TourType tourType,
+//                            @Param("date") LocalDateTime date,
+//                            @Param("startTime") LocalDateTime startTime,
+//                            @Param("endTime") LocalDateTime endTime);
 }

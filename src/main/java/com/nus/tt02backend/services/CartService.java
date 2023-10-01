@@ -781,11 +781,11 @@ public class CartService {
                     LocalDateTime startDateTime = LocalDateTime.of(tour_date.toLocalDate(), startTime);
                     LocalDateTime endDateTime = LocalDateTime.of(tour_date.toLocalDate(), endTime);
 
-                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
-
-                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date, startDateTime, endDateTime);
-
-                    newBooking.setTour(tour);
+//                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
+//
+//                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date, startDateTime, endDateTime);
+//
+//                    newBooking.setTour(tour);
                 }
 
 
@@ -855,12 +855,12 @@ public class CartService {
         Local local = null;
         if (Objects.equals(activity_type, "ATTRACTION")) {
             vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
-            if (!(newBooking.getTour() == null)) {
-                local = localRepository.findLocalByTour(newBooking.getTour());
-                // To re-calculate payoutAmount as it needs to be separate
-
-                // Calculate based on individual booking item and separate Tour and Attraction tickets
-            }
+//            if (!(newBooking.getTour() == null)) {
+//                local = localRepository.findLocalByTour(newBooking.getTour());
+//                // To re-calculate payoutAmount as it needs to be separate
+//
+//                // Calculate based on individual booking item and separate Tour and Attraction tickets
+//            }
         } else if (Objects.equals(activity_type, "TELECOM")) {
 
             vendor = vendorRepository.findVendorByTelecomName(newBooking.getTelecom().getName());
