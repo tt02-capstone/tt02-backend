@@ -361,7 +361,7 @@ public class CartService {
         List<CartBooking> cartBookingsToDelete = cartBookingRepository.findCartBookingsByIds(cart_booking_ids);
 
         for (CartBooking cartBookingToDelete : cartBookingsToDelete) {
-            System.out.println("aaa: " + cartBookingToDelete.getCart_booking_id());
+
             if (cartBookingToDelete.getType() == BookingTypeEnum.ATTRACTION) {
 
                 Attraction selected_attraction = cartBookingToDelete.getAttraction();
@@ -770,22 +770,45 @@ public class CartService {
                     String selectedTourTypeName = matcher.group(1);
                     String startTimeStr= matcher.group(2);
                     String endTimeStr = matcher.group(3);
+                    System.out.println(startTimeStr + ' ' +  endTimeStr);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm");
+                    String[] start_parts = startTimeStr.split(" ");
+                    String[] end_parts = endTimeStr.split(" ");
+                    startTimeStr = start_parts[0];
+                    endTimeStr = end_parts[0];
 
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
 
-                    // Parse start and end times into LocalTime objects
-                    LocalTime startTime = LocalTime.parse(startTimeStr, formatter);
-                    LocalTime endTime = LocalTime.parse(endTimeStr , formatter);
+                    // Bug
+                    //LocalTime startTime = LocalTime.parse(startTimeStr, formatter);
+                    //LocalTime endTime = LocalTime.parse(endTimeStr , formatter);
 
-                    // Assuming today's date for simplicity, you can change it as needed
+                    String[] startHourMinute = startTimeStr.split(":");
+                    String[] endHourMinute = endTimeStr.split(":");
+
+                    LocalTime startTime = LocalTime.of(Integer.parseInt(startHourMinute[0]), Integer.parseInt(startHourMinute[1]));
+                    LocalTime endTime = LocalTime.of(Integer.parseInt(endHourMinute[0]), Integer.parseInt(endHourMinute[1]));
+                    if ("PM".equals(start_parts[1])) {
+                        startTime = startTime.plusHours(12);
+                    }
+
+                    if ("PM".equals(end_parts[1])) {
+                        endTime =endTime.plusHours(12);
+                    }
+
+
+
+
                     LocalDateTime startDateTime = LocalDateTime.of(tour_date.toLocalDate(), startTime);
                     LocalDateTime endDateTime = LocalDateTime.of(tour_date.toLocalDate(), endTime);
 
-//                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
-//
-//                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date, startDateTime, endDateTime);
-//
-//                    newBooking.setTour(tour);
+                    System.out.println(startTime);
+                    System.out.println(startDateTime);
+                    System.out.println(endDateTime);
+                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
+                    System.out.println(tourTypeRepository.findTourInTourType(selected_tourType, startDateTime, startDateTime, endDateTime));
+                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, startDateTime, startDateTime, endDateTime);
+
+                    newBooking.setTour(tour);
                 }
 
 
@@ -794,7 +817,7 @@ public class CartService {
             newBooking.setTelecom(bookingToCheckout.getTelecom());
         } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
             newBooking.setRoom(bookingToCheckout.getRoom());
-        }else if (Objects.equals(activity_type, "TOUR")) {
+        }   else if (Objects.equals(activity_type, "TOUR")) {
             newBooking.setTour(bookingToCheckout.getTour());
         }
 
