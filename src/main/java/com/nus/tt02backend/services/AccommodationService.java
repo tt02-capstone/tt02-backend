@@ -1,5 +1,6 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.dto.AvailableRoomCountResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
@@ -8,6 +9,7 @@ import com.nus.tt02backend.models.enums.AccommodationTypeEnum;
 import com.nus.tt02backend.models.enums.RoomTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -522,6 +524,26 @@ public class AccommodationService {
         }
 
         return minAvailableRooms;
+    }
+
+    public List<AvailableRoomCountResponse> getNumOf0AvailableRoomsListOnDateRange(Long id, LocalDate start, LocalDate end) throws NotFoundException, BadRequestException {
+        Accommodation accommodation = retrieveAccommodation(id);
+        List<LocalDate> dateRange = start.datesUntil(end.plusDays(1)).collect(Collectors.toList());
+
+        List<AvailableRoomCountResponse> list = new ArrayList<>();
+
+        for (int i = 0; i < dateRange.size(); i++) {
+            LocalDate date = dateRange.get(i);
+            LocalDateTime roomDateTime = date.atStartOfDay();
+
+            for (RoomTypeEnum r : RoomTypeEnum.values()) {
+                Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(id, r, roomDateTime);
+                int count = (int) (getTotalRoomCountForType(accommodation, r) - bookedRoomsOnThatDate);
+                list.add(new AvailableRoomCountResponse(accommodation.getName(), date, r, count));
+            }
+        }
+
+        return list;
     }
 
     private long getTotalRoomCountForType(Accommodation accommodation, RoomTypeEnum roomType) {

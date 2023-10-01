@@ -1,5 +1,6 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.AvailableRoomCountResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -152,5 +154,11 @@ public class AccommodationController {
         Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
         Room room =  accommodationService.updateRoom(roomToUpate);
         return ResponseEntity.ok(room);
+    }
+
+    @GetMapping("/getNumOf0AvailableRoomsListOnDateRange/{accommodation_id}/{startDate}/{endDate}")
+    public ResponseEntity<List<AvailableRoomCountResponse>> getNumOf0AvailableRoomsListOnDateRange(@PathVariable Long accommodation_id, @PathVariable LocalDate startDate, @PathVariable LocalDate endDate) throws BadRequestException, NotFoundException {
+        List<AvailableRoomCountResponse> list = accommodationService.getNumOf0AvailableRoomsListOnDateRange(accommodation_id, startDate, endDate);
+        return ResponseEntity.ok(list);
     }
 }
