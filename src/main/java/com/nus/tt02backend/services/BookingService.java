@@ -339,6 +339,21 @@ public class BookingService {
                     }
                 }
             }
+
+            if (!vendor.getAccommodation_list().isEmpty()) {
+                for (Accommodation accommodation : vendor.getAccommodation_list()) {
+                    if (!accommodation.getRoom_list().isEmpty()) {
+                        for (Room room: accommodation.getRoom_list())
+                        if (b.getRoom() != null && Objects.equals(b.getRoom().getRoom_id(), room.getRoom_id())) {
+                            Booking temp = this.setBookingStatus(b);
+                            bookingRepository.save(temp);
+                            bookingsToReturn.add(temp);
+                        }
+                    }
+
+
+                }
+            }
         }
 
         // setting of 2 way relationship to null
