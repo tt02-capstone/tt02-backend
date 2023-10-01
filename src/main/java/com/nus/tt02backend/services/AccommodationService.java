@@ -36,6 +36,13 @@ public class AccommodationService {
     @Autowired
     VendorRepository vendorRepository;
 
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    TouristRepository touristRepository;
+    @Autowired
+    LocalRepository localRepository;
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -336,6 +343,69 @@ public class AccommodationService {
 
         return roomTypes;
     }
+
+    public List<Accommodation> getUserSavedAccommodation(Long userId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getAccommodation_list() == null) return new ArrayList<>();
+                return tourist.getAccommodation_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getAccommodation_list() == null) return new ArrayList<>();
+                return local.getAccommodation_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User not found!");
+        }
+    }
+
+    public List<Accommodation> toggleSaveAccommodation(Long userId, Long accommodationId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<Accommodation> accommodationOptional = accommodationRepository.findById(accommodationId);
+
+        if (userOptional.isPresent() && accommodationOptional.isPresent()) {
+            User user = userOptional.get();
+            Accommodation accommodation = accommodationOptional.get();
+            System.out.println("Toogle " + accommodation);
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getAccommodation_list() == null) tourist.setAccommodation_list(new ArrayList<>());
+
+                if (tourist.getAccommodation_list().contains(accommodation)) { // remove from saved listing
+                    tourist.getAccommodation_list().remove(accommodation);
+                } else {
+                    tourist.getAccommodation_list().add(accommodation);
+                }
+                touristRepository.save(tourist);
+                return tourist.getAccommodation_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getAccommodation_list() == null) local.setAccommodation_list(new ArrayList<>());
+
+                if (local.getAccommodation_list().contains(accommodation)) { // remove from saved listing
+                    local.getAccommodation_list().remove(accommodation);
+                } else {
+                    local.getAccommodation_list().add(accommodation);
+                }
+                localRepository.save(local);
+                return local.getAccommodation_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User or accommodation is not found!");
+        }
+    }
+
 
     public Long getNumOfBookingsOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
 
