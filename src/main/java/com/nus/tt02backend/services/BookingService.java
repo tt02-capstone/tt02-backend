@@ -6,6 +6,7 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BookingStatusEnum;
+import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import com.stripe.exception.StripeException;
@@ -214,7 +215,8 @@ public class BookingService {
                     tourist.setBooking_list(null);
                 }
 
-                if (booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
+                if (!booking.getType().equals(BookingTypeEnum.TELECOM) &&
+                        booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
                     for (BookingItem bookingItem : booking.getBooking_item_list()) {
                         long[] voucherCodes = generateVoucherCodes(booking.getBooking_id(), bookingItem.getQuantity());
                         for (int i = 0; i < voucherCodes.length; i++) {
