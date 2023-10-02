@@ -147,6 +147,8 @@ public class AccommodationService {
 
             accommodationToCreate.setRoom_list(persisted_room_list);
             accommodationToCreate.setEstimated_price_tier(priceTier);
+        } else {
+            accommodationToCreate.setEstimated_price_tier(PriceTierEnum.TIER_0);
         }
 
         Accommodation newAccommodation = accommodationRepository.save(accommodationToCreate);
@@ -191,11 +193,15 @@ public class AccommodationService {
             accommodation.setGeneric_location(accommodationToUpdate.getGeneric_location());
 
             // change price list to room
-            List<Room> updatedRoomList = updateRoomList(accommodationToUpdate.getRoom_list());
-            PriceTierEnum updatedTier = priceTierEstimation(updatedRoomList);
-
-            accommodation.setRoom_list(updatedRoomList);
-            accommodation.setEstimated_price_tier(updatedTier);
+            if (accommodationToUpdate.getRoom_list().isEmpty()) {
+                accommodation.setEstimated_price_tier(PriceTierEnum.TIER_0);
+                accommodation.setRoom_list(accommodationToUpdate.getRoom_list());
+            } else {
+                List<Room> updatedRoomList = updateRoomList(accommodationToUpdate.getRoom_list());
+                PriceTierEnum updatedTier = priceTierEstimation(updatedRoomList);
+                accommodation.setRoom_list(updatedRoomList);
+                accommodation.setEstimated_price_tier(updatedTier);
+            }
         }
 
         accommodationRepository.save(accommodation);
