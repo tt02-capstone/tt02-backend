@@ -573,4 +573,46 @@ public class AccommodationService {
         }
         return room;
     }
+
+    public List<Accommodation> nearbyAccommRecommendation (GenericLocationEnum locationNow) throws NotFoundException {
+        List<Accommodation> aList = retrieveAllPublishedAccommodation();
+        List<Accommodation> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No accommodations are created!");
+        } else {
+            for (Accommodation a : aList) {
+                if (a.getGeneric_location() == locationNow) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return filterList;
+        }
+    }
+
+    public List<Accommodation> nearbyAccommRecommendation (GenericLocationEnum locationNow, Long accommId) throws NotFoundException {
+        List<Accommodation> aList = retrieveAllPublishedAccommodation();
+        List<Accommodation> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No accommodations are created!");
+        } else {
+            for (Accommodation a : aList) {
+                if (a.getGeneric_location() == locationNow && !a.getAccommodation_id().equals(accommId)) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return filterList;
+        }
+    }
 }
