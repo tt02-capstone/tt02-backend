@@ -52,4 +52,6 @@ public class Telecom {
     @Enumerated(EnumType.STRING)
     private GBLimitEnum data_limit_category;
 
+    private String image;
+
 }

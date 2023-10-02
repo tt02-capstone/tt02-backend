@@ -3,10 +3,7 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
-import com.nus.tt02backend.models.enums.GenericLocationEnum;
-import com.nus.tt02backend.models.enums.PriceTierEnum;
-import com.nus.tt02backend.models.enums.TicketEnum;
-import com.nus.tt02backend.models.enums.UserTypeEnum;
+import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
@@ -31,12 +28,74 @@ public class TelecomService {
     @Autowired
     LocalRepository localRepository;
 
+    private String generateImageURL(NumberOfValidDaysEnum e) throws NotFoundException {
+        if (e == NumberOfValidDaysEnum.ONE_DAY) {
+            return "http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_1_day.JPG";
+        } else if (e == NumberOfValidDaysEnum.THREE_DAY) {
+            return "http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_3_day.JPG";
+        } else if (e == NumberOfValidDaysEnum.SEVEN_DAY) {
+            return "http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_7_day.JPG";
+        } else if (e == NumberOfValidDaysEnum.FOURTEEN_DAY) {
+            return "http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_14_day.JPG";
+        } else if (e == NumberOfValidDaysEnum.MORE_THAN_FOURTEEN_DAYS) {
+            return "http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_more_than_14_day.JPG";
+        } else {
+            throw new NotFoundException("Enum not found!");
+        }
+    }
+
+    private GBLimitEnum generateGBLimitEnum(int data) {
+        if (data <= 10) {
+            return GBLimitEnum.VALUE_10;
+        } else if (data <= 30) {
+            return GBLimitEnum.VALUE_30;
+        } else if (data <= 50) {
+            return GBLimitEnum.VALUE_50;
+        } else if (data <= 100) {
+            return GBLimitEnum.VALUE_100;
+        } else {
+            return GBLimitEnum.UNLIMITED;
+        }
+    }
+
+    private NumberOfValidDaysEnum generateNumValidDays(int num) {
+        if (num <= 1) {
+            return NumberOfValidDaysEnum.ONE_DAY;
+        } else if (num <= 3) {
+            return NumberOfValidDaysEnum.THREE_DAY;
+        } else if (num <= 7) {
+            return NumberOfValidDaysEnum.SEVEN_DAY;
+        } else if (num <= 14) {
+            return NumberOfValidDaysEnum.FOURTEEN_DAY;
+        } else {
+            return NumberOfValidDaysEnum.MORE_THAN_FOURTEEN_DAYS;
+        }
+    }
+
+    private PriceTierEnum generatePriceTier(BigDecimal price) {
+        if (price.compareTo(new BigDecimal("20")) == -1 || price.compareTo(new BigDecimal("20")) == 0) {
+            return PriceTierEnum.TIER_1;
+        } else if (price.compareTo(new BigDecimal("40")) == -1 || price.compareTo(new BigDecimal("40")) == 0) {
+            return PriceTierEnum.TIER_2;
+        } else if (price.compareTo(new BigDecimal("60")) == -1 || price.compareTo(new BigDecimal("60")) == 0) {
+            return PriceTierEnum.TIER_3;
+        } else if (price.compareTo(new BigDecimal("80")) == -1 || price.compareTo(new BigDecimal("80")) == 0) {
+            return PriceTierEnum.TIER_4;
+        } else {
+            return PriceTierEnum.TIER_5;
+        }
+    }
+
     public Telecom create(Telecom telecom, Long vendorId) throws NotFoundException {
 
         Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
 
         if (vendorOptional.isPresent()) {
             Vendor vendor = vendorOptional.get();
+            telecom.setEstimated_price_tier(generatePriceTier(telecom.getPrice()));
+            telecom.setPlan_duration_category(generateNumValidDays(telecom.getNum_of_days_valid()));
+            telecom.setImage(generateImageURL(telecom.getPlan_duration_category()));
+            telecom.setData_limit_category(generateGBLimitEnum(telecom.getData_limit()));
             telecomRepository.save(telecom);
             if (vendor.getTelecom_list() == null) vendor.setTelecom_list(new ArrayList<>());
             vendor.getTelecom_list().add(telecom);
@@ -92,11 +151,13 @@ public class TelecomService {
             telecom.setPrice(telecomToEdit.getPrice());
             telecom.setIs_published(telecomToEdit.getIs_published());
             telecom.setType(telecomToEdit.getType());
-            telecom.setEstimated_price_tier(telecomToEdit.getEstimated_price_tier());
             telecom.setNum_of_days_valid(telecomToEdit.getNum_of_days_valid());
-            telecom.setPlan_duration_category(telecomToEdit.getPlan_duration_category());
             telecom.setData_limit(telecomToEdit.getData_limit());
-            telecom.setData_limit_category(telecomToEdit.getData_limit_category());
+
+            telecom.setEstimated_price_tier(generatePriceTier(telecomToEdit.getPrice()));
+            telecom.setPlan_duration_category(generateNumValidDays(telecomToEdit.getNum_of_days_valid()));
+            telecom.setImage(generateImageURL(telecom.getPlan_duration_category()));
+            telecom.setData_limit_category(generateGBLimitEnum(telecomToEdit.getData_limit()));
             telecomRepository.save(telecom);
             return telecom;
 
