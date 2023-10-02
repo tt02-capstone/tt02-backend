@@ -6,6 +6,7 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BookingStatusEnum;
+import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import com.stripe.exception.StripeException;
@@ -214,7 +215,8 @@ public class BookingService {
                     tourist.setBooking_list(null);
                 }
 
-                if (booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
+                if (!booking.getType().equals(BookingTypeEnum.TELECOM) &&
+                        booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
                     for (BookingItem bookingItem : booking.getBooking_item_list()) {
                         long[] voucherCodes = generateVoucherCodes(booking.getBooking_id(), bookingItem.getQuantity());
                         for (int i = 0; i < voucherCodes.length; i++) {
@@ -337,6 +339,21 @@ public class BookingService {
                         bookingRepository.save(temp);
                         bookingsToReturn.add(temp);
                     }
+                }
+            }
+
+            if (!vendor.getAccommodation_list().isEmpty()) {
+                for (Accommodation accommodation : vendor.getAccommodation_list()) {
+                    if (!accommodation.getRoom_list().isEmpty()) {
+                        for (Room room: accommodation.getRoom_list())
+                        if (b.getRoom() != null && Objects.equals(b.getRoom().getRoom_id(), room.getRoom_id())) {
+                            Booking temp = this.setBookingStatus(b);
+                            bookingRepository.save(temp);
+                            bookingsToReturn.add(temp);
+                        }
+                    }
+
+
                 }
             }
         }

@@ -1,11 +1,10 @@
 package com.nus.tt02backend.config;
 
 import com.nus.tt02backend.models.*;
-import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
-import com.nus.tt02backend.models.enums.InternalRoleEnum;
-import com.nus.tt02backend.models.enums.UserTypeEnum;
-import com.nus.tt02backend.models.enums.VendorEnum;
+import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
+import com.nus.tt02backend.services.PaymentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,7 +13,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -27,6 +30,10 @@ public class InitDataConfig implements CommandLineRunner {
     private final VendorRepository vendorRepository;
     private final VendorStaffRepository vendorStaffRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AttractionRepository attractionRepository;
+    private final TicketPerDayRepository ticketPerDayRepository;
+    @Autowired
+    PaymentService paymentService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -58,6 +65,13 @@ public class InitDataConfig implements CommandLineRunner {
             local.setCountry_code("+65");
             local.setEmail_verified(true);
             local.setMobile_num("98989898");
+
+            Map<String, Object> customer_parameters = new HashMap<>();
+            customer_parameters.put("email", "local@gmail.com");
+            customer_parameters.put("name", "Rowoon");
+            String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+            local.setStripe_account_id(stripe_account_id);
+
             localRepository.save(local);
         }
 
@@ -73,6 +87,13 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setCountry_code("+65");
             tourist.setEmail_verified(true);
             tourist.setMobile_num("9797979797");
+
+            Map<String, Object> customer_parameters = new HashMap<>();
+            customer_parameters.put("email", "tourist@gmail.com");
+            customer_parameters.put("name", "Cho Bo Ah");
+            String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+            tourist.setStripe_account_id(stripe_account_id);
+
             touristRepository.save(tourist);
         }
 
@@ -87,6 +108,13 @@ public class InitDataConfig implements CommandLineRunner {
             vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
             vendor.setVendor_type(VendorEnum.ATTRACTION);
             vendor.setService_description("애정수를 믿으세요?");
+
+            Map<String, Object> customer_parameters = new HashMap<>();
+            customer_parameters.put("email", "vendor@gmail.com");
+            customer_parameters.put("name", "Business Name");
+            String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+            vendor.setStripe_account_id(stripe_account_id);
+
             vendorRepository.save(vendor);
 
             VendorStaff vendorStaff = new VendorStaff();
@@ -102,5 +130,150 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
         }
+/*
+        if (attractionRepository.count() == 0) {
+            Attraction attraction = new Attraction();
+            attraction.setName("Mega Adventure - Singapore");
+            attraction.setDescription("Mega Adventure Park - Singapore is located on the picturesque Sentosa Island, host to " +
+                    "Singapore’s main attractions. The park operates world famous MegaZip flying fox, spanning 450m, flying at " +
+                    "60 km/hour");
+            attraction.setAddress("10A Siloso Bch Walk, 099008");
+            attraction.setOpening_hours("11am - 6pm");
+            attraction.setAge_group("Suitable for all ages");
+            attraction.setContact_num("62353535");
+            attraction.setIs_published(true);
+            attraction.setSuggested_duration(4);
+            attraction.setAvg_rating_tier(0.0);
+            attraction.setAttraction_category(AttractionCategoryEnum.ADVENTURE);
+            attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
+            attraction.setAttraction_image_list(new ArrayList<>());
+            attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
+            attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega2.jpeg");
+
+            Price childPrice = new Price();
+            childPrice.setLocal_amount(new BigDecimal(30));
+            childPrice.setTourist_amount(new BigDecimal(40));
+            childPrice.setTicket_type(TicketEnum.CHILD);
+            //childPrice = priceRepository.save(childPrice);
+
+            Price adultPrice = new Price();
+            adultPrice.setLocal_amount(new BigDecimal(40));
+            adultPrice.setTourist_amount(new BigDecimal(50));
+            adultPrice.setTicket_type(TicketEnum.ADULT);
+            //adultPrice = priceRepository.save(adultPrice);
+
+            attraction.setPrice_list(new ArrayList<>());
+            attraction.getPrice_list().add(childPrice);
+            attraction.getPrice_list().add(adultPrice);
+
+            TicketPerDay t1 = new TicketPerDay();
+            t1.setTicket_date(LocalDate.parse("2023-10-05"));
+            t1.setTicket_count(5);
+            t1.setTicket_type(TicketEnum.ADULT);
+            t1 = ticketPerDayRepository.save(t1);
+
+            TicketPerDay t2 = new TicketPerDay();
+            t2.setTicket_date(LocalDate.parse("2023-10-05"));
+            t2.setTicket_count(5);
+            t2.setTicket_type(TicketEnum.CHILD);
+            t2 = ticketPerDayRepository.save(t2);
+
+            TicketPerDay t3 = new TicketPerDay();
+            t3.setTicket_date(LocalDate.parse("2023-10-06"));
+            t3.setTicket_count(5);
+            t3.setTicket_type(TicketEnum.ADULT);
+            t3 = ticketPerDayRepository.save(t3);
+
+            TicketPerDay t4 = new TicketPerDay();
+            t4.setTicket_date(LocalDate.parse("2023-10-06"));
+            t4.setTicket_count(5);
+            t4.setTicket_type(TicketEnum.CHILD);
+            t4 = ticketPerDayRepository.save(t4);
+
+            attraction.setTicket_per_day_list(new ArrayList<>());
+            attraction.getTicket_per_day_list().add(t1);
+            attraction.getTicket_per_day_list().add(t2);
+            attraction.getTicket_per_day_list().add(t3);
+            attraction.getTicket_per_day_list().add(t4);
+
+            attraction = attractionRepository.save(attraction);
+            Vendor vendor = vendorRepository.findVendorByBusinessName("Business Name");
+            vendor.setAttraction_list(new ArrayList<>());
+            vendor.getAttraction_list().add(attraction);
+            vendorRepository.save(vendor);
+
+            createSecondAttraction();
+        }
+*/
+    }
+
+    public void createSecondAttraction() {
+        Attraction attraction = new Attraction();
+        attraction.setName("Universal Studios Singapore");
+        attraction.setDescription("Universal Studios Singapore is a theme park located within the Resorts World Sentosa " +
+                "integrated resort at Sentosa in Singapore. It features 28 rides, shows, and attractions in seven themed " +
+                "zones. It is one of the five Universal Studios theme parks around the world.");
+        attraction.setAddress("8 Sentosa Gateway, Singapore 098269");
+        attraction.setOpening_hours("11am - 6pm");
+        attraction.setAge_group("Suitable for all ages");
+        attraction.setContact_num("65778888");
+        attraction.setIs_published(true);
+        attraction.setSuggested_duration(5);
+        attraction.setAvg_rating_tier(0.0);
+        attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
+        attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
+        attraction.setAttraction_image_list(new ArrayList<>());
+        attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/uss1.jpeg");
+        attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/uss2.jpeg");
+
+        Price childPrice = new Price();
+        childPrice.setLocal_amount(new BigDecimal(30));
+        childPrice.setTourist_amount(new BigDecimal(40));
+        childPrice.setTicket_type(TicketEnum.CHILD);
+
+        Price adultPrice = new Price();
+        adultPrice.setLocal_amount(new BigDecimal(40));
+        adultPrice.setTourist_amount(new BigDecimal(50));
+        adultPrice.setTicket_type(TicketEnum.ADULT);
+
+        attraction.setPrice_list(new ArrayList<>());
+        attraction.getPrice_list().add(childPrice);
+        attraction.getPrice_list().add(adultPrice);
+
+        TicketPerDay t1 = new TicketPerDay();
+        t1.setTicket_date(LocalDate.parse("2023-10-05"));
+        t1.setTicket_count(5);
+        t1.setTicket_type(TicketEnum.ADULT);
+        t1 = ticketPerDayRepository.save(t1);
+
+        TicketPerDay t2 = new TicketPerDay();
+        t2.setTicket_date(LocalDate.parse("2023-10-05"));
+        t2.setTicket_count(5);
+        t2.setTicket_type(TicketEnum.CHILD);
+        t2 = ticketPerDayRepository.save(t2);
+
+        TicketPerDay t3 = new TicketPerDay();
+        t3.setTicket_date(LocalDate.parse("2023-10-06"));
+        t3.setTicket_count(5);
+        t3.setTicket_type(TicketEnum.ADULT);
+        t3 = ticketPerDayRepository.save(t3);
+
+        TicketPerDay t4 = new TicketPerDay();
+        t4.setTicket_date(LocalDate.parse("2023-10-06"));
+        t4.setTicket_count(5);
+        t4.setTicket_type(TicketEnum.CHILD);
+        t4 = ticketPerDayRepository.save(t4);
+
+        attraction.setTicket_per_day_list(new ArrayList<>());
+        attraction.getTicket_per_day_list().add(t1);
+        attraction.getTicket_per_day_list().add(t2);
+        attraction.getTicket_per_day_list().add(t3);
+        attraction.getTicket_per_day_list().add(t4);
+
+        attractionRepository.save(attraction);
+        Vendor vendor = vendorRepository.findVendorByBusinessName("Business Name");
+        vendor.setAttraction_list(new ArrayList<>());
+        vendor.getAttraction_list().add(attraction);
+        vendorRepository.save(vendor);
     }
 }

@@ -1,5 +1,6 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.dto.AvailableRoomCountResponse;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
@@ -8,6 +9,7 @@ import com.nus.tt02backend.models.enums.AccommodationTypeEnum;
 import com.nus.tt02backend.models.enums.RoomTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -35,6 +37,13 @@ public class AccommodationService {
 
     @Autowired
     VendorRepository vendorRepository;
+
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    TouristRepository touristRepository;
+    @Autowired
+    LocalRepository localRepository;
 
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
@@ -340,6 +349,69 @@ public class AccommodationService {
         return roomTypes;
     }
 
+    public List<Accommodation> getUserSavedAccommodation(Long userId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getAccommodation_list() == null) return new ArrayList<>();
+                return tourist.getAccommodation_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getAccommodation_list() == null) return new ArrayList<>();
+                return local.getAccommodation_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User not found!");
+        }
+    }
+
+    public List<Accommodation> toggleSaveAccommodation(Long userId, Long accommodationId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<Accommodation> accommodationOptional = accommodationRepository.findById(accommodationId);
+
+        if (userOptional.isPresent() && accommodationOptional.isPresent()) {
+            User user = userOptional.get();
+            Accommodation accommodation = accommodationOptional.get();
+            System.out.println("Toogle " + accommodation);
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getAccommodation_list() == null) tourist.setAccommodation_list(new ArrayList<>());
+
+                if (tourist.getAccommodation_list().contains(accommodation)) { // remove from saved listing
+                    tourist.getAccommodation_list().remove(accommodation);
+                } else {
+                    tourist.getAccommodation_list().add(accommodation);
+                }
+                touristRepository.save(tourist);
+                return tourist.getAccommodation_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getAccommodation_list() == null) local.setAccommodation_list(new ArrayList<>());
+
+                if (local.getAccommodation_list().contains(accommodation)) { // remove from saved listing
+                    local.getAccommodation_list().remove(accommodation);
+                } else {
+                    local.getAccommodation_list().add(accommodation);
+                }
+                localRepository.save(local);
+                return local.getAccommodation_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User or accommodation is not found!");
+        }
+    }
+
+
     public Long getNumOfBookingsOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
 
         System.out.println("accommodation_id" + accommodation_id);
@@ -457,10 +529,93 @@ public class AccommodationService {
         return minAvailableRooms;
     }
 
+    public List<AvailableRoomCountResponse> getNumOf0AvailableRoomsListOnDateRange(Long id, LocalDate start, LocalDate end) throws NotFoundException, BadRequestException {
+        Accommodation accommodation = retrieveAccommodation(id);
+        List<LocalDate> dateRange = start.datesUntil(end.plusDays(1)).collect(Collectors.toList());
+
+        List<AvailableRoomCountResponse> list = new ArrayList<>();
+
+        for (int i = 0; i < dateRange.size(); i++) {
+            LocalDate date = dateRange.get(i);
+            LocalDateTime roomDateTime = date.atStartOfDay();
+
+            for (RoomTypeEnum r : RoomTypeEnum.values()) {
+                Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(id, r, roomDateTime);
+                int count = (int) (getTotalRoomCountForType(accommodation, r) - bookedRoomsOnThatDate);
+                list.add(new AvailableRoomCountResponse(accommodation.getName(), date, r, count));
+            }
+        }
+
+        return list;
+    }
+
     private long getTotalRoomCountForType(Accommodation accommodation, RoomTypeEnum roomType) {
         return accommodation.getRoom_list().stream()
                 .filter(room -> room.getRoom_type() == roomType)
                 .mapToLong(room -> room.getQuantity().longValue())
                 .sum();
+    }
+
+    public Room updateRoom(Room room) throws NotFoundException {
+        Optional<Room> currentRoomOptional = roomRepository.findById(room.getRoom_id());
+
+        if (currentRoomOptional.isPresent()) {
+            Room currentRoom = currentRoomOptional.get();
+            currentRoom.setAmenities_description(room.getAmenities_description());
+            currentRoom.setRoom_image(room.getRoom_image());
+            currentRoom.setNum_of_pax(room.getNum_of_pax());
+            currentRoom.setRoom_type(room.getRoom_type());
+            currentRoom.setPrice(room.getPrice());
+            currentRoom.setQuantity(room.getQuantity());
+
+            roomRepository.save(currentRoom);
+
+
+        } else {
+            throw new NotFoundException("Room Not Found!");
+        }
+        return room;
+    }
+
+    public List<Accommodation> nearbyAccommRecommendation (GenericLocationEnum locationNow) throws NotFoundException {
+        List<Accommodation> aList = retrieveAllPublishedAccommodation();
+        List<Accommodation> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No accommodations are created!");
+        } else {
+            for (Accommodation a : aList) {
+                if (a.getGeneric_location() == locationNow) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return filterList;
+        }
+    }
+
+    public List<Accommodation> nearbyAccommRecommendation (GenericLocationEnum locationNow, Long accommId) throws NotFoundException {
+        List<Accommodation> aList = retrieveAllPublishedAccommodation();
+        List<Accommodation> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No accommodations are created!");
+        } else {
+            for (Accommodation a : aList) {
+                if (a.getGeneric_location() == locationNow && !a.getAccommodation_id().equals(accommId)) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return filterList;
+        }
     }
 }

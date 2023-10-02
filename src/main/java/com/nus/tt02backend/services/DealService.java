@@ -111,7 +111,6 @@ public class DealService {
             deal.setDeal_image_list(dealToEdit.getDeal_image_list());
             deal.setIs_govt_voucher(dealToEdit.getIs_govt_voucher());
             deal.setDiscount_percent(dealToEdit.getDiscount_percent());
-            deal.setPublish_date(dealToEdit.getPublish_date());
             dealRepository.save(deal);
             return deal;
 
@@ -149,6 +148,7 @@ public class DealService {
                 } else {
                     local.getDeals_list().add(deal);
                 }
+                System.out.println("Toggle save"+ local);
                 localRepository.save(local);
                 return local.getDeals_list();
             } else {
@@ -173,6 +173,7 @@ public class DealService {
             } else if (user instanceof Local) {
                 Local local = (Local) user;
                 if (local.getDeals_list() == null) return new ArrayList<>();
+                System.out.println("Get saved"+  local.getDeals_list());
                 return local.getDeals_list();
             } else {
                 throw new NotFoundException("User is not tourist or local!");

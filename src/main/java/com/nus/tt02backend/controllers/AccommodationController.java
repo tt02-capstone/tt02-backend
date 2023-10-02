@@ -1,9 +1,11 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.AvailableRoomCountResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.Accommodation;
+import com.nus.tt02backend.models.enums.GenericLocationEnum;
 import com.nus.tt02backend.models.enums.RoomTypeEnum;
 import com.nus.tt02backend.services.AccommodationService;
 import com.nus.tt02backend.services.AuthenticationService;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -131,5 +134,44 @@ public class AccommodationController {
     public ResponseEntity<Long> getMinAvailableRoomsOnDateRange(@PathVariable Long accommodation_id, @PathVariable RoomTypeEnum roomTypeEnum, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkInDateTime, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkOutDateTime) throws BadRequestException ,NotFoundException {
         Long numRoomsAvailable = accommodationService.getMinAvailableRoomsOnDateRange(accommodation_id, roomTypeEnum, checkInDateTime, checkOutDateTime);
         return ResponseEntity.ok(numRoomsAvailable);
+    }
+
+    @PutMapping("/toggleSaveAccommodation/{userId}/{accommodationId}")
+    public ResponseEntity<List<Accommodation>> toggleSaveAccommodation(@PathVariable Long userId, @PathVariable Long accommodationId) throws NotFoundException {
+        List<Accommodation> list = accommodationService.toggleSaveAccommodation(userId, accommodationId);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getUserSavedAccommodation/{userId}")
+    public ResponseEntity<List<Accommodation>> getPublishedAccommodationList(@PathVariable Long userId) throws NotFoundException {
+        List<Accommodation> list = accommodationService.getUserSavedAccommodation(userId);
+        return ResponseEntity.ok(list);
+    }
+
+    @PutMapping("/updateRoom/{accommodationId}")
+    public ResponseEntity<Room> updateRoom(@PathVariable Long accommodationId , @RequestBody Room roomToUpate)
+            throws BadRequestException, IllegalArgumentException, NotFoundException {
+
+        Accommodation accommodation = accommodationService.retrieveAccommodation(accommodationId);
+        Room room =  accommodationService.updateRoom(roomToUpate);
+        return ResponseEntity.ok(room);
+    }
+
+    @GetMapping("/getNumOf0AvailableRoomsListOnDateRange/{accommodation_id}/{startDate}/{endDate}")
+    public ResponseEntity<List<AvailableRoomCountResponse>> getNumOf0AvailableRoomsListOnDateRange(@PathVariable Long accommodation_id, @PathVariable LocalDate startDate, @PathVariable LocalDate endDate) throws BadRequestException, NotFoundException {
+        List<AvailableRoomCountResponse> list = accommodationService.getNumOf0AvailableRoomsListOnDateRange(accommodation_id, startDate, endDate);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/nearbyAccommRecommendation/{locationEnum}")
+    public ResponseEntity<List<Accommodation>> nearbyAccommRecommendation(@PathVariable GenericLocationEnum locationEnum) throws NotFoundException {
+        List<Accommodation> aList = accommodationService.nearbyAccommRecommendation(locationEnum);
+        return ResponseEntity.ok(aList);
+    }
+
+    @GetMapping("/nearbyAccommRecommendationWithId/{locationEnum}/{accommId}")
+    public ResponseEntity<List<Accommodation>> nearbyAccommRecommendationWithId(@PathVariable GenericLocationEnum locationEnum, @PathVariable Long accommId) throws NotFoundException {
+        List<Accommodation> aList = accommodationService.nearbyAccommRecommendation(locationEnum,accommId);
+        return ResponseEntity.ok(aList);
     }
 }
