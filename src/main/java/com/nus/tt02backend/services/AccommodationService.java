@@ -372,7 +372,7 @@ public class AccommodationService {
         if (userOptional.isPresent() && accommodationOptional.isPresent()) {
             User user = userOptional.get();
             Accommodation accommodation = accommodationOptional.get();
-            System.out.println("Toogle " + accommodation);
+
             if (user instanceof Tourist) {
                 Tourist tourist = (Tourist) user;
                 if (tourist.getAccommodation_list() == null) tourist.setAccommodation_list(new ArrayList<>());
@@ -405,19 +405,17 @@ public class AccommodationService {
 
 
     public Long getNumOfBookingsOnDate(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime roomDateTime) throws NotFoundException, BadRequestException {
-
-        System.out.println("accommodation_id" + accommodation_id);
         Accommodation accommodation = retrieveAccommodation(accommodation_id);
-
-        System.out.println("accommodation" + accommodation);
 
         List<Booking> allBookings = bookingRepository.findAll();
         List<Booking> accommodationBookings = new ArrayList<Booking>();
 
         for (Booking b : allBookings) {
-            Accommodation accomm = retrieveAccommodationByRoom(b.getRoom().getRoom_id());
-            if (accomm.getAccommodation_id().equals(accommodation_id)) {
-                accommodationBookings.add(b);
+            if (b.getRoom() != null) {
+                Accommodation accomm = retrieveAccommodationByRoom(b.getRoom().getRoom_id());
+                if (accomm.getAccommodation_id().equals(accommodation_id)) {
+                    accommodationBookings.add(b);
+                }
             }
         }
 
@@ -442,10 +440,8 @@ public class AccommodationService {
     }
 
     public boolean isRoomAvailableOnDateRange(Long accommodation_id, RoomTypeEnum roomType, LocalDateTime checkInDateTime, LocalDateTime checkOutDateTime) throws NotFoundException, BadRequestException {
-        System.out.println("accommodation_id" + accommodation_id);
         Accommodation accommodation = retrieveAccommodation(accommodation_id);
 
-        System.out.println("accommodation" + accommodation);
         List<LocalDate> dateRange = checkInDateTime.toLocalDate().datesUntil(checkOutDateTime.toLocalDate().plusDays(1)).collect(Collectors.toList());
 
         long totalRoomCount = 0;
@@ -456,8 +452,6 @@ public class AccommodationService {
                 break;
             }
         }
-
-        System.out.println("totalRoomCount" + totalRoomCount);
 
         for (int i = 0; i < dateRange.size(); i++) {
             LocalDate date = dateRange.get(i);
