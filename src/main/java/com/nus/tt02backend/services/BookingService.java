@@ -179,22 +179,18 @@ public class BookingService {
         List<Booking> bookingList = bookingRepository.findAll();
 
         for (Booking b : bookingList) {
-            System.out.println("hello");
             b.getPayment().setBooking(null);
 
             if (b.getLocal_user() != null) {
                 Local local = b.getLocal_user();
                 local.setBooking_list(null);
+
             } else if (b.getTourist_user() != null) {
                 Tourist tourist = b.getTourist_user();
                 tourist.setBooking_list(null);
             }
 
-            System.out.println("b" + b);
-            System.out.println("b.getPayment()" + b);
-
             listToReturn.add(b);
-            System.out.println("Set to null alr" + b);
         }
 
         return listToReturn;
@@ -316,13 +312,10 @@ public class BookingService {
         List<Booking> bookingList = retrieveAllBookings();
 
         for (Booking b : bookingList) {
-            System.out.println("hey: " + b.getBooking_id());
-            System.out.println(vendor.getTelecom_list().size());
             if (!vendor.getAttraction_list().isEmpty()) {
                 // attraction
                 for (Attraction a : vendor.getAttraction_list()) {
                     if (b.getAttraction() != null && b.getAttraction().getAttraction_id() == a.getAttraction_id()) {
-                        System.out.println("aaaa");
                         Booking temp = this.setBookingStatus(b);
                         bookingRepository.save(temp);
                         bookingsToReturn.add(temp);
@@ -334,7 +327,6 @@ public class BookingService {
             if (!vendor.getTelecom_list().isEmpty()) {
                 for (Telecom t : vendor.getTelecom_list()) {
                     if (b.getTelecom() != null && b.getTelecom().getTelecom_id() == t.getTelecom_id()) {
-                        System.out.println("bbbb");
                         Booking temp = this.setBookingStatus(b);
                         bookingRepository.save(temp);
                         bookingsToReturn.add(temp);
