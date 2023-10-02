@@ -167,14 +167,6 @@ public class AccommodationService {
         currentList.add(newAccommodation);
         vendor.setAccommodation_list(currentList); // set new accommodation for the vendor
 
-        vendor.setAttraction_list(null);
-        vendor.setWithdrawal_list(null);
-        vendor.setVendor_staff_list(null);
-//        vendor.setComment_list(null);
-//        vendor.setPost_list(null);
-        vendor.setRestaurant_list(null);
-        vendor.setTelecom_list(null);
-
         vendorRepository.save(vendor);
 
         vendorStaff.setVendor(vendor);
