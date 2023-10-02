@@ -261,14 +261,6 @@ public class AttractionService {
         vendor.setAttraction_list(currentList); // set new attraction for the vendor
         System.out.println(vendor.getAttraction_list());
 
-        vendor.setAccommodation_list(null);
-        vendor.setWithdrawal_list(null);
-        vendor.setVendor_staff_list(null);
-//        vendor.setComment_list(null);
-//        vendor.setPost_list(null);
-        vendor.setRestaurant_list(null);
-        vendor.setTelecom_list(null);
-
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
 
         return newAttraction;
@@ -347,33 +339,16 @@ public class AttractionService {
 
         if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
             Local local = (Local) currentUser;
-            local.setCard_list(null);
-            local.setWithdrawal_list(null);
             local.setComment_list(null);
             local.setPost_list(null);
-            local.setBadge_list(null);
-            local.setCart_list(null);
             local.setSupport_ticket_list(null);
             local.setBooking_list(null);
-            local.setTour_type_list(null);
-            local.setAttraction_list(null);
-            local.setAccommodation_list(null);
-            local.setRestaurant_list(null);
-            local.setTelecom_list(null);
         } else {
             Tourist tourist = (Tourist) currentUser;
-            tourist.setCard_list(null);
             tourist.setComment_list(null);
             tourist.setPost_list(null);
-            tourist.setBadge_list(null);
-            tourist.setCart_list(null);
             tourist.setSupport_ticket_list(null);
             tourist.setBooking_list(null);
-            tourist.setTour_type_list(null);
-            tourist.setAttraction_list(null);
-            tourist.setAccommodation_list(null);
-            tourist.setRestaurant_list(null);
-            tourist.setTelecom_list(null);
         }
 
         return currentUser;
@@ -402,34 +377,16 @@ public class AttractionService {
 
                 if (currentUser.getUser_type() == UserTypeEnum.LOCAL) {
                     Local local = (Local) currentUser;
-                    local.setCard_list(null);
-                    local.setWithdrawal_list(null);
                     local.setComment_list(null);
                     local.setPost_list(null);
-                    local.setBadge_list(null);
-                    local.setCart_list(null);
                     local.setSupport_ticket_list(null);
                     local.setBooking_list(null);
-                    local.setTour_type_list(null);
-                    local.setAttraction_list(null);
-                    local.setAccommodation_list(null);
-                    local.setRestaurant_list(null);
-                    local.setTelecom_list(null);
-//                    local.setDeals_list(null);
                 } else {
                     Tourist tourist = (Tourist) currentUser;
-                    tourist.setCard_list(null);
                     tourist.setComment_list(null);
                     tourist.setPost_list(null);
-                    tourist.setBadge_list(null);
-                    tourist.setCart_list(null);
                     tourist.setSupport_ticket_list(null);
                     tourist.setBooking_list(null);
-                    tourist.setTour_type_list(null);
-                    tourist.setAttraction_list(null);
-                    tourist.setAccommodation_list(null);
-                    tourist.setRestaurant_list(null);
-                    tourist.setTelecom_list(null);
                 }
                 
                 return currentUser;
@@ -650,12 +607,6 @@ public class AttractionService {
                 break;
             }
         }
-
-        vendor.setAccommodation_list(null);
-        vendor.setWithdrawal_list(null);
-        vendor.setVendor_staff_list(null);
-        vendor.setRestaurant_list(null);
-        vendor.setTelecom_list(null);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
         attractionRepository.save(attraction);
