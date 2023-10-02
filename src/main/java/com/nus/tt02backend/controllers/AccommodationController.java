@@ -5,6 +5,7 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.Accommodation;
+import com.nus.tt02backend.models.enums.GenericLocationEnum;
 import com.nus.tt02backend.models.enums.RoomTypeEnum;
 import com.nus.tt02backend.services.AccommodationService;
 import com.nus.tt02backend.services.AuthenticationService;
@@ -160,5 +161,17 @@ public class AccommodationController {
     public ResponseEntity<List<AvailableRoomCountResponse>> getNumOf0AvailableRoomsListOnDateRange(@PathVariable Long accommodation_id, @PathVariable LocalDate startDate, @PathVariable LocalDate endDate) throws BadRequestException, NotFoundException {
         List<AvailableRoomCountResponse> list = accommodationService.getNumOf0AvailableRoomsListOnDateRange(accommodation_id, startDate, endDate);
         return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/nearbyAccommRecommendation/{locationEnum}")
+    public ResponseEntity<List<Accommodation>> nearbyAccommRecommendation(@PathVariable GenericLocationEnum locationEnum) throws NotFoundException {
+        List<Accommodation> aList = accommodationService.nearbyAccommRecommendation(locationEnum);
+        return ResponseEntity.ok(aList);
+    }
+
+    @GetMapping("/nearbyAccommRecommendationWithId/{locationEnum}/{accommId}")
+    public ResponseEntity<List<Accommodation>> nearbyAccommRecommendationWithId(@PathVariable GenericLocationEnum locationEnum, @PathVariable Long accommId) throws NotFoundException {
+        List<Accommodation> aList = accommodationService.nearbyAccommRecommendation(locationEnum,accommId);
+        return ResponseEntity.ok(aList);
     }
 }

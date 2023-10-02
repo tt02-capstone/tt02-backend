@@ -1,6 +1,7 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Accommodation;
 import com.nus.tt02backend.models.Attraction;
 import com.nus.tt02backend.models.Restaurant;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
@@ -29,12 +30,15 @@ public class RecommendationService {
         if (listingType == ListingTypeEnum.ATTRACTION) {
             List<Attraction> aList = attractionService.nearbyAttrRecommendation(location, typeId);
             List<Restaurant> rList = restaurantService.nearbyRestaurantRecommendation(location);
-            if (!aList.isEmpty() || !rList.isEmpty()) {
+            List<Accommodation> acList = accommodationService.nearbyAccommRecommendation(location);
+
+            if (!aList.isEmpty() || !rList.isEmpty() || !acList.isEmpty()) {
                 combinedList.addAll(aList);
                 combinedList.addAll(rList);
+                combinedList.addAll(acList);
 
                 Collections.shuffle(combinedList, new Random()); // anyhow shuffle so it wont return the same things
-                return combinedList.subList(0,3);
+                return combinedList.subList(0,2); // increase to 3 in SR3
             } else {
                 return new ArrayList<>(); // return by blank if there is nth ard
             }
@@ -42,20 +46,35 @@ public class RecommendationService {
         } else if (listingType ==  ListingTypeEnum.RESTAURANT) {
             List<Attraction> aList = attractionService.nearbyAttrRecommendation(location);
             List<Restaurant> rList = restaurantService.nearbyRestaurantRecommendation(location,typeId);
+            List<Accommodation> acList = accommodationService.nearbyAccommRecommendation(location);
 
-            if (!aList.isEmpty() || !rList.isEmpty()) {
+            if (!aList.isEmpty() || !rList.isEmpty() || !acList.isEmpty()) {
                 combinedList.addAll(aList);
                 combinedList.addAll(rList);
+                combinedList.addAll(acList);
 
                 Collections.shuffle(combinedList, new Random());
-                return combinedList.subList(0,3);
+                return combinedList.subList(0,2);
             } else {
                 return new ArrayList<>();
             }
+        } else if (listingType ==  ListingTypeEnum.ACCOMMODATION) {
+            List<Attraction> aList = attractionService.nearbyAttrRecommendation(location);
+            List<Restaurant> rList = restaurantService.nearbyRestaurantRecommendation(location);
+            List<Accommodation> acList = accommodationService.nearbyAccommRecommendation(location,typeId);
 
+            if (!aList.isEmpty() || !rList.isEmpty() || !acList.isEmpty()) {
+                combinedList.addAll(aList);
+                combinedList.addAll(rList);
+                combinedList.addAll(acList);
+
+                Collections.shuffle(combinedList, new Random());
+                return combinedList.subList(0,2);
+            } else {
+                return new ArrayList<>();
+            }
         } else {
-            // will add in accoms ltr
-            throw new NotFoundException("No recommendations to return.");
+            throw new NotFoundException("No recommendations to return after finding for recommendation");
         }
     }
 }
