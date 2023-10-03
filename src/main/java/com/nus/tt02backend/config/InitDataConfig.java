@@ -3,6 +3,7 @@ package com.nus.tt02backend.config;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
+import com.nus.tt02backend.services.AttractionService;
 import com.nus.tt02backend.services.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -14,10 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -34,6 +32,9 @@ public class InitDataConfig implements CommandLineRunner {
     private final TicketPerDayRepository ticketPerDayRepository;
     @Autowired
     PaymentService paymentService;
+
+    @Autowired
+    AttractionService attractionService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -130,11 +131,11 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
         }
-/*
+
         if (attractionRepository.count() == 0) {
             Attraction attraction = new Attraction();
-            attraction.setName("Mega Adventure - Singapore");
-            attraction.setDescription("Mega Adventure Park - Singapore is located on the picturesque Sentosa Island, host to " +
+            attraction.setName("Mega Adventure Singapore");
+            attraction.setDescription("Mega Adventure Park Singapore is located on the picturesque Sentosa Island, host to " +
                     "Singapore’s main attractions. The park operates world famous MegaZip flying fox, spanning 450m, flying at " +
                     "60 km/hour");
             attraction.setAddress("10A Siloso Bch Walk, 099008");
@@ -144,7 +145,7 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setIs_published(true);
             attraction.setSuggested_duration(4);
             attraction.setAvg_rating_tier(0.0);
-            attraction.setAttraction_category(AttractionCategoryEnum.ADVENTURE);
+            attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
             attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
             attraction.setAttraction_image_list(new ArrayList<>());
             attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
@@ -154,38 +155,40 @@ public class InitDataConfig implements CommandLineRunner {
             childPrice.setLocal_amount(new BigDecimal(30));
             childPrice.setTourist_amount(new BigDecimal(40));
             childPrice.setTicket_type(TicketEnum.CHILD);
-            //childPrice = priceRepository.save(childPrice);
 
             Price adultPrice = new Price();
             adultPrice.setLocal_amount(new BigDecimal(40));
             adultPrice.setTourist_amount(new BigDecimal(50));
             adultPrice.setTicket_type(TicketEnum.ADULT);
-            //adultPrice = priceRepository.save(adultPrice);
 
-            attraction.setPrice_list(new ArrayList<>());
-            attraction.getPrice_list().add(childPrice);
-            attraction.getPrice_list().add(adultPrice);
+            List<Price> priceList = new ArrayList<>();
+            priceList.add(childPrice);
+            priceList.add(adultPrice);
+            PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
+
+            attraction.setPrice_list(priceList);
+            attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
             TicketPerDay t1 = new TicketPerDay();
-            t1.setTicket_date(LocalDate.parse("2023-10-05"));
+            t1.setTicket_date(LocalDate.parse("2023-10-13"));
             t1.setTicket_count(5);
             t1.setTicket_type(TicketEnum.ADULT);
             t1 = ticketPerDayRepository.save(t1);
 
             TicketPerDay t2 = new TicketPerDay();
-            t2.setTicket_date(LocalDate.parse("2023-10-05"));
+            t2.setTicket_date(LocalDate.parse("2023-10-13"));
             t2.setTicket_count(5);
             t2.setTicket_type(TicketEnum.CHILD);
             t2 = ticketPerDayRepository.save(t2);
 
             TicketPerDay t3 = new TicketPerDay();
-            t3.setTicket_date(LocalDate.parse("2023-10-06"));
+            t3.setTicket_date(LocalDate.parse("2023-10-14"));
             t3.setTicket_count(5);
             t3.setTicket_type(TicketEnum.ADULT);
             t3 = ticketPerDayRepository.save(t3);
 
             TicketPerDay t4 = new TicketPerDay();
-            t4.setTicket_date(LocalDate.parse("2023-10-06"));
+            t4.setTicket_date(LocalDate.parse("2023-10-14"));
             t4.setTicket_count(5);
             t4.setTicket_type(TicketEnum.CHILD);
             t4 = ticketPerDayRepository.save(t4);
@@ -196,18 +199,22 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.getTicket_per_day_list().add(t3);
             attraction.getTicket_per_day_list().add(t4);
 
+            attraction.setListing_type(ListingTypeEnum.ATTRACTION);
+
             attraction = attractionRepository.save(attraction);
             Vendor vendor = vendorRepository.findVendorByBusinessName("Business Name");
-            vendor.setAttraction_list(new ArrayList<>());
-            vendor.getAttraction_list().add(attraction);
+
+            List<Attraction> currentList = new ArrayList<>();
+            currentList.add(attraction);
+            vendor.setAttraction_list(currentList);
             vendorRepository.save(vendor);
 
-            createSecondAttraction();
+            createSecondAttraction(currentList);
         }
-*/
+
     }
 
-    public void createSecondAttraction() {
+    public void createSecondAttraction(List<Attraction> currentList) {
         Attraction attraction = new Attraction();
         attraction.setName("Universal Studios Singapore");
         attraction.setDescription("Universal Studios Singapore is a theme park located within the Resorts World Sentosa " +
@@ -220,7 +227,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setIs_published(true);
         attraction.setSuggested_duration(5);
         attraction.setAvg_rating_tier(0.0);
-        attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
+        attraction.setAttraction_category(AttractionCategoryEnum.ADVENTURE);
         attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
         attraction.setAttraction_image_list(new ArrayList<>());
         attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/uss1.jpeg");
@@ -236,30 +243,34 @@ public class InitDataConfig implements CommandLineRunner {
         adultPrice.setTourist_amount(new BigDecimal(50));
         adultPrice.setTicket_type(TicketEnum.ADULT);
 
-        attraction.setPrice_list(new ArrayList<>());
-        attraction.getPrice_list().add(childPrice);
-        attraction.getPrice_list().add(adultPrice);
+        List<Price> priceList = new ArrayList<>();
+        priceList.add(childPrice);
+        priceList.add(adultPrice);
+        PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
+
+        attraction.setPrice_list(priceList);
+        attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
         TicketPerDay t1 = new TicketPerDay();
-        t1.setTicket_date(LocalDate.parse("2023-10-05"));
+        t1.setTicket_date(LocalDate.parse("2023-10-13"));
         t1.setTicket_count(5);
         t1.setTicket_type(TicketEnum.ADULT);
         t1 = ticketPerDayRepository.save(t1);
 
         TicketPerDay t2 = new TicketPerDay();
-        t2.setTicket_date(LocalDate.parse("2023-10-05"));
+        t2.setTicket_date(LocalDate.parse("2023-10-13"));
         t2.setTicket_count(5);
         t2.setTicket_type(TicketEnum.CHILD);
         t2 = ticketPerDayRepository.save(t2);
 
         TicketPerDay t3 = new TicketPerDay();
-        t3.setTicket_date(LocalDate.parse("2023-10-06"));
+        t3.setTicket_date(LocalDate.parse("2023-10-14"));
         t3.setTicket_count(5);
         t3.setTicket_type(TicketEnum.ADULT);
         t3 = ticketPerDayRepository.save(t3);
 
         TicketPerDay t4 = new TicketPerDay();
-        t4.setTicket_date(LocalDate.parse("2023-10-06"));
+        t4.setTicket_date(LocalDate.parse("2023-10-14"));
         t4.setTicket_count(5);
         t4.setTicket_type(TicketEnum.CHILD);
         t4 = ticketPerDayRepository.save(t4);
@@ -270,10 +281,12 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.getTicket_per_day_list().add(t3);
         attraction.getTicket_per_day_list().add(t4);
 
+        attraction.setListing_type(ListingTypeEnum.ATTRACTION);
+
         attractionRepository.save(attraction);
         Vendor vendor = vendorRepository.findVendorByBusinessName("Business Name");
-        vendor.setAttraction_list(new ArrayList<>());
-        vendor.getAttraction_list().add(attraction);
+        currentList.add(attraction); // add on to the previous list
+        vendor.setAttraction_list(currentList);
         vendorRepository.save(vendor);
     }
 }
