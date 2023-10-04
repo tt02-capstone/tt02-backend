@@ -306,7 +306,7 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         if (paymentRepository.count() == 0) {
-            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", "insert pamyent id here");
+//            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", "insert pamyent id here");
         }
     }
 
