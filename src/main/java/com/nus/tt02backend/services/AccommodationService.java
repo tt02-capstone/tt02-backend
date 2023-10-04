@@ -422,13 +422,19 @@ public class AccommodationService {
         long bookedRoomsOnThatDate = 0;
 
         for (Booking b : accommodationBookings) {
+            System.out.println("New Booking, Room Type:" + b.getRoom().getRoom_type());
             if (b.getRoom().getRoom_type().equals(roomType)) {
                 LocalDateTime checkInDateTime = b.getStart_datetime();
                 LocalDateTime checkOutDateTime = b.getEnd_datetime();
 
                 if (!roomDateTime.isBefore(checkInDateTime) && !roomDateTime.isAfter(checkOutDateTime)) {
                     System.out.println("roomDateTime is within the date range.");
-                    bookedRoomsOnThatDate++;
+                    List<BookingItem> bookingItemList = b.getBooking_item_list();
+                    long quantity = 0;
+                    for (BookingItem bItem : bookingItemList) {
+                        quantity = quantity + bItem.getQuantity();
+                    }
+                    bookedRoomsOnThatDate = bookedRoomsOnThatDate + quantity;
                 } else {
                     System.out.println("roomDateTime is outside the date range.");
                 }
