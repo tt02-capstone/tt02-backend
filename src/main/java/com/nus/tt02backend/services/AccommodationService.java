@@ -519,13 +519,21 @@ public class AccommodationService {
         Accommodation accommodation = retrieveAccommodation(id);
         List<LocalDate> dateRange = start.datesUntil(end.plusDays(1)).collect(Collectors.toList());
 
+        List<RoomTypeEnum> createdRoomTypes = new ArrayList<>();
+
+        for (Room r : accommodation.getRoom_list()) {
+            if (!createdRoomTypes.contains(r.getRoom_type())) {
+                createdRoomTypes.add(r.getRoom_type());
+            }
+        }
+
         List<AvailableRoomCountResponse> list = new ArrayList<>();
 
         for (int i = 0; i < dateRange.size(); i++) {
             LocalDate date = dateRange.get(i);
-            LocalDateTime roomDateTime = date.atStartOfDay();
+            LocalDateTime roomDateTime = date.atTime(20, 0,0); // need to change if checkin and checkout time change
 
-            for (RoomTypeEnum r : RoomTypeEnum.values()) {
+            for (RoomTypeEnum r : createdRoomTypes) {
                 Long bookedRoomsOnThatDate = getNumOfBookingsOnDate(id, r, roomDateTime);
                 int count = (int) (getTotalRoomCountForType(accommodation, r) - bookedRoomsOnThatDate);
                 list.add(new AvailableRoomCountResponse(accommodation.getName(), date, r, count));

@@ -12,9 +12,10 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.*;
 
 @Component
@@ -30,6 +31,10 @@ public class InitDataConfig implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final AttractionRepository attractionRepository;
     private final TicketPerDayRepository ticketPerDayRepository;
+    private final AccommodationRepository accommodationRepository;
+    private final RoomRepository roomRepository;
+    private final PaymentRepository paymentRepository;
+
     @Autowired
     PaymentService paymentService;
 
@@ -98,25 +103,25 @@ public class InitDataConfig implements CommandLineRunner {
             touristRepository.save(tourist);
         }
 
+        Vendor vendor1 = new Vendor();
         if (vendorRepository.count() == 0) {
-            Vendor vendor = new Vendor();
-            vendor.setBusiness_name("Business Name");
-            vendor.setPoc_name("Ha Joon");
-            vendor.setPoc_position("Manager");
-            vendor.setCountry_code("+65");
-            vendor.setPoc_mobile_num("96969696");
-            vendor.setWallet_balance(new BigDecimal(0));
-            vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
-            vendor.setVendor_type(VendorEnum.ATTRACTION);
-            vendor.setService_description("애정수를 믿으세요?");
+            vendor1.setBusiness_name("Business Name");
+            vendor1.setPoc_name("Ha Joon");
+            vendor1.setPoc_position("Manager");
+            vendor1.setCountry_code("+65");
+            vendor1.setPoc_mobile_num("96969696");
+            vendor1.setWallet_balance(new BigDecimal(0));
+            vendor1.setApplication_status(ApplicationStatusEnum.APPROVED);
+            vendor1.setVendor_type(VendorEnum.ATTRACTION);
+            vendor1.setService_description("애정수를 믿으세요?");
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "vendor@gmail.com");
             customer_parameters.put("name", "Business Name");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
-            vendor.setStripe_account_id(stripe_account_id);
+            vendor1.setStripe_account_id(stripe_account_id);
 
-            vendorRepository.save(vendor);
+            vendor1 = vendorRepository.save(vendor1);
 
             VendorStaff vendorStaff = new VendorStaff();
             vendorStaff.setEmail("vendor@gmail.com");
@@ -127,7 +132,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setIs_blocked(false);
             vendorStaff.setPosition("Manager");
             vendorStaff.setIs_master_account(true);
-            vendorStaff.setVendor(vendor);
+            vendorStaff.setVendor(vendor1);
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
         }
@@ -202,16 +207,107 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
             attraction = attractionRepository.save(attraction);
-            Vendor vendor = vendorRepository.findVendorByBusinessName("Business Name");
 
             List<Attraction> currentList = new ArrayList<>();
             currentList.add(attraction);
-            vendor.setAttraction_list(currentList);
-            vendorRepository.save(vendor);
+            vendor1.setAttraction_list(currentList);
+            vendorRepository.save(vendor1);
 
             createSecondAttraction(currentList);
         }
 
+        if (accommodationRepository.count() == 0) {
+            Accommodation a1 = new Accommodation();
+            a1.setName("Resorts World Sentosa");
+            List<String> list = new ArrayList<>();
+            list.add("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/rwshotel1.jpeg");
+            list.add("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/rwshotel2.jpeg");
+            a1.setAccommodation_image_list(list);
+            a1.setDescription("Singapore's best place! World-class attractions Universal Studios Singapore, S.E.A. Aquarium, Adventure Cove Waterpark; 6 unique hotels, finest dining.");
+            a1.setAddress("8 Sentosa Gateway, 098269");
+            a1.setContact_num("6363 1212");
+            a1.setCheck_in_time(LocalDateTime.parse("2023-10-13T16:00:00"));
+            a1.setCheck_out_time(LocalDateTime.parse("2023-10-13T12:00:00"));
+            a1.setType(AccommodationTypeEnum.HOTEL);
+            a1.setGeneric_location(GenericLocationEnum.SENTOSA);
+            a1.setIs_published(true);
+            a1.setEstimated_price_tier(PriceTierEnum.TIER_5);
+            accommodationRepository.save(a1);
+
+            Accommodation a2 = new Accommodation();
+            a2.setName("Mangrove Sentosa");
+            List<String> list2 = new ArrayList<>();
+            list2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/airbnb.jpeg");
+            list2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/airbnb2.jpeg");
+            a2.setAccommodation_image_list(list2);
+            a2.setDescription("Mangrove Sentosa is a 15-story building with 177 separate units and Stay rooms for short-term usage. The first story consists of a welcome lounge, the community desk and a cafe. The two basement stories are filled with an assortment of communal spaces.");
+            a2.setAddress("20 Sentosa Ave, Singapore 453532");
+            a2.setContact_num("6123 4567");
+            a2.setCheck_in_time(LocalDateTime.parse("2023-10-13T16:00:00"));
+            a2.setCheck_out_time(LocalDateTime.parse("2023-10-13T13:00:00"));
+            a2.setType(AccommodationTypeEnum.AIRBNB);
+            a2.setGeneric_location(GenericLocationEnum.SENTOSA);
+            a2.setIs_published(true);
+            a2.setEstimated_price_tier(PriceTierEnum.TIER_1);
+            accommodationRepository.save(a2);
+
+            if (vendor1.getAccommodation_list() == null) vendor1.setAccommodation_list(new ArrayList<>());
+            vendor1.getAccommodation_list().add(a1);
+            vendor1.getAccommodation_list().add(a2);
+            vendorRepository.save(vendor1);
+
+            Room r1 = new Room();
+            r1.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/rwsroom1.png");
+            r1.setAmenities_description("A two-storey townhouse offering a land view from an outdoor patio and jacuzzi above and an underwater view of 40,000 fishes below.");
+            r1.setNum_of_pax(3);
+            r1.setPrice(new BigDecimal(800));
+            r1.setQuantity(2);
+            r1.setRoom_type(RoomTypeEnum.DELUXE_SUITE);
+            roomRepository.save(r1);
+
+            Room r2 = new Room();
+            r2.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/rwsroom2.png");
+            r2.setAmenities_description("These deluxe rooms extend to the outdoors leaving you immediately at one with nature. View the rainforest canopy from your bed or over breakfast on the balcony. At the end of the day slip between crisp Egyptian cotton sheets for the ultimate good night’s sleep.");
+            r2.setNum_of_pax(2);
+            r2.setPrice(new BigDecimal(250));
+            r2.setQuantity(2);
+            r2.setRoom_type(RoomTypeEnum.STANDARD);
+            roomRepository.save(r2);
+
+            Room r3 = new Room();
+            r3.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/airbnbroom1.jpeg");
+            r3.setAmenities_description("Single bed, Private bath, Cleaning once a week");
+            r3.setNum_of_pax(1);
+            r3.setPrice(new BigDecimal(70));
+            r3.setQuantity(10);
+            r3.setRoom_type(RoomTypeEnum.STANDARD);
+            roomRepository.save(r3);
+
+            Room r4 = new Room();
+            r4.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/airbnbroom2.jpeg");
+            r4.setAmenities_description("Bunk bed, Private bath, Cleaning once a week!");
+            r4.setNum_of_pax(2);
+            r4.setPrice(new BigDecimal(50));
+            r4.setQuantity(10);
+            r4.setRoom_type(RoomTypeEnum.DOUBLE);
+            roomRepository.save(r4);
+
+            List<Room> roomList1 = new ArrayList<>();
+            roomList1.add(r1);
+            roomList1.add(r2);
+            a1.setRoom_list(roomList1);
+            accommodationRepository.save(a1);
+
+            List<Room> roomList2 = new ArrayList<>();
+            roomList2.add(r3);
+            roomList2.add(r4);
+            a2.setRoom_list(roomList2);
+            accommodationRepository.save(a2);
+        }
+
+        if (paymentRepository.count() == 0) {
+            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", "insert pamyent id here");
+        }
     }
 
     public void createSecondAttraction(List<Attraction> currentList) {
@@ -284,7 +380,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
         attractionRepository.save(attraction);
-        Vendor vendor = vendorRepository.findVendorByBusinessName("Business Name");
+        Vendor vendor = vendorRepository.findById(1L).get();
         currentList.add(attraction); // add on to the previous list
         vendor.setAttraction_list(currentList);
         vendorRepository.save(vendor);

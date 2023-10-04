@@ -5,6 +5,7 @@ import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BookingStatusEnum;
 import com.nus.tt02backend.models.enums.BookingTypeEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -677,20 +678,25 @@ public class CartService {
     }
 
 
-    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id,
-                               Float totalPrice, List<Long> booking_ids)
+    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id, Float totalPrice, List<Long> booking_ids, List<BigDecimal> priceList)
             throws StripeException, BadRequestException {
 
         // Should fetch via User if possible
         List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
-        BigDecimal totalAmountPayable = BigDecimal.valueOf(totalPrice).setScale(2, RoundingMode.HALF_UP);
+
+        Map<CartBooking, BigDecimal> map = new HashMap<>();
+        for (int i = 0; i < bookingsToCheckout.size(); i++) {
+            map.put(bookingsToCheckout.get(i), priceList.get(i));
+        }
 
         List<Long> createdBookingIds = new ArrayList<>();
         List<Booking> createdBookings = new ArrayList<>();
         if (user_type.equals("LOCAL")) {
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
+                BigDecimal totalAmountPayable = map.get(bookingToCheckout).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
+                createdBooking.setBooked_user(UserTypeEnum.LOCAL);
                 createdBookings.add(createdBooking);
                 createdBookingIds.add(createdBooking.getBooking_id());
             }
@@ -698,7 +704,9 @@ public class CartService {
         } else if (user_type.equals("TOURIST")) {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
+                BigDecimal totalAmountPayable = map.get(bookingToCheckout).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
+                createdBooking.setBooked_user(UserTypeEnum.TOURIST);
                 createdBookings.add(createdBooking);
                 createdBookingIds.add(createdBooking.getBooking_id());
             }

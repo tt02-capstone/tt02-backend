@@ -1,6 +1,7 @@
 package com.nus.tt02backend.controllers;
 
 
+import com.nus.tt02backend.dto.CheckoutRequest;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Booking;
@@ -8,6 +9,7 @@ import com.nus.tt02backend.models.CartBooking;
 import com.nus.tt02backend.models.CartItem;
 import com.nus.tt02backend.services.CartService;
 import com.stripe.exception.StripeException;
+import org.hibernate.annotations.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -84,9 +86,9 @@ public class CartController {
                                                @PathVariable String tourist_email,
                                                @PathVariable String payment_method_id,
                                                @PathVariable Float totalPrice,
-                                               @RequestBody List<Long> booking_ids) throws StripeException, BadRequestException {
+                                               @RequestBody CheckoutRequest checkoutRequest) throws StripeException, BadRequestException {
 
-        List<Long> createdBookingIds =  cartService.checkout(user_type,tourist_email, payment_method_id, totalPrice,booking_ids);
+        List<Long> createdBookingIds =  cartService.checkout(user_type,tourist_email, payment_method_id, totalPrice, checkoutRequest.getBooking_ids(), checkoutRequest.getPriceList());
         return ResponseEntity.ok(createdBookingIds);
     }
 }

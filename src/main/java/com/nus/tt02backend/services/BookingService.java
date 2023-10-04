@@ -309,7 +309,7 @@ public class BookingService {
         Vendor vendor = vendorStaff.getVendor();
 
         List<Booking> bookingsToReturn = new ArrayList<Booking>();
-        List<Booking> bookingList = retrieveAllBookings();
+        List<Booking> bookingList = bookingRepository.findAll();
 
         for (Booking b : bookingList) {
             if (!vendor.getAttraction_list().isEmpty()) {
