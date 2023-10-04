@@ -258,7 +258,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             Room r1 = new Room();
             r1.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/rwsroom1.png");
-            r1.setAmenities_description("A two-storey townhouse offering a land view from an outdoor patio and jacuzzi above and an underwater view of 40,000 fishes below.");
+            r1.setAmenities_description("A two-storey townhouse offering a land view from an outdoor patio and an underwater view of 40,000 fishes below.");
             r1.setNum_of_pax(3);
             r1.setPrice(new BigDecimal(800));
             r1.setQuantity(2);
@@ -267,7 +267,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             Room r2 = new Room();
             r2.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/rwsroom2.png");
-            r2.setAmenities_description("These deluxe rooms extend to the outdoors leaving you immediately at one with nature. View the rainforest canopy from your bed or over breakfast on the balcony. At the end of the day slip between crisp Egyptian cotton sheets for the ultimate good night’s sleep.");
+            r2.setAmenities_description("These deluxe rooms extend to the outdoors leaving you immediately at one with nature.");
             r2.setNum_of_pax(2);
             r2.setPrice(new BigDecimal(250));
             r2.setQuantity(2);
