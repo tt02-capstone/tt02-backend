@@ -208,7 +208,8 @@ public class TourService {
         Tour tour = tourOptional.get();
         TourType tourType = tourTypeRepository.getTourTypeTiedToTour(tour.getTour_id());
         for (Tour existingTour : tourType.getTour_list()) {
-            if (existingTour.getDate().toLocalDate().equals(tourToUpdate.getDate().toLocalDate())
+            if (existingTour.getTour_id().longValue() != tour.getTour_id().longValue()
+                    && existingTour.getDate().toLocalDate().equals(tourToUpdate.getDate().toLocalDate())
                     && (existingTour.getStart_time().isBefore(tourToUpdate.getStart_time())
                     && existingTour.getEnd_time().isAfter(tourToUpdate.getStart_time())
                     || (existingTour.getStart_time().isBefore(tourToUpdate.getEnd_time())
