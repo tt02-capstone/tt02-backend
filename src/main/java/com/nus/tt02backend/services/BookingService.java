@@ -217,8 +217,18 @@ public class BookingService {
                         long[] voucherCodes = generateVoucherCodes(booking.getBooking_id(), bookingItem.getQuantity());
                         for (int i = 0; i < voucherCodes.length; i++) {
                             QrCode qrCode = new QrCode();
-                            qrCode.setVoucher_code(Long.toString(voucherCodes[i]));
-                            qrCode.setQr_code_link(generateAndUploadQRCode(Long.toString(voucherCodes[i])));
+
+                            String voucherCode = Long.toString(voucherCodes[i]);
+                            if (booking.getType().equals(BookingTypeEnum.ATTRACTION)) {
+                                voucherCode += "AT";
+                            } else if (booking.getType().equals(BookingTypeEnum.TOUR)) {
+                                voucherCode += "TR";
+                            } else if (booking.getType().equals(BookingTypeEnum.ACCOMMODATION)) {
+                                voucherCode += "AC";
+                            }
+
+                            qrCode.setVoucher_code(voucherCode);
+                            qrCode.setQr_code_link(generateAndUploadQRCode(voucherCode));
                             qrCodeRepository.save(qrCode);
                             booking.getQr_code_list().add(qrCode);
                         }
