@@ -5,6 +5,7 @@ import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import com.nus.tt02backend.services.AttractionService;
 import com.nus.tt02backend.services.PaymentService;
+import com.stripe.model.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -306,7 +307,17 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         if (paymentRepository.count() == 0) {
-//            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", "insert pamyent id here");
+            Map<String, Object> card = new HashMap<>();
+            card.put("number", "4242424242424242");
+            card.put("exp_month", 10);
+            card.put("exp_year", 2025);
+            card.put("cvc", "314");
+            Map<String, Object> params = new HashMap<>();
+            params.put("card", card);
+
+            Token token = Token.create(params);
+
+            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", token.getCard().getId());
         }
     }
 
