@@ -37,6 +37,8 @@ public class InitDataConfig implements CommandLineRunner {
     private final AccommodationRepository accommodationRepository;
     private final RoomRepository roomRepository;
     private final PaymentRepository paymentRepository;
+    private final RestaurantRepository restaurantRepository;
+    private final DishRepository dishRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -82,6 +84,18 @@ public class InitDataConfig implements CommandLineRunner {
             local.setStripe_account_id(stripe_account_id);
 
             localRepository.save(local);
+
+            // init the ccd card here for the local account
+            Map<String, Object> card = new HashMap<>();
+            card.put("token", "tok_visa");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("type", "card");
+            params.put("card", card);
+
+            PaymentMethod paymentMethod = PaymentMethod.create(params);
+
+            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", paymentMethod.getId());
         }
 
         if (touristRepository.count() == 0) {
@@ -219,6 +233,79 @@ public class InitDataConfig implements CommandLineRunner {
             createSecondAttraction(currentList);
         }
 
+        if (restaurantRepository.count() == 0) {
+            Restaurant r1 = new Restaurant();
+            r1.setName("The Kitchen Table");
+            r1.setDescription("The Kitchen Table brings to life a culmination of culinary finesse. Step through our doors and satisfy your appetite anytime of the day! ");
+            r1.setAddress("21 Ocean Way Sentosa, 098374");
+            r1.setOpening_hours("6.30am - 10pm");
+            r1.setContact_num("68087777");
+            r1.setIs_published(true);
+            r1.setSuggested_duration(3);
+            r1.setRestaurant_type(RestaurantEnum.WESTERN);
+            r1.setGeneric_location(GenericLocationEnum.SENTOSA);
+            r1.setEstimated_price_tier(PriceTierEnum.TIER_5);
+            List<String> imgList = new ArrayList<>();
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen1.jpeg");
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen2.jpeg");
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen3.jpeg");
+            r1.setRestaurant_image_list(imgList);
+
+            Dish d1 = new Dish();
+            d1.setName("BBQ Chicken Pizza");
+            d1.setSpicy(false);
+            d1.setIs_signature(false);
+            d1.setDish_type(DishTypeEnum.MAINS);
+            d1.setPrice(new BigDecimal(30));
+            d1 = dishRepository.save(d1);
+
+            Dish d2 = new Dish();
+            d2.setName("Singapore Chili Lobster");
+            d2.setSpicy(true);
+            d2.setIs_signature(true);
+            d2.setDish_type(DishTypeEnum.MAINS);
+            d2.setPrice(new BigDecimal(80));
+            d2 = dishRepository.save(d2);
+
+            Dish d3 = new Dish();
+            d3.setName("Vegan Mediterranean Bowl");
+            d3.setSpicy(false);
+            d3.setIs_signature(false);
+            d3.setDish_type(DishTypeEnum.SIDES);
+            d3.setPrice(new BigDecimal(20));
+            d3 = dishRepository.save(d3);
+
+            Dish d4 = new Dish();
+            d4.setName("Ibérico Pork Jowl");
+            d4.setSpicy(false);
+            d4.setIs_signature(true);
+            d4.setDish_type(DishTypeEnum.MAINS);
+            d4.setPrice(new BigDecimal(35));
+            d4 = dishRepository.save(d4);
+
+            Dish d5 = new Dish();
+            d5.setName("Vanilla Milk Shake");
+            d5.setSpicy(false);
+            d5.setIs_signature(true);
+            d5.setDish_type(DishTypeEnum.DESSERT);
+            d5.setPrice(new BigDecimal(15));
+            d5 = dishRepository.save(d5);
+
+            r1.setDish_list(new ArrayList<>());
+            r1.getDish_list().add(d1);
+            r1.getDish_list().add(d2);
+            r1.getDish_list().add(d3);
+            r1.getDish_list().add(d4);
+            r1.getDish_list().add(d5);
+
+            r1 = restaurantRepository.save(r1);
+            List<Restaurant> rList = new ArrayList<>();
+            rList.add(r1);
+            vendor1.setRestaurant_list(rList);
+            vendorRepository.save(vendor1);
+            secondRestaurant(rList);
+        }
+
         if (accommodationRepository.count() == 0) {
             Accommodation a1 = new Accommodation();
             a1.setName("Resorts World Sentosa");
@@ -308,20 +395,135 @@ public class InitDataConfig implements CommandLineRunner {
             accommodationRepository.save(a2);
         }
 
-        if (paymentRepository.count() == 0) {
+//        if (paymentRepository.count() == 0) {
+//            Map<String, Object> card = new HashMap<>();
+//            card.put("token", "tok_visa");
+//
+//            Map<String, Object> params = new HashMap<>();
+//            params.put("type", "card");
+//            params.put("card", card);
+//
+//            PaymentMethod paymentMethod = PaymentMethod.create(params);
+//
+//            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", paymentMethod.getId());
+//        }
+    }
 
+    public void secondRestaurant(List<Restaurant> rList) {
+        Restaurant r1 = new Restaurant();
+        r1.setName("8 Noodles");
+        r1.setDescription("Casual and authentic eatery at Shangri-La Rasa Sentosa that serves Asian noodles and more!");
+        r1.setAddress("101 Siloso Road, 098970");
+        r1.setOpening_hours("11am - 11pm");
+        r1.setContact_num("63711900");
+        r1.setIs_published(true);
+        r1.setSuggested_duration(3);
+        r1.setRestaurant_type(RestaurantEnum.CHINESE);
+        r1.setGeneric_location(GenericLocationEnum.SENTOSA);
+        r1.setEstimated_price_tier(PriceTierEnum.TIER_3);
+        List<String> imgList = new ArrayList<>();
+        imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/chinese1.jpeg");
+        imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/chinese2.jpeg");
+        imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/chinese3.jpeg");
+        r1.setRestaurant_image_list(imgList);
 
-            Map<String, Object> card = new HashMap<>();
-            card.put("token", "tok_visa");
+        Dish d1 = new Dish();
+        d1.setName("Yang Zhou Fried Rice");
+        d1.setSpicy(false);
+        d1.setIs_signature(true);
+        d1.setDish_type(DishTypeEnum.MAINS);
+        d1.setPrice(new BigDecimal(18));
+        d1 = dishRepository.save(d1);
 
-            Map<String, Object> params = new HashMap<>();
-            params.put("type", "card");
-            params.put("card", card);
+        Dish d2 = new Dish();
+        d2.setName("Crab Meat Rice");
+        d2.setSpicy(false);
+        d2.setIs_signature(false);
+        d2.setDish_type(DishTypeEnum.MAINS);
+        d2.setPrice(new BigDecimal(21));
+        d2 = dishRepository.save(d2);
 
-            PaymentMethod paymentMethod = PaymentMethod.create(params);
+        Dish d3 = new Dish();
+        d3.setName("Szechuan Prawn");
+        d3.setSpicy(true);
+        d3.setIs_signature(true);
+        d3.setDish_type(DishTypeEnum.MAINS);
+        d3.setPrice(new BigDecimal(29));
+        d3 = dishRepository.save(d3);
 
-            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", paymentMethod.getId());
-        }
+        Dish d4 = new Dish();
+        d4.setName("Singapore Nonya Laksa");
+        d4.setSpicy(true);
+        d4.setIs_signature(true);
+        d4.setDish_type(DishTypeEnum.MAINS);
+        d4.setPrice(new BigDecimal(20));
+        d4 = dishRepository.save(d4);
+
+        Dish d5 = new Dish();
+        d5.setName("Poached Baby Bok Choy");
+        d5.setSpicy(false);
+        d5.setIs_signature(false);
+        d5.setDish_type(DishTypeEnum.SIDES);
+        d5.setPrice(new BigDecimal(11));
+        d5 = dishRepository.save(d5);
+
+        Dish d6 = new Dish();
+        d6.setName("Homemade Wanton Noodles");
+        d6.setSpicy(false);
+        d6.setIs_signature(true);
+        d6.setDish_type(DishTypeEnum.MAINS);
+        d6.setPrice(new BigDecimal(21));
+        d6 = dishRepository.save(d6);
+
+        Dish d7 = new Dish();
+        d7.setName("Beef, Chicken or Lamb Satay");
+        d7.setSpicy(false);
+        d7.setIs_signature(true);
+        d7.setDish_type(DishTypeEnum.SIDES);
+        d7.setPrice(new BigDecimal(20));
+        d7 = dishRepository.save(d7);
+
+        Dish d8 = new Dish();
+        d8.setName("Thai Coconut");
+        d8.setSpicy(false);
+        d8.setIs_signature(false);
+        d8.setDish_type(DishTypeEnum.BEVERAGE);
+        d8.setPrice(new BigDecimal(8));
+        d8 = dishRepository.save(d8);
+
+        Dish d9 = new Dish();
+        d9.setName("Barley Water");
+        d9.setSpicy(false);
+        d9.setIs_signature(false);
+        d9.setDish_type(DishTypeEnum.BEVERAGE);
+        d9.setPrice(new BigDecimal(4));
+        d9 = dishRepository.save(d9);
+
+        Dish d10 = new Dish();
+        d10.setName("Seafood Hor Fun");
+        d10.setSpicy(false);
+        d10.setIs_signature(true);
+        d10.setDish_type(DishTypeEnum.MAINS);
+        d10.setPrice(new BigDecimal(20));
+        d10 = dishRepository.save(d10);
+
+        r1.setDish_list(new ArrayList<>());
+        r1.getDish_list().add(d1);
+        r1.getDish_list().add(d2);
+        r1.getDish_list().add(d3);
+        r1.getDish_list().add(d4);
+        r1.getDish_list().add(d5);
+        r1.getDish_list().add(d6);
+        r1.getDish_list().add(d7);
+        r1.getDish_list().add(d8);
+        r1.getDish_list().add(d9);
+        r1.getDish_list().add(d10);
+
+        restaurantRepository.save(r1);
+        Vendor vendor = vendorRepository.findById(1L).get();
+        rList.add(r1);
+        vendor.setRestaurant_list(rList);
+        vendorRepository.save(vendor);
     }
 
     public void createSecondAttraction(List<Attraction> currentList) {
