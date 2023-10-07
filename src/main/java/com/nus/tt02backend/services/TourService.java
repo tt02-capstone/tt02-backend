@@ -86,6 +86,12 @@ public class TourService {
         }
 
         TourType tourType = tourTypeOptional.get();
+
+        Boolean differentDuration = false;
+        if (!tourType.getEstimated_duration().equals(tourTypeToUpdate.getEstimated_duration())) {
+            differentDuration = true;
+        }
+
         tourType.setPrice(tourTypeToUpdate.getPrice());
         tourType.setName(tourTypeToUpdate.getName());
         tourType.setDescription(tourTypeToUpdate.getDescription());
@@ -108,6 +114,13 @@ public class TourService {
         Attraction newAttraction = newAttractionOptional.get();
         newAttraction.getTour_type_list().add(tourType);
         attractionRepository.save(newAttraction);
+
+        if (differentDuration && !tourType.getTour_list().isEmpty()) {
+            for (Tour tour : tourType.getTour_list()) {
+                tour.setEnd_time(tour.getStart_time().plusHours(tourTypeToUpdate.getEstimated_duration()));
+                tourRepository.save(tour);
+            }
+        }
 
         return tourType;
     }

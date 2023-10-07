@@ -61,7 +61,7 @@ public class TourController {
     }
 
     @DeleteMapping("/deleteTourType/{tourTypeIdToDelete}")
-    public ResponseEntity<String> updateTourType(@PathVariable Long tourTypeIdToDelete) throws BadRequestException {
+    public ResponseEntity<String> deleteTourType(@PathVariable Long tourTypeIdToDelete) throws BadRequestException {
         String responseMessage = tourService.deleteTourType(tourTypeIdToDelete);
         return ResponseEntity.ok(responseMessage);
     }
