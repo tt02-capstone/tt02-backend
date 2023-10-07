@@ -5,6 +5,7 @@ import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -78,6 +79,7 @@ public class TourService {
         return tourTypeOptional.get();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public TourType updateTourType(Long attractionId, TourType tourTypeToUpdate) throws BadRequestException {
         Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeToUpdate.getTour_type_id());
 
@@ -119,6 +121,24 @@ public class TourService {
             for (Tour tour : tourType.getTour_list()) {
                 tour.setEnd_time(tour.getStart_time().plusHours(tourTypeToUpdate.getEstimated_duration()));
                 tourRepository.save(tour);
+            }
+        }
+
+        if (differentDuration && !tourType.getTour_list().isEmpty()) {
+            for (Tour firstTour : tourType.getTour_list()) {
+                for (Tour tourToCheck : tourType.getTour_list()) {
+                    if (tourToCheck.getTour_id().longValue() != firstTour.getTour_id().longValue()
+                            && tourToCheck.getDate().toLocalDate().equals(firstTour.getDate().toLocalDate())
+                            && (tourToCheck.getStart_time().isBefore(firstTour.getStart_time())
+                            && tourToCheck.getEnd_time().isAfter(firstTour.getStart_time())
+                            || (tourToCheck.getStart_time().isBefore(firstTour.getEnd_time())
+                            && tourToCheck.getEnd_time().isAfter(firstTour.getEnd_time())
+                            || (tourToCheck.getStart_time().isAfter(firstTour.getStart_time())
+                            && tourToCheck.getEnd_time().isBefore(firstTour.getEnd_time())))
+                    )) {
+                        throw new BadRequestException("Unable to update duration due to clashes in tour timings!");
+                    }
+                }
             }
         }
 
