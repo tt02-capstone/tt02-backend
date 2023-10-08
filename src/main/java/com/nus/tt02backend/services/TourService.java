@@ -134,8 +134,9 @@ public class TourService {
                             || (tourToCheck.getStart_time().isBefore(firstTour.getEnd_time())
                             && tourToCheck.getEnd_time().isAfter(firstTour.getEnd_time())
                             || (tourToCheck.getStart_time().isAfter(firstTour.getStart_time())
-                            && tourToCheck.getEnd_time().isBefore(firstTour.getEnd_time())))
-                    )) {
+                            && tourToCheck.getEnd_time().isBefore(firstTour.getEnd_time()))
+                            || tourToCheck.getStart_time().isEqual(firstTour.getStart_time())
+                    ))) {
                         throw new BadRequestException("Unable to update duration due to clashes in tour timings!");
                     }
                 }
@@ -198,8 +199,9 @@ public class TourService {
                     || (existingTour.getStart_time().isBefore(tourToCreate.getEnd_time())
                     && existingTour.getEnd_time().isAfter(tourToCreate.getEnd_time())
                     || (existingTour.getStart_time().isAfter(tourToCreate.getStart_time())
-                    && existingTour.getEnd_time().isBefore(tourToCreate.getEnd_time())))
-            )) {
+                    && existingTour.getEnd_time().isBefore(tourToCreate.getEnd_time()))
+                    || existingTour.getStart_time().isEqual(tourToCreate.getStart_time())
+            ))) {
                 throw new BadRequestException("There is an existing tour that clashes with the timeslot!");
             }
         }
@@ -248,8 +250,9 @@ public class TourService {
                     || (existingTour.getStart_time().isBefore(tourToUpdate.getEnd_time())
                     && existingTour.getEnd_time().isAfter(tourToUpdate.getEnd_time())
                     || (existingTour.getStart_time().isAfter(tourToUpdate.getStart_time())
-                    && existingTour.getEnd_time().isBefore(tourToUpdate.getEnd_time())))
-            )) {
+                    && existingTour.getEnd_time().isBefore(tourToUpdate.getEnd_time()))
+                    || existingTour.getStart_time().isEqual(tourToUpdate.getStart_time())
+            ))) {
                 throw new BadRequestException("There is an existing tour that clashes with the timeslot!");
             }
         }
