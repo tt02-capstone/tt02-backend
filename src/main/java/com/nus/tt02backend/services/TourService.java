@@ -342,6 +342,17 @@ public class TourService {
             }
         }
 
+        for (Booking b : bookings) {
+            if (b.getLocal_user() != null) {
+                Local localUser = b.getLocal_user();
+                localUser.setBooking_list(null);
+            } else if (b.getTourist_user() != null) {
+                Tourist touristUser = b.getTourist_user();
+                touristUser.setBooking_list(null);
+            }
+            b.getPayment().setBooking(null);
+        }
+
         return bookings;
     }
 
@@ -352,7 +363,17 @@ public class TourService {
             throw new BadRequestException("Booking does not exist!");
         }
 
-        return bookingOptional.get();
+        Booking booking = bookingOptional.get();
+        if (booking.getLocal_user() != null) {
+            Local localUser = booking.getLocal_user();
+            localUser.setBooking_list(null);
+        } else if (booking.getTourist_user() != null) {
+            Tourist touristUser = booking.getTourist_user();
+            touristUser.setBooking_list(null);
+        }
+        booking.getPayment().setBooking(null);
+
+        return booking;
     }
 
     /*
