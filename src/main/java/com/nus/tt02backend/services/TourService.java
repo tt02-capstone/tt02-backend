@@ -2,6 +2,7 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.*;
+import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ public class TourService {
 
     @Autowired
     LocalRepository localRepository;
+
+    @Autowired
+    BookingRepository bookingRepository;
 
     public TourType createTourType(Long userId, Long attractionId, TourType tourTypeToCreate)
             throws BadRequestException {
@@ -315,6 +319,61 @@ public class TourService {
         }
 
         return listOfAvailableTourTypes;
+    }
+
+    public List<Booking> getAllBookingsByLocal(Long userId) throws BadRequestException {
+        Optional<Local> localOptional = localRepository.findById(userId);
+
+        if (localOptional.isEmpty()) {
+            throw new BadRequestException("User does not exist!");
+        }
+
+        Local local = localOptional.get();
+        List<Tour> tours = new ArrayList<>();
+        for (TourType tourType : local.getTour_type_list()) {
+            tours.addAll(tourType.getTour_list());
+        }
+
+        List<Booking> bookings = new ArrayList<>();
+        List<Booking> listOfAllTourBookings = bookingRepository.getAllTourBookings(BookingTypeEnum.TOUR);
+        for (Booking booking : listOfAllTourBookings) {
+            if (tours.contains(booking.getTour())) {
+                bookings.add(booking);
+            }
+        }
+
+        for (Booking b : bookings) {
+            if (b.getLocal_user() != null) {
+                Local localUser = b.getLocal_user();
+                localUser.setBooking_list(null);
+            } else if (b.getTourist_user() != null) {
+                Tourist touristUser = b.getTourist_user();
+                touristUser.setBooking_list(null);
+            }
+            b.getPayment().setBooking(null);
+        }
+
+        return bookings;
+    }
+
+    public Booking getBookingByBookingId(Long bookingId) throws BadRequestException {
+        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+
+        if (bookingOptional.isEmpty()) {
+            throw new BadRequestException("Booking does not exist!");
+        }
+
+        Booking booking = bookingOptional.get();
+        if (booking.getLocal_user() != null) {
+            Local localUser = booking.getLocal_user();
+            localUser.setBooking_list(null);
+        } else if (booking.getTourist_user() != null) {
+            Tourist touristUser = booking.getTourist_user();
+            touristUser.setBooking_list(null);
+        }
+        booking.getPayment().setBooking(null);
+
+        return booking;
     }
 
     /*
