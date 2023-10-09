@@ -17,7 +17,7 @@ public class ForumController {
     ForumService forumService;
 
     @PostMapping("/createCategoryItem/{categoryId}")
-    public ResponseEntity<CategoryItem> createPost(@PathVariable Long categoryId, @RequestBody CategoryItem categoryItemToCreate)
+    public ResponseEntity<CategoryItem> createCategoryItem(@PathVariable Long categoryId, @RequestBody CategoryItem categoryItemToCreate)
             throws BadRequestException {
         CategoryItem categoryItem = forumService.createCategoryItem(categoryId, categoryItemToCreate);
         return ResponseEntity.ok(categoryItem);

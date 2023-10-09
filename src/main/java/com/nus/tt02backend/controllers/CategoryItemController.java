@@ -1,5 +1,6 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.CategoryItem;
 import com.nus.tt02backend.services.CategoryItemService;
@@ -15,6 +16,26 @@ import java.util.*;
 public class CategoryItemController {
     @Autowired
     CategoryItemService categoryItemService;
+
+    @PostMapping("/createCategoryItem/{categoryId}")
+    public ResponseEntity<CategoryItem> createCategoryItem(@PathVariable Long categoryId, @RequestBody CategoryItem categoryItemToCreate)
+            throws BadRequestException {
+        CategoryItem categoryItem = categoryItemService.createCategoryItem(categoryId, categoryItemToCreate);
+        return ResponseEntity.ok(categoryItem);
+    }
+
+    @PutMapping("/updateCategoryItem")
+    public ResponseEntity<CategoryItem> updateCategoryItem(@RequestBody CategoryItem categoryItemToUpdate)
+            throws BadRequestException {
+        CategoryItem categoryItem = categoryItemService.updateCategoryItem(categoryItemToUpdate);
+        return ResponseEntity.ok(categoryItem);
+    }
+
+    @DeleteMapping("/deleteCategoryItem/{categoryItemIdToDelete}")
+    public ResponseEntity<String> deleteCategoryItem(@PathVariable Long categoryItemIdToDelete) throws BadRequestException {
+        String responseMessage = categoryItemService.deleteCategoryItem(categoryItemIdToDelete);
+        return ResponseEntity.ok(responseMessage);
+    }
 
     @GetMapping("/getAllByCategoryId/{categoryId}")
     public ResponseEntity<List<CategoryItem>> getByCategoryId(@PathVariable Long categoryId) throws NotFoundException {

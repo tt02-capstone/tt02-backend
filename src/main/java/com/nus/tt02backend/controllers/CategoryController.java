@@ -1,6 +1,8 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.Category;
+import com.nus.tt02backend.models.CategoryItem;
 import com.nus.tt02backend.services.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
