@@ -1,6 +1,7 @@
 package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.models.CategoryItem;
 import com.nus.tt02backend.models.Post;
 import com.nus.tt02backend.services.ForumService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,26 @@ public class ForumController {
 
     @Autowired
     ForumService forumService;
+
+    @PostMapping("/createCategoryItem/{categoryId}")
+    public ResponseEntity<CategoryItem> createPost(@PathVariable Long categoryId, @RequestBody CategoryItem categoryItemToCreate)
+            throws BadRequestException {
+        CategoryItem categoryItem = forumService.createCategoryItem(categoryId, categoryItemToCreate);
+        return ResponseEntity.ok(categoryItem);
+    }
+
+    @PutMapping("/updateCategoryItem")
+    public ResponseEntity<CategoryItem> updateCategoryItem(@RequestBody CategoryItem categoryItemToUpdate)
+            throws BadRequestException {
+        CategoryItem categoryItem = forumService.updateCategoryItem(categoryItemToUpdate);
+        return ResponseEntity.ok(categoryItem);
+    }
+
+    @DeleteMapping("/deleteCategoryItem/{categoryItemIdToDelete}")
+    public ResponseEntity<String> deleteCategoryItem(@PathVariable Long categoryItemIdToDelete) throws BadRequestException {
+        String responseMessage = forumService.deleteCategoryItem(categoryItemIdToDelete);
+        return ResponseEntity.ok(responseMessage);
+    }
 
     @PostMapping("/createPost/{userId}/{categoryItemId}")
     public ResponseEntity<Post> createPost(@PathVariable Long userId, @PathVariable Long categoryItemId,
