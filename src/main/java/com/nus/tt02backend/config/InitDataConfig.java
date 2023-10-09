@@ -8,6 +8,7 @@ import com.nus.tt02backend.services.PaymentService;
 import com.stripe.model.PaymentMethod;
 import com.stripe.model.Token;
 import com.stripe.param.PaymentMethodCreateParams;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,6 +40,10 @@ public class InitDataConfig implements CommandLineRunner {
     private final PaymentRepository paymentRepository;
     private final RestaurantRepository restaurantRepository;
     private final DishRepository dishRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryItemRepository categoryItemRepository;
+    private final TelecomRepository telecomRepository;
+    private final TourTypeRepository tourTypeRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -393,6 +398,75 @@ public class InitDataConfig implements CommandLineRunner {
             roomList2.add(r4);
             a2.setRoom_list(roomList2);
             accommodationRepository.save(a2);
+        }
+
+        if (categoryRepository.count() == 0) {
+            for (BookingTypeEnum value : BookingTypeEnum.values()) {
+                Category category = new Category();
+                String categoryName = value.toString().toLowerCase();
+                category.setName(categoryName.substring(0, 1).toUpperCase() + categoryName.substring(1));
+                category.setCategory_item_list(new ArrayList<>());
+                category = categoryRepository.save(category);
+                List<CategoryItem> categoryItemList = new ArrayList<>();
+
+                if (value.equals(BookingTypeEnum.ATTRACTION)) {
+                    List<Attraction> attractions = attractionRepository.findAll();
+
+                    for (Attraction attraction : attractions) {
+                        CategoryItem categoryItem = new CategoryItem();
+                        categoryItem.setName(attraction.getName());
+                        categoryItem = categoryItemRepository.save(categoryItem);
+                        categoryItemList.add(categoryItem);
+                    }
+                } else if (value.equals(BookingTypeEnum.ACCOMMODATION)) {
+                    List<Accommodation> accommodations = accommodationRepository.findAll();
+
+                    for (Accommodation accommodation : accommodations) {
+                        CategoryItem categoryItem = new CategoryItem();
+                        categoryItem.setName(accommodation.getName());
+                        categoryItem = categoryItemRepository.save(categoryItem);
+                        categoryItemList.add(categoryItem);
+                    }
+                } else if (value.equals(BookingTypeEnum.TELECOM)) {
+                    List<Telecom> telecoms = telecomRepository.findAll();
+
+                    for (Telecom telecom : telecoms) {
+                        CategoryItem categoryItem = new CategoryItem();
+                        categoryItem.setName(telecom.getName());
+                        categoryItem = categoryItemRepository.save(categoryItem);
+                        categoryItemList.add(categoryItem);
+                    }
+                } else if (value.equals(BookingTypeEnum.TOUR)) {
+                    List<TourType> tourTypes = tourTypeRepository.findAll();
+
+                    for (TourType tourType : tourTypes) {
+                        CategoryItem categoryItem = new CategoryItem();
+                        categoryItem.setName(tourType.getName());
+                        categoryItem = categoryItemRepository.save(categoryItem);
+                        categoryItemList.add(categoryItem);
+                    }
+                }
+
+                category.getCategory_item_list().addAll(categoryItemList);
+                categoryRepository.save(category);
+            }
+
+            Category category = new Category();
+            category.setName("Restaurant");
+            category.setCategory_item_list(new ArrayList<>());
+            category = categoryRepository.save(category);
+            List<Restaurant> restaurants = restaurantRepository.findAll();
+            List<CategoryItem> categoryItemList = new ArrayList<>();
+
+            for (Restaurant restaurant : restaurants) {
+                CategoryItem categoryItem = new CategoryItem();
+                categoryItem.setName(restaurant.getName());
+                categoryItem = categoryItemRepository.save(categoryItem);
+                categoryItemList.add(categoryItem);
+            }
+
+            category.getCategory_item_list().addAll(categoryItemList);
+            categoryRepository.save(category);
         }
 
 //        if (paymentRepository.count() == 0) {
