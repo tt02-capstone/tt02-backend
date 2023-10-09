@@ -49,4 +49,16 @@ public class PostController {
         Post post = postService.getPost(postId);
         return ResponseEntity.ok(post);
     }
+
+    @PostMapping("/upvote/{userId}/{postId}")
+    public ResponseEntity<Post> upvote(@PathVariable Long userId, @PathVariable Long postId) throws NotFoundException {
+        Post post = postService.upvote(userId, postId);
+        return ResponseEntity.ok(post);
+    }
+
+    @PostMapping("/downvote/{userId}/{postId}")
+    public ResponseEntity<Post> downvote(@PathVariable Long userId, @PathVariable Long postId) throws NotFoundException {
+        Post post = postService.downvote(userId, postId);
+        return ResponseEntity.ok(post);
+    }
 }

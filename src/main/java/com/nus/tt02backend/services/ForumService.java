@@ -109,8 +109,6 @@ public class ForumService {
 
         postToCreate.setPublish_time(LocalDateTime.now());
         postToCreate.setUpdated_time(LocalDateTime.now());
-        postToCreate.setUpvote(0);
-        postToCreate.setDownvote(0);
         postToCreate.setComment_list(new ArrayList<>());
         if (postToCreate.getPost_image_list() == null) {
             postToCreate.setPost_image_list(new ArrayList<>());

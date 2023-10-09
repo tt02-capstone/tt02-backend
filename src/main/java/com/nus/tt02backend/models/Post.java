@@ -35,11 +35,13 @@ public class Post {
     @Column(nullable = false)
     private LocalDateTime updated_time;
 
-    @Column(nullable = false)
-    private Integer upvote;
+    @ElementCollection
+    @CollectionTable(name="upvoted_user_id_list")
+    private List<Long> upvoted_user_id_list;
 
-    @Column(nullable = false)
-    private Integer downvote;
+    @ElementCollection
+    @CollectionTable(name="downvoted_user_id_list")
+    private List<Long> downvoted_user_id_list;
 
     @ManyToOne
     @JoinColumn(name = "tourist_id")
