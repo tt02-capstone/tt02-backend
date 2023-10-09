@@ -4,11 +4,13 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
+import org.hibernate.Internal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -50,6 +52,9 @@ public class ForumService {
         postToCreate.setUpvote(0);
         postToCreate.setDownvote(0);
         postToCreate.setComment_list(new ArrayList<>());
+        if (postToCreate.getPost_image_list() == null) {
+            postToCreate.setPost_image_list(new ArrayList<>());
+        }
         Post post = postRepository.save(postToCreate);
 
         User user = userOptional.get();
@@ -97,5 +102,76 @@ public class ForumService {
         categoryItemRepository.save(categoryItem);
 
         return post;
+    }
+
+    public Post updatePost(Post postToUpdate) throws BadRequestException {
+        Optional<Post> postOptional = postRepository.findById(postToUpdate.getPost_id());
+
+        if (postOptional.isEmpty()) {
+            throw new BadRequestException("Post does not exist!");
+        }
+
+        Post post = postOptional.get();
+        post.setContent(postToUpdate.getContent());
+        post.setUpdated_time(LocalDateTime.now());
+        post.getPost_image_list().clear();
+        post.getPost_image_list().addAll(postToUpdate.getPost_image_list());
+        postRepository.save(post);
+
+        if (post.getTourist_user() != null) {
+            post.getTourist_user().setPost_list(null);
+        } else if (post.getLocal_user() != null) {
+            post.getLocal_user().setPost_list(null);
+        } else if (post.getVendor_staff_user() != null) {
+            post.getVendor_staff_user().setPost_list(null);
+        } else if (post.getInternal_staff_user() != null) {
+            post.getInternal_staff_user().setPost_list(null);
+        }
+
+        return post;
+    }
+
+    public String deletePost(Long postIdToDelete) throws BadRequestException {
+        Optional<Post> postOptional = postRepository.findById(postIdToDelete);
+
+        if (postOptional.isEmpty()) {
+            throw new BadRequestException("Post does not exist!");
+        }
+
+        Post post = postOptional.get();
+        if (!post.getComment_list().isEmpty()) {
+            throw new BadRequestException("Only posts without comments can be deleted!");
+        }
+
+        if (post.getTourist_user() != null) {
+            Tourist tourist = post.getTourist_user();
+            tourist.getPost_list().remove(post);
+            touristRepository.save(tourist);
+        } else if (post.getLocal_user() != null) {
+            Local local = post.getLocal_user();
+            local.getPost_list().remove(post);
+            localRepository.save(local);
+        } else if (post.getVendor_staff_user() != null) {
+            VendorStaff vendorStaff = post.getVendor_staff_user();
+            vendorStaff.getPost_list().remove(post);
+            vendorStaffRepository.save(vendorStaff);
+        } else if (post.getInternal_staff_user() != null) {
+            InternalStaff internalStaff = post.getInternal_staff_user();
+            internalStaff.getPost_list().remove(post);
+            internalStaffRepository.save(internalStaff);
+        }
+
+        List<CategoryItem> categoryItems = categoryItemRepository.findAll();
+        for (CategoryItem categoryItem : categoryItems) {
+            if (categoryItem.getPost_list().contains(post)) {
+                categoryItem.getPost_list().remove(post);
+                categoryItemRepository.save(categoryItem);
+                break;
+            }
+        }
+
+        postRepository.delete(post);
+
+        return "Post successfully deleted";
     }
 }
