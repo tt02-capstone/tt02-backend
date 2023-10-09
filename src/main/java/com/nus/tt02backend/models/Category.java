@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -24,6 +25,6 @@ public class Category {
     private String name;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private ArrayList<CategoryItem> category_item_list;
+    private List<CategoryItem> category_item_list;
 
 }
