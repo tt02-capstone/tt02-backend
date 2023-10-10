@@ -79,6 +79,7 @@ public class PostService {
             postRepository.save(post);
 
             post.getVendor_staff_user().setPost_list(null);
+            post.getVendor_staff_user().setVendor(null);
         } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
             InternalStaff internalStaff = (InternalStaff) user;
             internalStaff.getPost_list().add(post);
@@ -178,10 +179,18 @@ public class PostService {
 
             for (Post p : list) {
                 p.setComment_list(null);
-                p.setLocal_user(null);
-                p.setTourist_user(null);
-                p.setVendor_staff_user(null);
-                p.setInternal_staff_user(null);
+                if (p.getLocal_user() != null) {
+                    p.getLocal_user().setPost_list(null);
+                }
+                else if (p.getTourist_user() != null) {
+                    p.getTourist_user().setPost_list(null);
+                }
+                else if (p.getInternal_staff_user() != null) {
+                    p.getInternal_staff_user().setPost_list(null);
+                }
+                else if (p.getVendor_staff_user() != null) {
+                    p.getVendor_staff_user().setPost_list(null);
+                }
             }
 
             return list;
@@ -195,14 +204,23 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(id);
 
         if (postOptional.isPresent()) {
-            Post post = postOptional.get();
-            post.setComment_list(null); // might change in future
-            post.setTourist_user(null); // might change in future
-            post.setLocal_user(null); // might change in future
-            post.setVendor_staff_user(null); // might change in future
-            post.setInternal_staff_user(null); // might change in future
+            Post p = postOptional.get();
+            p.setComment_list(null); // might change in future
 
-            return post;
+            if (p.getLocal_user() != null) {
+                p.getLocal_user().setPost_list(null);
+            }
+            else if (p.getTourist_user() != null) {
+                p.getTourist_user().setPost_list(null);
+            }
+            else if (p.getInternal_staff_user() != null) {
+                p.getInternal_staff_user().setPost_list(null);
+            }
+            else if (p.getVendor_staff_user() != null) {
+                p.getVendor_staff_user().setPost_list(null);
+            }
+
+            return p;
         } else {
             throw new NotFoundException("Post not found!");
         }
