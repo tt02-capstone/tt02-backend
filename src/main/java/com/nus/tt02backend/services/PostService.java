@@ -79,7 +79,8 @@ public class PostService {
             postRepository.save(post);
 
             post.getVendor_staff_user().setPost_list(null);
-            post.getVendor_staff_user().setVendor(null);
+            post.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+
         } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
             InternalStaff internalStaff = (InternalStaff) user;
             internalStaff.getPost_list().add(post);
@@ -190,6 +191,7 @@ public class PostService {
                 }
                 else if (p.getVendor_staff_user() != null) {
                     p.getVendor_staff_user().setPost_list(null);
+                    p.getVendor_staff_user().getVendor().setVendor_staff_list(null);
                 }
             }
 
@@ -218,6 +220,7 @@ public class PostService {
             }
             else if (p.getVendor_staff_user() != null) {
                 p.getVendor_staff_user().setPost_list(null);
+                p.getVendor_staff_user().getVendor().setVendor_staff_list(null);
             }
 
             return p;
