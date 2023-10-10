@@ -55,7 +55,7 @@ public class InitDataConfig implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         if (internalStaffRepository.count() == 0) {
-            InternalStaff staff = InternalStaff.builder()
+            InternalStaff staff = (InternalStaff) InternalStaff.builder()
                     .email("admin@gmail.com")
                     .name("admin")
                     .password(passwordEncoder.encode("password1!"))
@@ -63,6 +63,7 @@ public class InitDataConfig implements CommandLineRunner {
                     .is_blocked(false)
                     .role(InternalRoleEnum.ADMIN)
                     .staff_num(48323233L)
+                    .profile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg")
                     .build();
             internalStaffRepository.save(staff);
             log.debug("created ADMIN user - {}", staff);
@@ -81,6 +82,7 @@ public class InitDataConfig implements CommandLineRunner {
             local.setCountry_code("+65");
             local.setEmail_verified(true);
             local.setMobile_num("98989898");
+            local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "local@gmail.com");
@@ -115,6 +117,7 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setCountry_code("+65");
             tourist.setEmail_verified(true);
             tourist.setMobile_num("9797979797");
+            tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "tourist@gmail.com");
@@ -154,6 +157,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setIs_blocked(false);
             vendorStaff.setPosition("Manager");
             vendorStaff.setIs_master_account(true);
+            vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
             vendorStaff.setVendor(vendor1);
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
@@ -400,6 +404,26 @@ public class InitDataConfig implements CommandLineRunner {
             accommodationRepository.save(a2);
         }
 
+        if (telecomRepository.count() == 0) {
+            Telecom t1 = new Telecom();
+            t1.setName("M1");
+            t1.setDescription("M1 7 Days 50GB plan");
+            t1.setPrice(new BigDecimal(50));
+            t1.setType(TelecomTypeEnum.PHYSICALSIM);
+            t1.setIs_published(true);
+            t1.setEstimated_price_tier(PriceTierEnum.TIER_2);
+            t1.setNum_of_days_valid(7);
+            t1.setData_limit(50);
+            t1.setData_limit_category(GBLimitEnum.VALUE_50);
+            t1.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_7_day.JPG");
+
+            t1 = telecomRepository.save(t1);
+            List<Telecom> tList = new ArrayList<>();
+            tList.add(t1);
+            vendor1.setTelecom_list(tList);
+            vendorRepository.save(vendor1);
+        }
+
         if (categoryRepository.count() == 0) {
             for (BookingTypeEnum value : BookingTypeEnum.values()) {
                 Category category = new Category();
@@ -415,6 +439,7 @@ public class InitDataConfig implements CommandLineRunner {
                     for (Attraction attraction : attractions) {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(attraction.getName());
+                        categoryItem.setImage(attraction.getAttraction_image_list().get(0));
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -424,6 +449,7 @@ public class InitDataConfig implements CommandLineRunner {
                     for (Accommodation accommodation : accommodations) {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(accommodation.getName());
+                        categoryItem.setImage(accommodation.getAccommodation_image_list().get(0));
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -433,6 +459,7 @@ public class InitDataConfig implements CommandLineRunner {
                     for (Telecom telecom : telecoms) {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(telecom.getName());
+                        categoryItem.setImage(telecom.getImage()); // init telecom w an image
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -442,6 +469,7 @@ public class InitDataConfig implements CommandLineRunner {
                     for (TourType tourType : tourTypes) {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(tourType.getName());
+                        categoryItem.setImage(tourType.getTour_image_list().get(0));
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -461,26 +489,19 @@ public class InitDataConfig implements CommandLineRunner {
             for (Restaurant restaurant : restaurants) {
                 CategoryItem categoryItem = new CategoryItem();
                 categoryItem.setName(restaurant.getName());
+                categoryItem.setImage(restaurant.getRestaurant_image_list().get(0));
                 categoryItem = categoryItemRepository.save(categoryItem);
                 categoryItemList.add(categoryItem);
             }
 
             category.getCategory_item_list().addAll(categoryItemList);
             categoryRepository.save(category);
-        }
 
-//        if (paymentRepository.count() == 0) {
-//            Map<String, Object> card = new HashMap<>();
-//            card.put("token", "tok_visa");
-//
-//            Map<String, Object> params = new HashMap<>();
-//            params.put("type", "card");
-//            params.put("card", card);
-//
-//            PaymentMethod paymentMethod = PaymentMethod.create(params);
-//
-//            paymentService.addPaymentMethod("LOCAL", "local@gmail.com", paymentMethod.getId());
-//        }
+            Category category1 = new Category();
+            category1.setName("Others"); // for all the misc forum post
+            category1.setCategory_item_list(new ArrayList<>());
+            categoryRepository.save(category1);
+        }
     }
 
     public void secondRestaurant(List<Restaurant> rList) {

@@ -34,7 +34,7 @@ public class Accommodation {
 
     private String contact_num;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="accommodation_image_list")
     private List<String> accommodation_image_list;
 
