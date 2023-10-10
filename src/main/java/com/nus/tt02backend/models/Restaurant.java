@@ -53,7 +53,7 @@ public class Restaurant {
     @Enumerated(EnumType.STRING)
     private PriceTierEnum estimated_price_tier;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="restaurant_image_list")
     private List<String> restaurant_image_list;
 
