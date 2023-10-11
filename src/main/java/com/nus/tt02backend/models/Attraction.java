@@ -42,7 +42,7 @@ public class Attraction {
     @Column(nullable = false)
     private String contact_num;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="attraction_image_list")
     private List<String> attraction_image_list;
 

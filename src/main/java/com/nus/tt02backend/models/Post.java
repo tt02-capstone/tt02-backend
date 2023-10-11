@@ -23,6 +23,9 @@ public class Post {
     private Long post_id;
 
     @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
     private String content;
 
     @ElementCollection

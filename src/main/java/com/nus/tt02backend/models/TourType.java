@@ -27,7 +27,7 @@ public class TourType {
     @Column(nullable = false, length = 400)
     private String description;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="tour_image_list")
     private List<String> tour_image_list;
 
