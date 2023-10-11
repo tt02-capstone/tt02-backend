@@ -42,4 +42,14 @@ public class CategoryItemController {
         List<CategoryItem> list = categoryItemService.getAllByCategoryId(categoryId);
         return ResponseEntity.ok(list);
     }
+
+    @GetMapping("/getLastCategoryItemId")
+    public ResponseEntity<?> getLastCategoryItemId() {
+        try {
+            Long lastCategoryItemId = categoryItemService.getLastCategoryItemId();
+            return ResponseEntity.ok(lastCategoryItemId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
 }

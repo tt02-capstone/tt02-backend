@@ -99,4 +99,9 @@ public class CategoryItemService {
 
         return "Category item successfully deleted";
     }
+
+    public Long getLastCategoryItemId() {
+        Long lastCategoryItemId = categoryItemRepository.findMaxCategoryItemId();
+        return (lastCategoryItemId != null) ? lastCategoryItemId : 0L;
+    }
 }
