@@ -107,10 +107,13 @@ public class PostService {
         }
 
         Post post = postOptional.get();
+        post.setTitle(postToUpdate.getTitle());
         post.setContent(postToUpdate.getContent());
         post.setUpdated_time(LocalDateTime.now());
-        post.getPost_image_list().clear();
-        post.getPost_image_list().addAll(postToUpdate.getPost_image_list());
+        if (post.getPost_image_list() != null && postToUpdate.getPost_image_list() != null) {
+            post.getPost_image_list().clear();
+            post.getPost_image_list().addAll(postToUpdate.getPost_image_list());
+        }
         postRepository.save(post);
 
         if (post.getTourist_user() != null) {
@@ -119,6 +122,7 @@ public class PostService {
             post.getLocal_user().setPost_list(null);
         } else if (post.getVendor_staff_user() != null) {
             post.getVendor_staff_user().setPost_list(null);
+            post.getVendor_staff_user().setVendor(null);
         } else if (post.getInternal_staff_user() != null) {
             post.getInternal_staff_user().setPost_list(null);
         }
