@@ -86,7 +86,8 @@ public class UserService {
                 if (checkUser.getEmail_verified() &&
                         vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
                     vendorStaff.getVendor().setVendor_staff_list(null);
-                    vendorStaff.setSupport_ticket_list(null);
+                    vendorStaff.setIncoming_support_ticket_list(null);
+                    vendorStaff.setOutgoing_support_ticket_list(null);
                     vendorStaff.setComment_list(null);
                     vendorStaff.setPost_list(null);
 

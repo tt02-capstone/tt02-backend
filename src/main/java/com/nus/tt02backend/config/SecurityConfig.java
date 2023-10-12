@@ -90,6 +90,8 @@ public class SecurityConfig {
               "/categoryItem/**", // to remove
               "/post/**", // to remove
               "/comment/**", // to remove
+              "/supportTicket/**", // to remove
+                "/reply/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
@@ -97,13 +99,20 @@ public class SecurityConfig {
               "/categoryItem/**", // to remove
               "/post/**", // to remove
               "/comment/**", // to remove
+              "/supportTicket/**", // to remove
+                "/reply/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
               "/category/**", // to remove
               "/categoryItem/**", // to remove
               "/post/**", // to remove
               "/comment/**", // to remove
+              "/supportTicket/**", // to remove
+                "/reply/**", // to remove
               "/user/**").permitAll()
+        .requestMatchers(HttpMethod.DELETE,
+                "/supportTicket/**" // to remove
+                ).permitAll()
         .requestMatchers(HttpMethod.GET,
               "/category/**", // to remove
               "/categoryItem/**", // to remove
