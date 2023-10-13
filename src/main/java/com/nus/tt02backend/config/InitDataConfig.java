@@ -242,7 +242,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendor1.setAttraction_list(currentList);
             vendorRepository.save(vendor1);
 
-            createSecondAttraction();
+            createSecondAttraction(currentList);
         }
 
         if (dealRepository.count() == 0) {
@@ -273,12 +273,12 @@ public class InitDataConfig implements CommandLineRunner {
             d2.setIs_govt_voucher(true);
             d2.setIs_published(true);
             List<String> imgList2 = new ArrayList<>();
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_2_gov_pic.png");
+            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_2_gov_pic.png");
             d2.setDeal_image_list(imgList2);
 
             d2 = dealRepository.save(d2);
             List<Deal> dList2 = new ArrayList<>();
-            dList.add(d2);
+            dList2.add(d2);
             vendor2.setDeals_list(dList2);
             vendorRepository.save(vendor2);
         }
@@ -464,6 +464,25 @@ public class InitDataConfig implements CommandLineRunner {
             tList.add(t1);
             vendor1.setTelecom_list(tList);
             vendorRepository.save(vendor1);
+
+
+            Telecom t2 = new Telecom();
+            t2.setName("Singetel");
+            t2.setDescription("Singtel 14 Days 80GB plan");
+            t2.setPrice(new BigDecimal(60));
+            t2.setType(TelecomTypeEnum.PHYSICALSIM);
+            t2.setIs_published(true);
+            t2.setEstimated_price_tier(PriceTierEnum.TIER_3);
+            t2.setNum_of_days_valid(14);
+            t2.setData_limit(80);
+            t2.setData_limit_category(GBLimitEnum.VALUE_100);
+            t2.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_14_day.JPG");
+
+            t2 = telecomRepository.save(t2);
+            List<Telecom> tList2 = new ArrayList<>();
+            tList2.add(t2);
+            vendor2.setTelecom_list(tList2);
+            vendorRepository.save(vendor2);
         }
 
         if (categoryRepository.count() == 0) {
@@ -663,7 +682,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendorRepository.save(vendor);
     }
 
-    public void createSecondAttraction() {
+    public void createSecondAttraction(List<Attraction> currentList) {
         Attraction attraction = new Attraction();
         attraction.setName("Universal Studios Singapore");
         attraction.setDescription("Universal Studios Singapore is a theme park located within the Resorts World Sentosa " +
@@ -732,12 +751,11 @@ public class InitDataConfig implements CommandLineRunner {
 
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
-        attraction = attractionRepository.save(attraction);
-        Vendor vendor2 = vendorRepository.findById(2L).get();
-        List<Attraction> currentList = new ArrayList<>();
-        currentList.add(attraction);
-        vendor2.setAttraction_list(currentList);
-        vendorRepository.save(vendor2);
+        attractionRepository.save(attraction);
+        Vendor vendor = vendorRepository.findById(1L).get();
+        currentList.add(attraction); // add on to the previous list
+        vendor.setAttraction_list(currentList);
+        vendorRepository.save(vendor);
     }
 
     Vendor setUpVendor2(Vendor vendor2) {

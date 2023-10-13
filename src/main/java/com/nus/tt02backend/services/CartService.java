@@ -243,6 +243,7 @@ public class CartService {
     public CartBooking addCartOperation(String activity_name, List<CartItem> cartItems) throws NotFoundException {
         Attraction selectedAttraction = attractionRepository.getAttractionByName(activity_name);
         Vendor vendor = vendorRepository.findVendorByAttractionName(activity_name);
+        vendor.setVendor_staff_list(null);
 
         LocalDate startDate = cartItems.get(0).getStart_datetime();
         LocalDate endDate = cartItems.get(0).getEnd_datetime();
@@ -604,8 +605,8 @@ public class CartService {
         }
 
         cartBooking.setTelecom(telecom);
+        vendor.setVendor_staff_list(null);
         cartBooking.setVendor(vendor);
-        System.out.println(cartBooking);
         cartBookingRepository.save(cartBooking);
 
         if (user instanceof Local) {
@@ -639,6 +640,7 @@ public class CartService {
         }
 
         cartBooking.setRoom(room);
+        vendor.setVendor_staff_list(null);
         cartBooking.setVendor(vendor);
         cartBookingRepository.save(cartBooking);
 
