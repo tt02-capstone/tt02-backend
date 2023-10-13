@@ -207,56 +207,60 @@ public class SupportTicketService {
 
         VendorStaff vendorStaff = null;
 
-        if (supportTicketToCreate.getTicket_category().equals(SupportTicketCategoryEnum.ACCOMMODATION)) {
+        SupportTicket supportTicket = supportTicketRepository.save(supportTicketToCreate);
+
+        if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.ACCOMMODATION)) {
             Optional<Accommodation> accommodationOptional = accommodationRepository.findById(activityId);
             if (accommodationOptional.isEmpty()) {
                 throw new BadRequestException("Accommodation does not exist!");
             }
             Accommodation accommodation = accommodationOptional.get();
-            supportTicketToCreate.setAccommodation(accommodation);
+            supportTicket.setAccommodation(accommodation);
 
             vendorStaff = getVendorByAccommodation(activityId);
 
-        } else if (supportTicketToCreate.getTicket_category().equals(SupportTicketCategoryEnum.ATTRACTION)) {
+        } else if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.ATTRACTION)) {
             Optional<Attraction> attractionOptional = attractionRepository.findById(activityId);
             if (attractionOptional.isEmpty()) {
                 throw new BadRequestException("Attraction does not exist!");
             }
             Attraction attraction = attractionOptional.get();
-            supportTicketToCreate.setAttraction(attraction);
+            supportTicket.setAttraction(attraction);
 
             vendorStaff = getVendorByAttraction(activityId);
-        } else if (supportTicketToCreate.getTicket_category().equals(SupportTicketCategoryEnum.RESTAURANT)) {
+        } else if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.RESTAURANT)) {
             Optional<Restaurant> restaurantOptional = restaurantRepository.findById(activityId);
             if (restaurantOptional.isEmpty()) {
                 throw new BadRequestException("Restaurant does not exist!");
             }
             Restaurant restaurant = restaurantOptional.get();
-            supportTicketToCreate.setRestaurant(restaurant);
+            supportTicket.setRestaurant(restaurant);
 
             vendorStaff = getVendorByRestaurant(activityId);
-        } else if (supportTicketToCreate.getTicket_category().equals(SupportTicketCategoryEnum.TELECOM)) {
+        } else if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.TELECOM)) {
             Optional<Telecom> telecomOptional = telecomRepository.findById(activityId);
             if (telecomOptional.isEmpty()) {
                 throw new BadRequestException("Telecom package does not exist!");
             }
             Telecom telecom = telecomOptional.get();
-            supportTicketToCreate.setTelecom(telecom);
+            supportTicket.setTelecom(telecom);
 
             vendorStaff = getVendorByTelecom(activityId);
-        } else if (supportTicketToCreate.getTicket_category().equals(SupportTicketCategoryEnum.DEAL)) {
+        } else if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.DEAL)) {
             Optional<Deal> dealOptional = dealRepository.findById(activityId);
             if (dealOptional.isEmpty()) {
                 throw new BadRequestException("Deal does not exist!");
             }
             Deal deal = dealOptional.get();
-            supportTicketToCreate.setDeal(deal);
+            supportTicket.setDeal(deal);
 
             vendorStaff = getVendorByDeal(activityId);
         }
 
-        SupportTicket supportTicket = supportTicketRepository.save(supportTicketToCreate);
-        vendorStaff.getIncoming_support_ticket_list().add(supportTicket);
+        supportTicketRepository.save(supportTicket);
+        List<SupportTicket> incomingSupportTicketList = vendorStaff.getIncoming_support_ticket_list();
+        incomingSupportTicketList.add(supportTicket);
+        vendorStaff.setIncoming_support_ticket_list(incomingSupportTicketList);
         vendorStaffRepository.save(vendorStaff);
 
         User user = userOptional.get();
