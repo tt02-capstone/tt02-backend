@@ -3,6 +3,7 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BookingStatusEnum;
+import com.nus.tt02backend.models.enums.InternalRoleEnum;
 import com.nus.tt02backend.models.enums.SupportTicketCategoryEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
@@ -178,6 +179,16 @@ public class SupportTicketService {
             vendorStaff.getOutgoing_support_ticket_list().add(supportTicket);
             vendorStaffRepository.save(vendorStaff);
 
+        }
+
+        List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
+        for (InternalStaff i : internalStaffList) {
+            if (i.getRole().equals(InternalRoleEnum.ADMIN) || i.getRole().equals(InternalRoleEnum.SUPPORT)) {
+                List<SupportTicket> supportTicketList = i.getSupport_ticket_list();
+                supportTicketList.add(supportTicket);
+                i.setSupport_ticket_list(supportTicketList);
+                internalStaffRepository.save(i);
+            }
         }
 
         return supportTicket;
@@ -449,7 +460,6 @@ public class SupportTicketService {
         }
         throw new NotFoundException("Vendor not found!");
     }
-
 
     public SupportTicket createSupportTicketForBooking(Long userId, Long bookingId, SupportTicket supportTicketToCreate) throws BadRequestException, NotFoundException {
 
