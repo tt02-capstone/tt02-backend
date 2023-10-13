@@ -45,6 +45,7 @@ public class PostService {
         postToCreate.setPublish_time(LocalDateTime.now());
         postToCreate.setUpdated_time(LocalDateTime.now());
         postToCreate.setComment_list(new ArrayList<>());
+
         if (postToCreate.getPost_image_list() == null) {
             postToCreate.setPost_image_list(new ArrayList<>());
         }
@@ -242,17 +243,23 @@ public class PostService {
 
         User user = userOptional.get();
         Post post = postOptional.get();
+
+        // list does not contain user
         if (!post.getUpvoted_user_id_list().contains(user.getUser_id())) {
             post.getUpvoted_user_id_list().add(user.getUser_id());
             post.getDownvoted_user_id_list().remove(user.getUser_id());
-            postRepository.save(post);
 
-            post.setComment_list(null);
-            post.setInternal_staff_user(null);
-            post.setTourist_user(null);
-            post.setLocal_user(null);
-            post.setVendor_staff_user(null);
+        } else { // contains user
+            post.getUpvoted_user_id_list().remove(user.getUser_id());
         }
+
+        postRepository.save(post);
+
+        post.setComment_list(null);
+        post.setInternal_staff_user(null);
+        post.setTourist_user(null);
+        post.setLocal_user(null);
+        post.setVendor_staff_user(null);
 
         return post;
     }
@@ -266,17 +273,23 @@ public class PostService {
 
         User user = userOptional.get();
         Post post = postOptional.get();
+
+        // list does not contain user
         if (!post.getDownvoted_user_id_list().contains(user.getUser_id())) {
             post.getDownvoted_user_id_list().add(user.getUser_id());
             post.getUpvoted_user_id_list().remove(user.getUser_id());
-            postRepository.save(post);
 
-            post.setComment_list(null);
-            post.setInternal_staff_user(null);
-            post.setTourist_user(null);
-            post.setLocal_user(null);
-            post.setVendor_staff_user(null);
+        } else { // contains user
+            post.getDownvoted_user_id_list().remove(user.getUser_id());
         }
+
+        postRepository.save(post);
+
+        post.setComment_list(null);
+        post.setInternal_staff_user(null);
+        post.setTourist_user(null);
+        post.setLocal_user(null);
+        post.setVendor_staff_user(null);
 
         return post;
     }
