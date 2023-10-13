@@ -40,6 +40,7 @@ public class InitDataConfig implements CommandLineRunner {
     private final PaymentRepository paymentRepository;
     private final RestaurantRepository restaurantRepository;
     private final DishRepository dishRepository;
+    private final DealRepository dealRepository;
     private final CategoryRepository categoryRepository;
     private final CategoryItemRepository categoryItemRepository;
     private final TelecomRepository telecomRepository;
@@ -129,6 +130,7 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         Vendor vendor1 = new Vendor();
+        Vendor vendor2 = new Vendor();
         if (vendorRepository.count() == 0) {
             vendor1.setBusiness_name("Business Name");
             vendor1.setPoc_name("Ha Joon");
@@ -161,6 +163,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setVendor(vendor1);
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
+            vendor2 = setUpVendor2(vendor2);
         }
 
         if (attractionRepository.count() == 0) {
@@ -239,8 +242,47 @@ public class InitDataConfig implements CommandLineRunner {
             vendor1.setAttraction_list(currentList);
             vendorRepository.save(vendor1);
 
-            createSecondAttraction(currentList);
+            createSecondAttraction();
         }
+
+        if (dealRepository.count() == 0) {
+            Deal d1 = new Deal();
+            d1.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
+            d1.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
+            d1.setDiscount_percent(10);
+            d1.setDeal_type(DealCategoryEnum.BLACK_FRIDAY);
+            d1.setPromo_code("TOURING");
+            d1.setIs_govt_voucher(false);
+            d1.setIs_published(true);
+            List<String> imgList = new ArrayList<>();
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_1_black_friday_deal.jpeg");
+            d1.setDeal_image_list(imgList);
+
+            d1 = dealRepository.save(d1);
+            List<Deal> dList = new ArrayList<>();
+            dList.add(d1);
+            vendor1.setDeals_list(dList);
+            vendorRepository.save(vendor1);
+
+            Deal d2 = new Deal();
+            d2.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
+            d2.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
+            d2.setDiscount_percent(20);
+            d2.setDeal_type(DealCategoryEnum.GOVERNMENT);
+            d2.setPromo_code("WELCOME");
+            d2.setIs_govt_voucher(true);
+            d2.setIs_published(true);
+            List<String> imgList2 = new ArrayList<>();
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_2_gov_pic.png");
+            d2.setDeal_image_list(imgList2);
+
+            d2 = dealRepository.save(d2);
+            List<Deal> dList2 = new ArrayList<>();
+            dList.add(d2);
+            vendor2.setDeals_list(dList2);
+            vendorRepository.save(vendor2);
+        }
+
 
         if (restaurantRepository.count() == 0) {
             Restaurant r1 = new Restaurant();
@@ -621,7 +663,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendorRepository.save(vendor);
     }
 
-    public void createSecondAttraction(List<Attraction> currentList) {
+    public void createSecondAttraction() {
         Attraction attraction = new Attraction();
         attraction.setName("Universal Studios Singapore");
         attraction.setDescription("Universal Studios Singapore is a theme park located within the Resorts World Sentosa " +
@@ -690,10 +732,46 @@ public class InitDataConfig implements CommandLineRunner {
 
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
-        attractionRepository.save(attraction);
-        Vendor vendor = vendorRepository.findById(1L).get();
-        currentList.add(attraction); // add on to the previous list
-        vendor.setAttraction_list(currentList);
-        vendorRepository.save(vendor);
+        attraction = attractionRepository.save(attraction);
+        Vendor vendor2 = vendorRepository.findById(2L).get();
+        List<Attraction> currentList = new ArrayList<>();
+        currentList.add(attraction);
+        vendor2.setAttraction_list(currentList);
+        vendorRepository.save(vendor2);
+    }
+
+    Vendor setUpVendor2(Vendor vendor2) {
+        vendor2.setBusiness_name("Business 2");
+        vendor2.setPoc_name("Ha Loon");
+        vendor2.setPoc_position("Manager");
+        vendor2.setCountry_code("+65");
+        vendor2.setPoc_mobile_num("96969697");
+        vendor2.setWallet_balance(new BigDecimal(0));
+        vendor2.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor2.setVendor_type(VendorEnum.ATTRACTION);
+        vendor2.setService_description("애정수를 믿으세요?");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "vendor2@gmail.com");
+        customer_parameters.put("name", "Business 2");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor2.setStripe_account_id(stripe_account_id);
+
+        vendor2 = vendorRepository.save(vendor2);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("vendor2@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Na HAHHAH"); //ewww
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor2);
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor2;
     }
 }
