@@ -701,17 +701,18 @@ public class CartService {
         // Should fetch via User if possible
         List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
 
-        Map<CartBooking, BigDecimal> map = new HashMap<>();
+        Map<Long, BigDecimal> map = new HashMap<>();
         for (int i = 0; i < bookingsToCheckout.size(); i++) {
-            map.put(bookingsToCheckout.get(i), priceList.get(i));
+            map.put(bookingsToCheckout.get(i).getCart_booking_id(), priceList.get(i));
         }
 
         List<Long> createdBookingIds = new ArrayList<>();
         List<Booking> createdBookings = new ArrayList<>();
         if (user_type.equals("LOCAL")) {
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
+            currentTourist.setCart_list(null);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
-                BigDecimal totalAmountPayable = map.get(bookingToCheckout).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
                 createdBooking.setBooked_user(UserTypeEnum.LOCAL);
                 createdBookings.add(createdBooking);
@@ -720,6 +721,7 @@ public class CartService {
             updateLocalUser(currentTourist, bookingsToCheckout, createdBookings);
         } else if (user_type.equals("TOURIST")) {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
+            currentTourist.setCart_list(null);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
@@ -851,9 +853,13 @@ public class CartService {
 
         // Check user type and populate fields accordingly
         if (user instanceof Local) {
-            newBooking.setLocal_user((Local) user);
+            Local local = (Local) user;
+            local.setCart_list(null);
+            newBooking.setLocal_user(local);
         } else if (user instanceof Tourist) {
-            newBooking.setTourist_user((Tourist) user);
+            Tourist tourist = (Tourist) user;
+            tourist.setCart_list(null);
+            newBooking.setTourist_user(tourist);
         } else {
             throw new IllegalArgumentException("Invalid user type");
         }
