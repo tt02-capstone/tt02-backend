@@ -110,6 +110,7 @@ public class BookingService {
         try {
             Tourist tourist = touristRepository.getTouristByUserId(touristId);
             if (tourist != null) {
+                tourist.setCart_list(null);
                 return tourist;
             } else {
                 throw new NotFoundException("Tourist not found!");
@@ -123,6 +124,7 @@ public class BookingService {
         try {
             Local local = localRepository.getLocalByUserId(localId);
             if (local != null) {
+                local.setCart_list(null);
                 return local;
             } else {
                 throw new NotFoundException("Local not found!");
@@ -206,8 +208,10 @@ public class BookingService {
                 if (booking.getLocal_user() != null) {
                     Local local = booking.getLocal_user();
                     local.setBooking_list(null);
+                    local.setCart_list(null);
                 } else if (booking.getTourist_user() != null) {
                     Tourist tourist = booking.getTourist_user();
+                    tourist.setCart_list(null);
                     tourist.setBooking_list(null);
                 }
 
