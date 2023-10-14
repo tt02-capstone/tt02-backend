@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 @CrossOrigin
@@ -58,5 +59,11 @@ public class LocalController {
     public ResponseEntity<BigDecimal> updateWallet(@PathVariable Long localId, @PathVariable BigDecimal updateAmount) throws BadRequestException, NotFoundException {
         BigDecimal updatedWalletAmount = localService.updateWallet(localId, updateAmount);
         return ResponseEntity.ok(updatedWalletAmount);
+    }
+
+    @GetMapping ("/getWalletHistory/{localId}")
+    public ResponseEntity<List<HashMap<String, Object>>> getWithdrawalRequests(@PathVariable Long localId) throws  NotFoundException, StripeException {
+        List<HashMap<String, Object>> transactions = localService.getWithdrawalRequests(localId);
+        return ResponseEntity.ok(transactions);
     }
 }

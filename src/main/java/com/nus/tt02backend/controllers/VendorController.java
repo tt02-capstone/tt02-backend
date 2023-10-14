@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -39,9 +40,9 @@ public class VendorController {
         return ResponseEntity.ok(updatedWalletAmount);
     }
 
-    @GetMapping ("/getWithdrawalRequests/{vendorId}")
-    public ResponseEntity<BigDecimal> getWithdrawalRequests(@PathVariable Long vendorId) throws BadRequestException, NotFoundException {
-        BigDecimal updatedWalletAmount = vendorService.getWithdrawalRequests(vendorId);
-        return ResponseEntity.ok(updatedWalletAmount);
+    @GetMapping ("/getWalletHistory/{vendorId}")
+    public ResponseEntity<List<HashMap<String, Object>>> getWalletHistory(@PathVariable Long vendorId) throws  NotFoundException, StripeException {
+        List<HashMap<String, Object>> transactions = vendorService.getWithdrawalRequests(vendorId);
+        return ResponseEntity.ok(transactions);
     }
 }

@@ -9,8 +9,7 @@ import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Account;
-import com.stripe.model.Person;
+import com.stripe.model.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -22,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -129,13 +129,47 @@ public class VendorService {
 
     }
 
-    public BigDecimal getWithdrawalRequests(Long vendorId) throws NotFoundException {
+    public List<HashMap<String, Object>> getWithdrawalRequests(Long vendorId) throws NotFoundException, StripeException {
         Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
 
         if (vendorOptional.isPresent()) {
             Vendor vendor = vendorOptional.get();
+            Customer customer =
+                    Customer.retrieve(vendor.getStripe_account_id());
 
-            return null;
+            Map<String, Object> params = new HashMap<>();
+
+
+            CustomerBalanceTransactionCollection balanceTransactions =
+                    customer.balanceTransactions().list(params);
+
+            List<HashMap<String, Object>> extractedData = new ArrayList<>();
+
+            for (CustomerBalanceTransaction transaction : balanceTransactions.getData()) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("id", transaction.getId());
+                BigDecimal amount = new BigDecimal(transaction.getAmount()).divide(new BigDecimal("100.0"));
+                map.put("amount", amount);
+
+                // Converting Unix timestamp to formatted date-time string
+                long timestamp = transaction.getCreated();
+                Date date = new Date(timestamp * 1000L);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                String formattedDate = sdf.format(date);
+
+                // Splitting the formattedDate into date and time
+                String[] dateTimeParts = formattedDate.split(" ");
+                map.put("date", dateTimeParts[0]);
+                map.put("time", dateTimeParts[1]);
+
+                //map.put("type", transaction.getMetadata().get("transaction_type"));
+
+                extractedData.add(map);
+            }
+
+
+
+            return extractedData;
 
         } else {
             throw new NotFoundException("Vendor does not exist");
