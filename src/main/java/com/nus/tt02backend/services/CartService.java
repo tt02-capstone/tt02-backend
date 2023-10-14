@@ -684,7 +684,7 @@ public class CartService {
         // Should fetch via User if possible
         List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
 
-
+        CartBooking cartBookingToCreate = new CartBooking();
         for (CartBooking booking : bookingsToCheckout) {
 
             if ("ATTRACTION".equals(String.valueOf(booking.getType()))) {
@@ -697,7 +697,7 @@ public class CartService {
                 if (optionalCartItem.isPresent()) {
                     CartItem tour_booking = optionalCartItem.get();
 
-                    CartBooking cartBookingToCreate = new CartBooking();
+
 
                     List<CartItem> cartItems = new ArrayList<>();
                     cartItems.add(tour_booking);
@@ -747,7 +747,7 @@ public class CartService {
                         cartBookingToCreate.setActivity_name(selectedTourTypeName);
                         cartBookingToCreate.setTour(tour);
                         cartBookingToCreate.setCart_item_list(cartItems);
-                        bookingsToCheckout.add(cartBookingToCreate);
+
 
                         priceList.add(tour_booking.getPrice().multiply(BigDecimal.valueOf(tour_booking.getQuantity())));
                     }
@@ -755,6 +755,8 @@ public class CartService {
 
             }
         }
+
+        bookingsToCheckout.add(cartBookingToCreate);
 
 
         Map<Long, BigDecimal> map = new HashMap<>();
@@ -777,7 +779,7 @@ public class CartService {
         } else if (user_type.equals("TOURIST")) {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
-                BigDecimal totalAmountPayable = map.get(bookingToCheckout).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
                 createdBooking.setBooked_user(UserTypeEnum.TOURIST);
                 createdBookings.add(createdBooking);
@@ -899,21 +901,7 @@ public class CartService {
         Vendor vendor = null;
         Local local = null;
 
-        if (Objects.equals(activity_type, "ATTRACTION")) {
-            vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
-
-            vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
-
-        } else if (Objects.equals(activity_type, "TELECOM")) {
-            vendor = vendorRepository.findVendorByTelecomName(newBooking.getTelecom().getName());
-            vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
-        } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
-            vendor = vendorRepository.findVendorByAccommodationName(newBooking.getActivity_name());
-            if (!(vendor == null)) {
-                vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
-            }
-
-        }else if (Objects.equals(activity_type, "TOUR")) {
+        if (Objects.equals(activity_type, "TOUR")) {
             local = localRepository.findLocalByTour(newBooking.getTour());
             local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
         } else {
