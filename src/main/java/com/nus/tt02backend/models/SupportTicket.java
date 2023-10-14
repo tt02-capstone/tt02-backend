@@ -1,7 +1,8 @@
 package com.nus.tt02backend.models;
 
-
 import com.nus.tt02backend.models.enums.SupportTicketCategoryEnum;
+import com.nus.tt02backend.models.enums.SupportTicketTypeEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,10 +33,16 @@ public class SupportTicket {
     @Enumerated(EnumType.STRING)
     private SupportTicketCategoryEnum ticket_category;
 
+    @Enumerated(EnumType.STRING)
+    private SupportTicketTypeEnum ticket_type;
+
+    @Enumerated(EnumType.STRING)
+    private UserTypeEnum submitted_user;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Reply> reply_list;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Booking booking;
 
     @ManyToOne

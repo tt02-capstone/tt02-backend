@@ -2,10 +2,7 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.*;
-import com.nus.tt02backend.models.enums.BookingStatusEnum;
-import com.nus.tt02backend.models.enums.InternalRoleEnum;
-import com.nus.tt02backend.models.enums.SupportTicketCategoryEnum;
-import com.nus.tt02backend.models.enums.UserTypeEnum;
+import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -120,7 +117,19 @@ public class SupportTicketService {
         try {
             Optional<SupportTicket> supportTicketOptional = supportTicketRepository.findById(supportTicketId);
             if (supportTicketOptional.isPresent()) {
-                return supportTicketOptional.get();
+
+                SupportTicket supportTicket = supportTicketOptional.get();
+                if (!supportTicket.getReply_list().isEmpty()) {
+                    List<Reply> replyList = supportTicket.getReply_list();
+                    for (Reply r : replyList) {
+                        r.setVendor_staff_user(null);
+                        r.setInternal_staff_user(null);
+                        r.setTourist_user(null);
+                        r.setLocal_user(null);
+                    }
+                }
+
+                return supportTicket;
             } else {
                 throw new NotFoundException("Support Ticket not found!");
             }
@@ -144,6 +153,18 @@ public class SupportTicketService {
             supportTickets = local.getSupport_ticket_list();
         } else {
             throw new BadRequestException("Current user type is not tourist or local");
+        }
+
+        for (SupportTicket s : supportTickets) {
+            if (!s.getReply_list().isEmpty()) {
+                List<Reply> replyList = s.getReply_list();
+                for (Reply r : replyList) {
+                    r.setVendor_staff_user(null);
+                    r.setInternal_staff_user(null);
+                    r.setTourist_user(null);
+                    r.setLocal_user(null);
+                }
+            }
         }
 
         return supportTickets;
@@ -468,6 +489,8 @@ public class SupportTicketService {
             throw new BadRequestException("User does not exist!");
         }
 
+        supportTicketToCreate.setCreated_time(LocalDateTime.now());
+        supportTicketToCreate.setUpdated_time(LocalDateTime.now());
         supportTicketToCreate.setIs_resolved(false);
         supportTicketToCreate.setReply_list(new ArrayList<>());
 
@@ -495,8 +518,23 @@ public class SupportTicketService {
         // tour if adding
 
         SupportTicket supportTicket = supportTicketRepository.save(supportTicketToCreate);
-        vendorStaff.getIncoming_support_ticket_list().add(supportTicket);
-        vendorStaffRepository.save(vendorStaff);
+
+        // send to vendorstaff or internal depending on ticket type
+        if (supportTicket.getTicket_type().equals(SupportTicketTypeEnum.ADMIN)) {
+            List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
+            for (InternalStaff i : internalStaffList) {
+                if (i.getRole().equals(InternalRoleEnum.ADMIN) || i.getRole().equals(InternalRoleEnum.SUPPORT)) {
+                    List<SupportTicket> supportTicketList = i.getSupport_ticket_list();
+                    supportTicketList.add(supportTicket);
+                    i.setSupport_ticket_list(supportTicketList);
+                    internalStaffRepository.save(i);
+                }
+            }
+        } else if (supportTicket.getTicket_type().equals(SupportTicketTypeEnum.VENDOR)) {
+            vendorStaff.getIncoming_support_ticket_list().add(supportTicket);
+            vendorStaffRepository.save(vendorStaff);
+
+        }
 
         User user = userOptional.get();
         UserTypeEnum userType;
@@ -547,7 +585,6 @@ public class SupportTicketService {
         supportTicket.setUpdated_time(LocalDateTime.now());
         supportTicket.setDescription(supportTicketToUpdate.getDescription());
         supportTicket.setTicket_category(supportTicketToUpdate.getTicket_category());
-        supportTicket.setTicket_type(supportTicketToUpdate.getTicket_type());
 
         supportTicketRepository.save(supportTicket);
 
@@ -613,6 +650,19 @@ public class SupportTicketService {
                         vendorStaffOutgoingSupportTicketList.remove(s);
                         v.setOutgoing_support_ticket_list(vendorStaffOutgoingSupportTicketList);
                         vendorStaffRepository.save(v);
+                        break;
+                    }
+                }
+            }
+
+            List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
+            for (InternalStaff i : internalStaffList) {
+                List<SupportTicket> internalStaffSupportTicketList = i.getSupport_ticket_list();
+                for (SupportTicket s : internalStaffSupportTicketList) {
+                    if (s.getSupport_ticket_id().equals(supportTicketId)) {
+                        internalStaffSupportTicketList.remove(s);
+                        i.setSupport_ticket_list(internalStaffSupportTicketList);
+                        internalStaffRepository.save(i);
                         break;
                     }
                 }

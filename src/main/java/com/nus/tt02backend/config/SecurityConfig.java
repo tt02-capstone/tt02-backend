@@ -101,6 +101,7 @@ public class SecurityConfig {
               "/comment/**", // to remove
               "/supportTicket/**", // to remove
                 "/reply/**", // to remove
+                "/booking/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
               "/category/**", // to remove

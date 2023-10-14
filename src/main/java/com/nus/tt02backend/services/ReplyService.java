@@ -50,6 +50,12 @@ public class ReplyService {
                 r.getVendor_staff_user().setVendor(null);
                 r.getVendor_staff_user().setIncoming_support_ticket_list(null);
                 r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+            } else if (r.getInternal_staff_user() != null) {
+                r.getInternal_staff_user().setSupport_ticket_list(null);
+            } else if (r.getTourist_user() != null) {
+                r.getTourist_user().setSupport_ticket_list(null);
+            } else if (r.getLocal_user() != null) {
+                r.getLocal_user().setSupport_ticket_list(null);
             }
         }
 
@@ -69,6 +75,12 @@ public class ReplyService {
             reply.getVendor_staff_user().setVendor(null);
             reply.getVendor_staff_user().setIncoming_support_ticket_list(null);
             reply.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+        } else if (reply.getInternal_staff_user() != null) {
+            reply.getInternal_staff_user().setSupport_ticket_list(null);
+        } else if (reply.getTourist_user() != null) {
+            reply.getTourist_user().setSupport_ticket_list(null);
+        } else if (reply.getLocal_user() != null) {
+            reply.getLocal_user().setSupport_ticket_list(null);
         }
 
         return replyOptional.get();
@@ -97,7 +109,6 @@ public class ReplyService {
         supportTicketRepository.save(supportTicket);
 
         User user = userOptional.get();
-        UserTypeEnum userType;
         if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
             Tourist tourist = (Tourist) user;
             reply.setTourist_user(tourist);
@@ -149,6 +160,18 @@ public class ReplyService {
         reply.setUpdated_time(LocalDateTime.now());
         replyRepository.save(reply);
 
+        if (reply.getVendor_staff_user() != null) {
+            reply.getVendor_staff_user().setVendor(null);
+            reply.getVendor_staff_user().setIncoming_support_ticket_list(null);
+            reply.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+        } else if (reply.getInternal_staff_user() != null) {
+            reply.getInternal_staff_user().setSupport_ticket_list(null);
+        } else if (reply.getTourist_user() != null) {
+            reply.getTourist_user().setSupport_ticket_list(null);
+        } else if (reply.getLocal_user() != null) {
+            reply.getLocal_user().setSupport_ticket_list(null);
+        }
+
         return reply;
     }
 
@@ -180,6 +203,12 @@ public class ReplyService {
                     r.getVendor_staff_user().setVendor(null);
                     r.getVendor_staff_user().setIncoming_support_ticket_list(null);
                     r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                } else if (r.getLocal_user() != null) {
+                    r.getLocal_user().setSupport_ticket_list(null);
+                } else if (r.getTourist_user() != null) {
+                    r.getTourist_user().setSupport_ticket_list(null);
+                } else if (r.getInternal_staff_user() != null) {
+                    r.getInternal_staff_user().setSupport_ticket_list(null);
                 }
             }
         }
