@@ -109,15 +109,35 @@ public class VendorService {
         return vendorList;
     }
 
-    public BigDecimal updateWallet(Long vendorId, BigDecimal updateAmount) throws BadRequestException, NotFoundException {
+    public BigDecimal updateWallet(Long vendorId, BigDecimal updateAmount) throws BadRequestException, NotFoundException, StripeException {
         Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
 
         if (vendorOptional.isPresent()) {
             Vendor vendor = vendorOptional.get();
+            String stripe_account_id = vendor.getStripe_account_id();
+
+            Customer customer =
+                    Customer.retrieve(stripe_account_id);
+
+
             BigDecimal updatedWalletBalance = vendor.getWallet_balance().add(updateAmount);
             if (updatedWalletBalance.compareTo(BigDecimal.ZERO) >= 0) {
                 vendor.setWallet_balance(updatedWalletBalance);
                 vendorRepository.save(vendor);
+                Map<String, Object> params = new HashMap<>();
+                params.put("amount", updateAmount.multiply(new BigDecimal("100")).intValueExact());
+                params.put("currency", "sgd");
+                Map<String, Object> metadata = new HashMap<>();
+
+                if (updateAmount.signum() > 0) {
+                    metadata.put("transaction_type", "Manual Credit");
+                } else {
+                    metadata.put("transaction_type", "Manual Debit");
+                }
+
+                params.put("metadata", metadata);
+                CustomerBalanceTransaction balanceTransaction =
+                        customer.balanceTransactions().create(params);
                 return updatedWalletBalance;
             } else {
                 throw new BadRequestException("Insufficient wallet balance to deduct from");
@@ -162,7 +182,7 @@ public class VendorService {
                 map.put("date", dateTimeParts[0]);
                 map.put("time", dateTimeParts[1]);
 
-                //map.put("type", transaction.getMetadata().get("transaction_type"));
+                map.put("type", transaction.getMetadata().get("transaction_type"));
 
                 extractedData.add(map);
             }

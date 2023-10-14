@@ -56,7 +56,7 @@ public class LocalController {
     }
 
     @PutMapping ("/updateWallet/{localId}/{updateAmount}")
-    public ResponseEntity<BigDecimal> updateWallet(@PathVariable Long localId, @PathVariable BigDecimal updateAmount) throws BadRequestException, NotFoundException {
+    public ResponseEntity<BigDecimal> updateWallet(@PathVariable Long localId, @PathVariable BigDecimal updateAmount) throws BadRequestException, NotFoundException, StripeException {
         BigDecimal updatedWalletAmount = localService.updateWallet(localId, updateAmount);
         return ResponseEntity.ok(updatedWalletAmount);
     }
