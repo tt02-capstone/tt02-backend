@@ -40,6 +40,7 @@ public class InitDataConfig implements CommandLineRunner {
     private final PaymentRepository paymentRepository;
     private final RestaurantRepository restaurantRepository;
     private final DishRepository dishRepository;
+    private final DealRepository dealRepository;
     private final CategoryRepository categoryRepository;
     private final CategoryItemRepository categoryItemRepository;
     private final TelecomRepository telecomRepository;
@@ -129,6 +130,7 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         Vendor vendor1 = new Vendor();
+        Vendor vendor2 = new Vendor();
         if (vendorRepository.count() == 0) {
             vendor1.setBusiness_name("Business Name");
             vendor1.setPoc_name("Ha Joon");
@@ -161,6 +163,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setVendor(vendor1);
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
+            vendor2 = setUpVendor2(vendor2);
         }
 
         if (attractionRepository.count() == 0) {
@@ -241,6 +244,45 @@ public class InitDataConfig implements CommandLineRunner {
 
             createSecondAttraction(currentList);
         }
+
+        if (dealRepository.count() == 0) {
+            Deal d1 = new Deal();
+            d1.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
+            d1.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
+            d1.setDiscount_percent(10);
+            d1.setDeal_type(DealCategoryEnum.BLACK_FRIDAY);
+            d1.setPromo_code("TOURING");
+            d1.setIs_govt_voucher(false);
+            d1.setIs_published(true);
+            List<String> imgList = new ArrayList<>();
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_1_black_friday_deal.jpeg");
+            d1.setDeal_image_list(imgList);
+
+            d1 = dealRepository.save(d1);
+            List<Deal> dList = new ArrayList<>();
+            dList.add(d1);
+            vendor1.setDeals_list(dList);
+            vendorRepository.save(vendor1);
+
+            Deal d2 = new Deal();
+            d2.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
+            d2.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
+            d2.setDiscount_percent(20);
+            d2.setDeal_type(DealCategoryEnum.GOVERNMENT);
+            d2.setPromo_code("WELCOME");
+            d2.setIs_govt_voucher(true);
+            d2.setIs_published(true);
+            List<String> imgList2 = new ArrayList<>();
+            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_2_gov_pic.png");
+            d2.setDeal_image_list(imgList2);
+
+            d2 = dealRepository.save(d2);
+            List<Deal> dList2 = new ArrayList<>();
+            dList2.add(d2);
+            vendor2.setDeals_list(dList2);
+            vendorRepository.save(vendor2);
+        }
+
 
         if (restaurantRepository.count() == 0) {
             Restaurant r1 = new Restaurant();
@@ -422,6 +464,25 @@ public class InitDataConfig implements CommandLineRunner {
             tList.add(t1);
             vendor1.setTelecom_list(tList);
             vendorRepository.save(vendor1);
+
+
+            Telecom t2 = new Telecom();
+            t2.setName("Singetel");
+            t2.setDescription("Singtel 14 Days 80GB plan");
+            t2.setPrice(new BigDecimal(60));
+            t2.setType(TelecomTypeEnum.PHYSICALSIM);
+            t2.setIs_published(true);
+            t2.setEstimated_price_tier(PriceTierEnum.TIER_3);
+            t2.setNum_of_days_valid(14);
+            t2.setData_limit(80);
+            t2.setData_limit_category(GBLimitEnum.VALUE_100);
+            t2.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_14_day.JPG");
+
+            t2 = telecomRepository.save(t2);
+            List<Telecom> tList2 = new ArrayList<>();
+            tList2.add(t2);
+            vendor2.setTelecom_list(tList2);
+            vendorRepository.save(vendor2);
         }
 
         if (categoryRepository.count() == 0) {
@@ -695,5 +756,40 @@ public class InitDataConfig implements CommandLineRunner {
         currentList.add(attraction); // add on to the previous list
         vendor.setAttraction_list(currentList);
         vendorRepository.save(vendor);
+    }
+
+    Vendor setUpVendor2(Vendor vendor2) {
+        vendor2.setBusiness_name("Business 2");
+        vendor2.setPoc_name("Ha Loon");
+        vendor2.setPoc_position("Manager");
+        vendor2.setCountry_code("+65");
+        vendor2.setPoc_mobile_num("96969697");
+        vendor2.setWallet_balance(new BigDecimal(0));
+        vendor2.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor2.setVendor_type(VendorEnum.ATTRACTION);
+        vendor2.setService_description("애정수를 믿으세요?");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "vendor2@gmail.com");
+        customer_parameters.put("name", "Business 2");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor2.setStripe_account_id(stripe_account_id);
+
+        vendor2 = vendorRepository.save(vendor2);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("vendor2@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Na HAHHAH"); //ewww
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor2);
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor2;
     }
 }

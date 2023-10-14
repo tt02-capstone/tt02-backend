@@ -244,6 +244,9 @@ public class CartService {
 
     public CartBooking addCartOperation(String activity_name, List<CartItem> cartItems) throws NotFoundException {
         Attraction selectedAttraction = attractionRepository.getAttractionByName(activity_name);
+        Vendor vendor = vendorRepository.findVendorByAttractionName(activity_name);
+        vendor.setVendor_staff_list(null);
+
         LocalDate startDate = cartItems.get(0).getStart_datetime();
         LocalDate endDate = cartItems.get(0).getEnd_datetime();
 
@@ -290,6 +293,7 @@ public class CartService {
         cartBookingToCreate.setActivity_name(selectedAttraction.getName());
         cartBookingToCreate.setAttraction(selectedAttraction);
         cartBookingToCreate.setCart_item_list(addedCartItems);
+        cartBookingToCreate.setVendor(vendor);
         cartBookingRepository.save(cartBookingToCreate);
 
         // Save Attraction
@@ -307,12 +311,19 @@ public class CartService {
     public List<CartBooking> viewCart(String user_type, String tourist_email) throws BadRequestException {
         if (user_type.equals("LOCAL")) {
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
-            return currentTourist.getCart_list();
+            List<CartBooking> cartBookings = currentTourist.getCart_list();
+            for (CartBooking i : cartBookings) {
+                i.getVendor().setVendor_staff_list(null);
+            }
+            return cartBookings;
 
         } else if (user_type.equals("TOURIST")) {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
-            return currentTourist.getCart_list();
-
+            List<CartBooking> cartBookings = currentTourist.getCart_list();
+            for (CartBooking i : cartBookings) {
+                i.getVendor().setVendor_staff_list(null);
+            }
+            return cartBookings;
         } else {
             throw new BadRequestException("Invalid user type");
         }
@@ -588,6 +599,7 @@ public class CartService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found!"));
         Telecom telecom = telecomRepository.findById(telecomId).orElseThrow(() -> new NotFoundException("Telecom not found!"));
+        Vendor vendor = vendorRepository.findVendorByTelecomId(telecomId);
 
         List<CartItem> list = cartBooking.getCart_item_list();
         for (CartItem c : list) {
@@ -595,6 +607,8 @@ public class CartService {
         }
 
         cartBooking.setTelecom(telecom);
+        vendor.setVendor_staff_list(null);
+        cartBooking.setVendor(vendor);
         cartBookingRepository.save(cartBooking);
 
         if (user instanceof Local) {
@@ -620,6 +634,7 @@ public class CartService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found!"));
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new NotFoundException("Room not found!"));
+        Vendor vendor = vendorRepository.findVendorByRoomId(roomId);
 
         List<CartItem> list = cartBooking.getCart_item_list();
         for (CartItem c : list) {
@@ -627,6 +642,8 @@ public class CartService {
         }
 
         cartBooking.setRoom(room);
+        vendor.setVendor_staff_list(null);
+        cartBooking.setVendor(vendor);
         cartBookingRepository.save(cartBooking);
 
         if (user instanceof Local) {
@@ -752,15 +769,18 @@ public class CartService {
 
 
                         priceList.add(tour_booking.getPrice().multiply(BigDecimal.valueOf(tour_booking.getQuantity())));
+                        bookingsToCheckout.add(cartBookingToCreate);
                     }
                 }
 
             }
         }
 
+
         if (cartBookingToCreate != null) {
             bookingsToCheckout.add(cartBookingToCreate);
         }
+
 
 
 
@@ -773,6 +793,7 @@ public class CartService {
         List<Booking> createdBookings = new ArrayList<>();
         if (user_type.equals("LOCAL")) {
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
+            currentTourist.setCart_list(null);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
@@ -783,6 +804,7 @@ public class CartService {
             updateLocalUser(currentTourist, bookingsToCheckout, createdBookings);
         } else if (user_type.equals("TOURIST")) {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
+            currentTourist.setCart_list(null);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
@@ -855,9 +877,13 @@ public class CartService {
 
         // Check user type and populate fields accordingly
         if (user instanceof Local) {
-            newBooking.setLocal_user((Local) user);
+            Local local = (Local) user;
+            local.setCart_list(null);
+            newBooking.setLocal_user(local);
         } else if (user instanceof Tourist) {
-            newBooking.setTourist_user((Tourist) user);
+            Tourist tourist = (Tourist) user;
+            tourist.setCart_list(null);
+            newBooking.setTourist_user(tourist);
         } else {
             throw new IllegalArgumentException("Invalid user type");
         }

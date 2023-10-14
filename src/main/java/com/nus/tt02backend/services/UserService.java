@@ -51,6 +51,7 @@ public class UserService {
                 tourist.setBooking_list(null);
                 tourist.setPost_list(null);
                 tourist.setComment_list(null);
+                tourist.setCart_list(null);
                 return tourist;
 
             } else if (checkUser instanceof Local) {
@@ -58,6 +59,7 @@ public class UserService {
                 local.setBooking_list(null);
                 local.setPost_list(null);
                 local.setComment_list(null);
+                local.setCart_list(null);
                 return local;
 
             } else {
@@ -129,6 +131,7 @@ public class UserService {
                 local.setRestaurant_list(null);
                 local.setTelecom_list(null);
                 local.setDeals_list(null);
+                local.setCart_list(null);
 
                 return local;
             }
