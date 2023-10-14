@@ -3,6 +3,7 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Local;
+import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.UserRepository;
 import com.stripe.exception.StripeException;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.*;
 
@@ -177,5 +179,25 @@ public class LocalService {
         }
 
         return localList;
+    }
+
+    public BigDecimal updateWallet(Long localId, BigDecimal updateAmount) throws BadRequestException, NotFoundException {
+
+        Optional<Local> localOptional = localRepository.findById(localId);
+
+        if (localOptional.isPresent()) {
+            Local local = localOptional.get();
+            BigDecimal updatedWalletBalance = local.getWallet_balance().add(updateAmount);
+            if (updatedWalletBalance.compareTo(BigDecimal.ZERO) >= 0) {
+                local.setWallet_balance(updatedWalletBalance);
+                localRepository.save(local);
+                return updatedWalletBalance;
+            } else {
+                throw new BadRequestException("Insufficient wallet balance to deduct from");
+            }
+
+        } else {
+            throw new NotFoundException("Local does not exist");
+        }
     }
 }

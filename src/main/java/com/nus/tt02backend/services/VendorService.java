@@ -2,6 +2,7 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.TicketPerDay;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
@@ -20,12 +21,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class VendorService {
@@ -108,5 +107,38 @@ public class VendorService {
         }
 
         return vendorList;
+    }
+
+    public BigDecimal updateWallet(Long vendorId, BigDecimal updateAmount) throws BadRequestException, NotFoundException {
+        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
+
+        if (vendorOptional.isPresent()) {
+            Vendor vendor = vendorOptional.get();
+            BigDecimal updatedWalletBalance = vendor.getWallet_balance().add(updateAmount);
+            if (updatedWalletBalance.compareTo(BigDecimal.ZERO) >= 0) {
+                vendor.setWallet_balance(updatedWalletBalance);
+                vendorRepository.save(vendor);
+                return updatedWalletBalance;
+            } else {
+                throw new BadRequestException("Insufficient wallet balance to deduct from");
+            }
+
+        } else {
+            throw new NotFoundException("Vendor does not exist");
+        }
+
+    }
+
+    public BigDecimal getWithdrawalRequests(Long vendorId) throws NotFoundException {
+        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
+
+        if (vendorOptional.isPresent()) {
+            Vendor vendor = vendorOptional.get();
+
+            return null;
+
+        } else {
+            throw new NotFoundException("Vendor does not exist");
+        }
     }
 }
