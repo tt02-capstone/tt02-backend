@@ -8,6 +8,8 @@ import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
+import com.stripe.model.CustomerBalanceTransaction;
 import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -684,7 +686,7 @@ public class CartService {
         // Should fetch via User if possible
         List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
 
-        CartBooking cartBookingToCreate = new CartBooking();
+        CartBooking cartBookingToCreate = null;
         for (CartBooking booking : bookingsToCheckout) {
 
             if ("ATTRACTION".equals(String.valueOf(booking.getType()))) {
@@ -740,7 +742,7 @@ public class CartService {
                         TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
 
                         Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, startDateTime, startDateTime, endDateTime);
-
+                        cartBookingToCreate = new CartBooking();
                         cartBookingToCreate.setStart_datetime(startDateTime);
                         cartBookingToCreate.setEnd_datetime(endDateTime);
                         cartBookingToCreate.setType(BookingTypeEnum.TOUR);
@@ -756,7 +758,10 @@ public class CartService {
             }
         }
 
-        bookingsToCheckout.add(cartBookingToCreate);
+        if (cartBookingToCreate != null) {
+            bookingsToCheckout.add(cartBookingToCreate);
+        }
+
 
 
         Map<Long, BigDecimal> map = new HashMap<>();
@@ -904,6 +909,20 @@ public class CartService {
         if (Objects.equals(activity_type, "TOUR")) {
             local = localRepository.findLocalByTour(newBooking.getTour());
             local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
+            String stripe_account_id = local.getStripe_account_id();
+
+            Customer customer =
+                    Customer.retrieve(stripe_account_id);
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("amount", payoutAmount.multiply(new BigDecimal("100")).intValueExact());
+            params.put("currency", "sgd");
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("transaction_type", "Earnings");
+            params.put("metadata", metadata);
+
+            CustomerBalanceTransaction balanceTransaction =
+                    customer.balanceTransactions().create(params);
         } else {
             if (Objects.equals(activity_type, "ATTRACTION")) {
                 vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
@@ -917,6 +936,20 @@ public class CartService {
 
             if (!(vendor == null)) {
                 vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+                String stripe_account_id = vendor.getStripe_account_id();
+
+                Customer customer =
+                        Customer.retrieve(stripe_account_id);
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("amount", payoutAmount.multiply(new BigDecimal("100")).intValueExact());
+                params.put("currency", "sgd");
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("transaction_type", "Earnings");
+                params.put("metadata", metadata);
+
+                CustomerBalanceTransaction balanceTransaction =
+                        customer.balanceTransactions().create(params);
             }
         }
 

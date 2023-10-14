@@ -350,6 +350,9 @@ public class PaymentService {
             Map<String, Object> params = new HashMap<>();
             params.put("amount", -amount.multiply(new BigDecimal("100")).intValueExact());
             params.put("currency", "sgd");
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("transaction_type", "Withdrawals");
+            params.put("metadata", metadata);
 
             CustomerBalanceTransaction balanceTransaction =
                     customer.balanceTransactions().create(params);

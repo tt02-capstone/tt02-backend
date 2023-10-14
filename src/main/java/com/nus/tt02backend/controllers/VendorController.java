@@ -35,7 +35,7 @@ public class VendorController {
     }
 
     @PutMapping ("/updateWallet/{vendorId}/{updateAmount}")
-    public ResponseEntity<BigDecimal> updateWallet(@PathVariable Long vendorId, @PathVariable BigDecimal updateAmount) throws BadRequestException, NotFoundException {
+    public ResponseEntity<BigDecimal> updateWallet(@PathVariable Long vendorId, @PathVariable BigDecimal updateAmount) throws BadRequestException, NotFoundException, StripeException {
         BigDecimal updatedWalletAmount = vendorService.updateWallet(vendorId, updateAmount);
         return ResponseEntity.ok(updatedWalletAmount);
     }
