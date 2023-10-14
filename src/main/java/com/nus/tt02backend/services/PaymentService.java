@@ -407,4 +407,8 @@ public class PaymentService {
 
 
     }
+
+    public List<Map<String,String>> getWalletBalances() {
+        return null;
+    }
 }
