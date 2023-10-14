@@ -757,9 +757,9 @@ public class CartService {
         }
 
 
-        Map<CartBooking, BigDecimal> map = new HashMap<>();
+        Map<Long, BigDecimal> map = new HashMap<>();
         for (int i = 0; i < bookingsToCheckout.size(); i++) {
-            map.put(bookingsToCheckout.get(i), priceList.get(i));
+            map.put(bookingsToCheckout.get(i).getCart_booking_id(), priceList.get(i));
         }
 
         List<Long> createdBookingIds = new ArrayList<>();
@@ -767,7 +767,7 @@ public class CartService {
         if (user_type.equals("LOCAL")) {
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
-                BigDecimal totalAmountPayable = map.get(bookingToCheckout).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
                 createdBooking.setBooked_user(UserTypeEnum.LOCAL);
                 createdBookings.add(createdBooking);
