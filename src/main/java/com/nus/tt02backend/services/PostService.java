@@ -111,9 +111,10 @@ public class PostService {
         post.setTitle(postToUpdate.getTitle());
         post.setContent(postToUpdate.getContent());
         post.setUpdated_time(LocalDateTime.now());
-        if (post.getPost_image_list() != null && postToUpdate.getPost_image_list() != null) {
-            post.getPost_image_list().clear();
-            post.getPost_image_list().addAll(postToUpdate.getPost_image_list());
+        if (postToUpdate.getPost_image_list() == null) {
+            post.setPost_image_list(new ArrayList<>());
+        } else {
+            post.setPost_image_list(postToUpdate.getPost_image_list());
         }
         postRepository.save(post);
 
