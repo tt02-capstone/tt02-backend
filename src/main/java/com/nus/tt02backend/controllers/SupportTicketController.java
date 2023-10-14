@@ -53,6 +53,18 @@ public class SupportTicketController {
         return ResponseEntity.ok(supportTicket);
     }
 
+    @GetMapping("/getAllBookingsByUser/{userId}")
+    public ResponseEntity<List<Booking>> getAllBookingsByUser(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        List<Booking> bookingList = supportTicketService.getAllBookingsByUser(userId);
+        return ResponseEntity.ok(bookingList);
+    }
+
+    @GetMapping("/getBookingByBookingId/{bookingId}")
+    public ResponseEntity<Booking> getBookingByBookingId(@PathVariable Long bookingId) throws NotFoundException {
+        Booking booking = supportTicketService.getBookingByBookingId(bookingId);
+        return ResponseEntity.ok(booking);
+    }
+
     @PostMapping("/createSupportTicketForBooking/{userId}/{bookingId}")
     public ResponseEntity<SupportTicket> createSupportTicketForBooking(@PathVariable Long userId, @PathVariable Long bookingId, @RequestBody SupportTicket supportTicketToCreate) throws BadRequestException, NotFoundException {
         SupportTicket supportTicket = supportTicketService.createSupportTicketForBooking(userId, bookingId, supportTicketToCreate);

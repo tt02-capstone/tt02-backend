@@ -165,6 +165,11 @@ public class SupportTicketService {
                     r.setLocal_user(null);
                 }
             }
+            if (s.getBooking() != null) {
+                s.getBooking().setPayment(null);
+                s.getBooking().setLocal_user(null);
+                s.getBooking().setTourist_user(null);
+            }
         }
 
         return supportTickets;
@@ -482,13 +487,65 @@ public class SupportTicketService {
         throw new NotFoundException("Vendor not found!");
     }
 
+    public Booking getBookingByBookingId(Long bookingId) throws NotFoundException {
+        try {
+            Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+
+            if (bookingOptional.isPresent()) {
+                Booking booking = bookingOptional.get();
+
+                if (booking.getLocal_user() != null) {
+                    Local local = booking.getLocal_user();
+                    local.setBooking_list(null);
+                } else if (booking.getTourist_user() != null) {
+                    Tourist tourist = booking.getTourist_user();
+                    tourist.setBooking_list(null);
+                }
+
+                return booking;
+            } else {
+                throw new NotFoundException("Booking not found");
+            }
+        } catch (Exception ex) {
+            throw new NotFoundException(ex.getMessage());
+        }
+    }
+
+    public List<Booking> getAllBookingsByUser(Long userId) throws NotFoundException, BadRequestException {
+        UserTypeEnum touristType = UserTypeEnum.TOURIST;
+        UserTypeEnum localType = UserTypeEnum.LOCAL;
+
+        User currentUser = findUser(userId);
+        List<Booking> bookings = new ArrayList<Booking>();
+        List<Booking> bookingsToReturn = new ArrayList<Booking>();
+
+        if (currentUser.getUser_type().equals(touristType)) {
+            Tourist tourist = findTourist(userId);
+            bookings = tourist.getBooking_list();
+        } else if (currentUser.getUser_type().equals(localType)) {
+            Local local = findLocal(userId);
+            bookings = local.getBooking_list();
+        } else {
+            throw new BadRequestException("Current user type not tourist or local");
+        }
+
+        bookingsToReturn.addAll(bookings);
+
+        for (Booking booking : bookingsToReturn) {
+            booking.setLocal_user(null);
+            booking.setTourist_user(null);
+            booking.getPayment().setBooking(null);
+        }
+
+        return bookingsToReturn;
+    }
+
     public SupportTicket createSupportTicketForBooking(Long userId, Long bookingId, SupportTicket supportTicketToCreate) throws BadRequestException, NotFoundException {
 
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new BadRequestException("User does not exist!");
         }
-
         supportTicketToCreate.setCreated_time(LocalDateTime.now());
         supportTicketToCreate.setUpdated_time(LocalDateTime.now());
         supportTicketToCreate.setIs_resolved(false);
@@ -496,9 +553,12 @@ public class SupportTicketService {
 
         VendorStaff vendorStaff = null;
 
-        Booking booking = bookingService.getBookingByBookingId(bookingId);
+        Booking booking = getBookingByBookingId(bookingId);
         booking.setLocal_user(null);
         booking.setTourist_user(null);
+        if (booking.getPayment() != null ) {
+            booking.getPayment().setBooking(null);
+        }
         supportTicketToCreate.setBooking(booking);
 
         if (booking.getAttraction() != null) {
@@ -533,11 +593,10 @@ public class SupportTicketService {
         } else if (supportTicket.getTicket_type().equals(SupportTicketTypeEnum.VENDOR)) {
             vendorStaff.getIncoming_support_ticket_list().add(supportTicket);
             vendorStaffRepository.save(vendorStaff);
-
         }
 
         User user = userOptional.get();
-        UserTypeEnum userType;
+
         if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
             Tourist tourist = (Tourist) user;
             tourist.getSupport_ticket_list().add(supportTicket);
@@ -545,6 +604,14 @@ public class SupportTicketService {
         } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
             Local local = (Local) user;
             local.getSupport_ticket_list().add(supportTicket);
+//            cant uncomment below as bookinglist is empty
+//            List<Booking> bookingList = local.getBooking_list();
+//            for (Booking b : bookingList) {
+//                b.getPayment().setBooking(null);
+//                b.setLocal_user(null);
+//                b.setTourist_user(null);
+//            }
+//            System.out.println("Local booking list" + bookingList);
             localRepository.save(local);
         }
 
@@ -584,7 +651,6 @@ public class SupportTicketService {
 
         supportTicket.setUpdated_time(LocalDateTime.now());
         supportTicket.setDescription(supportTicketToUpdate.getDescription());
-        supportTicket.setTicket_category(supportTicketToUpdate.getTicket_category());
 
         supportTicketRepository.save(supportTicket);
 

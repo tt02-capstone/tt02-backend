@@ -42,7 +42,7 @@ public class SupportTicket {
     @OneToMany(fetch = FetchType.LAZY)
     private List<Reply> reply_list;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private Booking booking;
 
     @ManyToOne

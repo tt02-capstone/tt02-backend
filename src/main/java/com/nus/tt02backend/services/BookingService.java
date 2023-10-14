@@ -206,9 +206,11 @@ public class BookingService {
                 if (booking.getLocal_user() != null) {
                     Local local = booking.getLocal_user();
                     local.setBooking_list(null);
+                    local.setSupport_ticket_list(null);
                 } else if (booking.getTourist_user() != null) {
                     Tourist tourist = booking.getTourist_user();
                     tourist.setBooking_list(null);
+                    tourist.setSupport_ticket_list(null);
                 }
 
                 if (!booking.getType().equals(BookingTypeEnum.TELECOM) &&
@@ -236,7 +238,9 @@ public class BookingService {
                 }
 
                 bookingRepository.save(booking);
-                booking.getPayment().setBooking(null);
+                if (booking.getPayment() != null) {
+                    booking.getPayment().setBooking(null);
+                }
 
                 return booking;
             } else {
