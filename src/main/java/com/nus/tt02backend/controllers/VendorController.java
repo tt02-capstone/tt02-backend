@@ -25,4 +25,10 @@ public class VendorController {
         Long vendorId = vendorService.createVendor(vendorStaffToCreate);
         return ResponseEntity.ok(vendorId);
     }
+
+    @GetMapping ("/getAllVendors")
+    public ResponseEntity<List<Vendor>> getAllVendors(){
+        List<Vendor> vendorList = vendorService.getAllVendors();
+        return ResponseEntity.ok(vendorList);
+    }
 }
