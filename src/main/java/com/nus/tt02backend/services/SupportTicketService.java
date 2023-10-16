@@ -109,9 +109,18 @@ public class SupportTicketService {
         }
     }
 
+
+    public List<SupportTicket> getAllSupportTicketsByVendorStaff(Long vendorStaffId) throws NotFoundException {
+        VendorStaff vendorStaff = vendorStaffRepository.findById(vendorStaffId)
+                .orElseThrow(() -> new NotFoundException("VendorStaff not found"));
+        vendorStaff.getVendor().setVendor_staff_list(null);
+        return vendorStaff.getOutgoing_support_ticket_list();
+    }
+
     public List<SupportTicket> getAllSupportTickets() {
         return supportTicketRepository.findAll();
     }
+
 
     public SupportTicket getSupportTicket(Long supportTicketId) throws NotFoundException {
         try {
