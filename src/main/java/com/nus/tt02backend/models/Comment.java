@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -23,11 +23,13 @@ public class Comment {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private Integer upvote;
+    @ElementCollection
+    @CollectionTable(name="upvoted_user_id_list")
+    private List<Long> upvoted_user_id_list;
 
-    @Column(nullable = false)
-    private Integer downvote;
+    @ElementCollection
+    @CollectionTable(name="downvoted_user_id_list")
+    private List<Long> downvoted_user_id_list;
 
     @Column(nullable = false)
     private LocalDateTime publish_time;
@@ -37,10 +39,10 @@ public class Comment {
 
     @Column(nullable = false)
     @OneToMany
-    private ArrayList<Comment> reply_list = new ArrayList<>();
+    private List<Comment> reply_list;
 
     @OneToMany
-    private ArrayList<Report> reported_comment_list = new ArrayList<>();
+    private List<Report> reported_comment_list;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
@@ -51,7 +53,7 @@ public class Comment {
     private Comment parent_comment;
 
     @OneToMany(mappedBy = "parent_comment")
-    private ArrayList<Comment> child_comment_list = new ArrayList<>();
+    private List<Comment> child_comment_list;
 
     @ManyToOne
     @JoinColumn(name = "tourist_id")
