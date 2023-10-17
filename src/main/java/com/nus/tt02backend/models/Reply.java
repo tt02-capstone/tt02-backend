@@ -27,14 +27,18 @@ public class Reply {
     private String message;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tourist_user_user_id")
     private Tourist tourist_user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "local_user_user_id")
     private Local local_user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vendor_user_user_id")
     private VendorStaff vendor_staff_user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "internal_user_user_id")
     private InternalStaff internal_staff_user;
 }

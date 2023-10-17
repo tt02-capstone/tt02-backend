@@ -114,7 +114,24 @@ public class SupportTicketService {
         VendorStaff vendorStaff = vendorStaffRepository.findById(vendorStaffId)
                 .orElseThrow(() -> new NotFoundException("VendorStaff not found"));
         vendorStaff.getVendor().setVendor_staff_list(null);
-        return vendorStaff.getOutgoing_support_ticket_list();
+        List<SupportTicket> supportTickets = vendorStaff.getOutgoing_support_ticket_list();
+        for (SupportTicket s : supportTickets) {
+            if (!s.getReply_list().isEmpty()) {
+                List<Reply> replyList = s.getReply_list();
+                for (Reply r : replyList) {
+                    r.setVendor_staff_user(null);
+                    r.setInternal_staff_user(null);
+                    r.setTourist_user(null);
+                    r.setLocal_user(null);
+                }
+            }
+            if (s.getBooking() != null) {
+                s.getBooking().setPayment(null);
+                s.getBooking().setLocal_user(null);
+                s.getBooking().setTourist_user(null);
+            }
+        }
+        return supportTickets;
     }
 
     public List<SupportTicket> getAllSupportTickets() {
