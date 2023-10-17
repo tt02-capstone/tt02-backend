@@ -22,4 +22,18 @@ public class CommentController {
         Comment comment = commentService.createComment(postId, parentCommentId, userId, commentToCreate);
         return ResponseEntity.ok(comment);
     }
+
+    @PutMapping("/updateComment")
+    public ResponseEntity<Comment> updateComment(@RequestBody Comment commentToUpdate)
+            throws BadRequestException {
+        Comment comment = commentService.updateComment(commentToUpdate);
+        return ResponseEntity.ok(comment);
+    }
+
+    @DeleteMapping("/deleteComment/{commentIdToDelete}")
+    public ResponseEntity<String> deleteComment(@PathVariable Long commentIdToDelete)
+            throws BadRequestException {
+        String responseMessage = commentService.deleteComment(commentIdToDelete);
+        return ResponseEntity.ok(responseMessage);
+    }
 }
