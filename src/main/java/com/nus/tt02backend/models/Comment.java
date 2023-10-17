@@ -24,11 +24,11 @@ public class Comment {
     private String content;
 
     @ElementCollection
-    @CollectionTable(name="upvoted_user_id_list")
+    @CollectionTable(name="comment_upvoted_user_id_list")
     private List<Long> upvoted_user_id_list;
 
     @ElementCollection
-    @CollectionTable(name="downvoted_user_id_list")
+    @CollectionTable(name="comment_downvoted_user_id_list")
     private List<Long> downvoted_user_id_list;
 
     @Column(nullable = false)
