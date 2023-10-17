@@ -215,4 +215,96 @@ public class CommentService {
 
         return "Comment successfully deleted";
     }
+    
+    public Comment upvoteComment(Long userId, Long commentId) throws BadRequestException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new BadRequestException("User does not exist!");
+        }
+
+        Optional<Comment> commentOptional = commentRepository.findById(commentId);
+        if (commentOptional.isEmpty()) {
+            throw new BadRequestException("Comment does not exist!");
+        }
+
+        User user = userOptional.get();
+        Comment comment = commentOptional.get();
+        if (!comment.getUpvoted_user_id_list().contains(user.getUser_id())) {
+            comment.getUpvoted_user_id_list().add(user.getUser_id());
+            comment.getDownvoted_user_id_list().remove(user.getUser_id());
+        } else {
+            comment.getUpvoted_user_id_list().remove(user.getUser_id());
+        }
+        commentRepository.save(comment);
+
+        if (comment.getTourist_user() != null) {
+            comment.getTourist_user().setPost_list(null);
+            comment.getTourist_user().setComment_list(null);
+        } else if (comment.getLocal_user() != null) {
+            comment.getLocal_user().setPost_list(null);
+            comment.getLocal_user().setComment_list(null);
+        } else if (comment.getVendor_staff_user() != null) {
+            comment.getVendor_staff_user().setPost_list(null);
+            comment.getVendor_staff_user().setComment_list(null);
+            comment.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+        } else if (comment.getInternal_staff_user() != null) {
+            comment.getInternal_staff_user().setPost_list(null);
+            comment.getInternal_staff_user().setComment_list(null);
+        }
+
+        comment.getPost().setComment_list(null);
+        comment.getPost().setTourist_user(null);
+        comment.getPost().setLocal_user(null);
+        comment.getPost().setVendor_staff_user(null);
+        comment.getPost().setInternal_staff_user(null);
+        comment.setParent_comment(null);
+
+        return comment;
+    }
+
+    public Comment downvoteComment(Long userId, Long commentId) throws BadRequestException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new BadRequestException("User does not exist!");
+        }
+
+        Optional<Comment> commentOptional = commentRepository.findById(commentId);
+        if (commentOptional.isEmpty()) {
+            throw new BadRequestException("Comment does not exist!");
+        }
+
+        User user = userOptional.get();
+        Comment comment = commentOptional.get();
+        if (!comment.getDownvoted_user_id_list().contains(user.getUser_id())) {
+            comment.getDownvoted_user_id_list().add(user.getUser_id());
+            comment.getUpvoted_user_id_list().remove(user.getUser_id());
+        } else {
+            comment.getDownvoted_user_id_list().remove(user.getUser_id());
+        }
+        commentRepository.save(comment);
+
+        if (comment.getTourist_user() != null) {
+            comment.getTourist_user().setPost_list(null);
+            comment.getTourist_user().setComment_list(null);
+        } else if (comment.getLocal_user() != null) {
+            comment.getLocal_user().setPost_list(null);
+            comment.getLocal_user().setComment_list(null);
+        } else if (comment.getVendor_staff_user() != null) {
+            comment.getVendor_staff_user().setPost_list(null);
+            comment.getVendor_staff_user().setComment_list(null);
+            comment.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+        } else if (comment.getInternal_staff_user() != null) {
+            comment.getInternal_staff_user().setPost_list(null);
+            comment.getInternal_staff_user().setComment_list(null);
+        }
+
+        comment.getPost().setComment_list(null);
+        comment.getPost().setTourist_user(null);
+        comment.getPost().setLocal_user(null);
+        comment.getPost().setVendor_staff_user(null);
+        comment.getPost().setInternal_staff_user(null);
+        comment.setParent_comment(null);
+
+        return comment;
+    }
 }
