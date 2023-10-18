@@ -189,10 +189,12 @@ public class PostService {
                 if (p.getLocal_user() != null) {
                     p.getLocal_user().setPost_list(null);
                     p.getLocal_user().setComment_list(null);
+                    p.getLocal_user().setBooking_list(null);
                 }
                 else if (p.getTourist_user() != null) {
                     p.getTourist_user().setPost_list(null);
                     p.getTourist_user().setComment_list(null);
+                    p.getTourist_user().setBooking_list(null);
                 }
                 else if (p.getInternal_staff_user() != null) {
                     p.getInternal_staff_user().setPost_list(null);
@@ -243,10 +245,12 @@ public class PostService {
             if (p.getLocal_user() != null) {
                 p.getLocal_user().setPost_list(null);
                 p.getLocal_user().setComment_list(null);
+                p.getLocal_user().setBooking_list(null);
             }
             else if (p.getTourist_user() != null) {
                 p.getTourist_user().setPost_list(null);
                 p.getTourist_user().setComment_list(null);
+                p.getTourist_user().setBooking_list(null);
             }
             else if (p.getInternal_staff_user() != null) {
                 p.getInternal_staff_user().setPost_list(null);
