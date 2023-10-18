@@ -144,7 +144,7 @@ public class DataCollectionService {
                     "price_1O1Pf2JuLboRjh4qv1wswh2w"
             );
 
-            subscription_params.put("cancel_at", )
+            //subscription_params.put("cancel_at", )
 
         } else if (Objects.equals(subscription_type, "YEARLY")) {
 
