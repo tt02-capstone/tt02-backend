@@ -130,7 +130,7 @@ public class LocalService {
         javaMailSender.send(mimeMessage);
     }
 
-    public Local editLocalProfile(Local localToEdit) throws EditUserException {
+    public Local editLocalProfile(Local localToEdit) throws BadRequestException {
         try {
 
             Optional<Local> localOptional = localRepository.findById(localToEdit.getUser_id());
@@ -140,17 +140,17 @@ public class LocalService {
 
                 Long existingId = localRepository.getLocalIdByEmail(localToEdit.getEmail());
                 if (existingId != null && existingId != localToEdit.getUser_id()) { // but there is an existing email
-                    throw new EditUserException("Email currently in use. Please use a different email!");
+                    throw new BadRequestException("Email currently in use. Please use a different email!");
                 }
 
                 existingId = localRepository.getLocalIdByNRICNum(local.getNric_num());
                 if (existingId != null && existingId != localToEdit.getUser_id()) { // but there is a NRIC number
-                    throw new EditUserException("NRIC number currently in use. Please use a different NRIC number!");
+                    throw new BadRequestException("NRIC number currently in use. Please use a different NRIC number!");
                 }
 
                 existingId = localRepository.getLocalIdByMobileNum(localToEdit.getMobile_num());
                 if (existingId != null && existingId != localToEdit.getUser_id()) { // but there is a mobile number
-                    throw new CreateLocalException("Mobile number currently in use. Please use a different mobile number!");
+                    throw new BadRequestException("Mobile number currently in use. Please use a different mobile number!");
                 }
 
                 local.setEmail(localToEdit.getEmail());
@@ -165,10 +165,10 @@ public class LocalService {
                 return local;
 
             } else {
-                throw new EditUserException("Local not found!");
+                throw new BadRequestException("Local not found!");
             }
         } catch (Exception ex) {
-            throw new EditUserException(ex.getMessage());
+            throw new BadRequestException(ex.getMessage());
         }
     }
 

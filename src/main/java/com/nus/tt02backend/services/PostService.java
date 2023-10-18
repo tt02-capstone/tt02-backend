@@ -188,17 +188,21 @@ public class PostService {
                 p.setComment_list(null);
                 if (p.getLocal_user() != null) {
                     p.getLocal_user().setPost_list(null);
+                    p.getLocal_user().setComment_list(null);
                     p.getLocal_user().setBooking_list(null);
                 }
                 else if (p.getTourist_user() != null) {
                     p.getTourist_user().setPost_list(null);
+                    p.getTourist_user().setComment_list(null);
                     p.getTourist_user().setBooking_list(null);
                 }
                 else if (p.getInternal_staff_user() != null) {
                     p.getInternal_staff_user().setPost_list(null);
+                    p.getInternal_staff_user().setComment_list(null);
                 }
                 else if (p.getVendor_staff_user() != null) {
                     p.getVendor_staff_user().setPost_list(null);
+                    p.getVendor_staff_user().setComment_list(null);
                     p.getVendor_staff_user().getVendor().setVendor_staff_list(null);
                 }
             }
@@ -215,23 +219,50 @@ public class PostService {
 
         if (postOptional.isPresent()) {
             Post p = postOptional.get();
-            p.setComment_list(null); // might change in future
+            // p.setComment_list(null); // might change in future
+            List<Comment> childComments = new ArrayList<>();
+            if (!p.getComment_list().isEmpty()) {
+                for (Comment comment : p.getComment_list()) {
+                    comment.setPost(null);
+                    comment.setParent_comment(null);
+
+                    if (!comment.getChild_comment_list().isEmpty()) {
+                        childComments.addAll(comment.getChild_comment_list());
+                    }
+
+                    if (comment.getLocal_user() != null) {
+                        comment.getLocal_user().setComment_list(null);
+                    } else if (comment.getTourist_user() != null) {
+                        comment.getTourist_user().setComment_list(null);
+                    } else if (comment.getVendor_staff_user() != null) {
+                        comment.getVendor_staff_user().setComment_list(null);
+                    } else if (comment.getInternal_staff_user() != null) {
+                        comment.getInternal_staff_user().setComment_list(null);
+                    }
+                }
+            }
 
             if (p.getLocal_user() != null) {
                 p.getLocal_user().setPost_list(null);
+                p.getLocal_user().setComment_list(null);
                 p.getLocal_user().setBooking_list(null);
             }
             else if (p.getTourist_user() != null) {
                 p.getTourist_user().setPost_list(null);
+                p.getTourist_user().setComment_list(null);
                 p.getTourist_user().setBooking_list(null);
             }
             else if (p.getInternal_staff_user() != null) {
                 p.getInternal_staff_user().setPost_list(null);
+                p.getInternal_staff_user().setComment_list(null);
             }
             else if (p.getVendor_staff_user() != null) {
                 p.getVendor_staff_user().setPost_list(null);
+                p.getVendor_staff_user().setComment_list(null);
                 p.getVendor_staff_user().getVendor().setVendor_staff_list(null);
             }
+
+            p.getComment_list().removeAll(childComments);
 
             return p;
         } else {

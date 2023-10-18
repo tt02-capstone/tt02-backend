@@ -96,13 +96,13 @@ public class UserController {
     }
 
     @PutMapping("/editPassword/{userId}/{oldPassword}/{newPassword}")
-    public void editPassword(@PathVariable Long userId, @PathVariable String oldPassword, @PathVariable String newPassword) throws EditPasswordException {
+    public void editPassword(@PathVariable Long userId, @PathVariable String oldPassword, @PathVariable String newPassword) throws BadRequestException {
         System.out.println("edit pass");
         userService.editPassword(userId, oldPassword, newPassword);
     }
 
     @PutMapping ("/uploadNewProfilePic")
-    public ResponseEntity<User> uploadNewProfilePic(@RequestBody User user) throws UserNotFoundException {
+    public ResponseEntity<User> uploadNewProfilePic(@RequestBody User user) throws NotFoundException {
         User newUser = userService.uploadNewProfilePic(user.getUser_id(), user.getProfile_pic());
         return ResponseEntity.ok(newUser);
     }
@@ -121,7 +121,7 @@ public class UserController {
         return ResponseEntity.ok(successMessage);
     }
     @GetMapping("/viewUserProfile/{userId}")
-    public ResponseEntity<User> viewUserProfile(@PathVariable Long userId) throws UserNotFoundException {
+    public ResponseEntity<User> viewUserProfile(@PathVariable Long userId) throws NotFoundException {
         User user = userService.viewUserProfile(userId);
         return ResponseEntity.ok(user);
     }
