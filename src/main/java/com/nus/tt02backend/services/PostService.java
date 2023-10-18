@@ -217,7 +217,7 @@ public class PostService {
 
         if (postOptional.isPresent()) {
             Post p = postOptional.get();
-            // p.setComment_list(null); // might change in future
+
             List<Comment> childComments = new ArrayList<>();
             if (!p.getComment_list().isEmpty()) {
                 for (Comment comment : p.getComment_list()) {
