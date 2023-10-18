@@ -698,7 +698,7 @@ public class CartService {
 
 
     public List<Long> checkout(String user_type, String tourist_email, String payment_method_id, Float totalPrice, List<Long> booking_ids, List<BigDecimal> priceList)
-            throws StripeException, BadRequestException {
+            throws StripeException, BadRequestException, NotFoundException {
 
         // Should fetch via User if possible
         List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
@@ -715,7 +715,6 @@ public class CartService {
 
                 if (optionalCartItem.isPresent()) {
                     CartItem tour_booking = optionalCartItem.get();
-
 
 
                     List<CartItem> cartItems = new ArrayList<>();
@@ -755,10 +754,9 @@ public class CartService {
                         LocalDateTime startDateTime = LocalDateTime.of(tour_date, startTime);
                         LocalDateTime endDateTime = LocalDateTime.of(tour_date, endTime);
 
-
                         TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
-
-                        Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, startDateTime, startDateTime, endDateTime);
+                        Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date.atStartOfDay(), startDateTime, endDateTime);
+                        System.out.println(tour.getTour_id());
                         cartBookingToCreate = new CartBooking();
                         cartBookingToCreate.setStart_datetime(startDateTime);
                         cartBookingToCreate.setEnd_datetime(endDateTime);
@@ -766,6 +764,7 @@ public class CartService {
                         cartBookingToCreate.setActivity_name(selectedTourTypeName);
                         cartBookingToCreate.setTour(tour);
                         cartBookingToCreate.setCart_item_list(cartItems);
+
 
 
                         priceList.add(tour_booking.getPrice().multiply(BigDecimal.valueOf(tour_booking.getQuantity())));
@@ -821,7 +820,7 @@ public class CartService {
     }
 
     private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id)
-            throws StripeException {
+            throws StripeException, NotFoundException {
 
         List<BookingItem> bookingItems = createBookingItems(bookingToCheckout);
         Booking newBooking = createBooking(user, bookingToCheckout, bookingItems);
@@ -837,14 +836,17 @@ public class CartService {
     private List<BookingItem> createBookingItems(CartBooking bookingToCheckout) {
         List<BookingItem> bookingItems = new ArrayList<>();
         for (CartItem cartItem : bookingToCheckout.getCart_item_list()) {
-            BookingItem newBookingItem = new BookingItem();
-            newBookingItem.setQuantity(cartItem.getQuantity());
-            newBookingItem.setStart_datetime(cartItem.getStart_datetime());
-            newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
-            newBookingItem.setType(cartItem.getType());
-            newBookingItem.setActivity_selection(cartItem.getActivity_selection());
-            bookingItemRepository.save(newBookingItem);
-            bookingItems.add(newBookingItem);
+            if (!(Objects.equals(String.valueOf(bookingToCheckout.getType()), "ATTRACTION") && Objects.equals(String.valueOf(cartItem.getType()), "TOUR"))) {
+                BookingItem newBookingItem = new BookingItem();
+                newBookingItem.setQuantity(cartItem.getQuantity());
+                newBookingItem.setStart_datetime(cartItem.getStart_datetime());
+                newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
+                newBookingItem.setType(cartItem.getType());
+                newBookingItem.setActivity_selection(cartItem.getActivity_selection());
+                bookingItemRepository.save(newBookingItem);
+                bookingItems.add(newBookingItem);
+            }
+
         }
         return bookingItems;
     }
@@ -861,6 +863,8 @@ public class CartService {
         newBooking.setActivity_name(bookingToCheckout.getActivity_name());
         String activity_type = String.valueOf(bookingToCheckout.getType());
         //ACCOMODATION, TELECOM, ATTRACTION, TOUR
+
+
         if (Objects.equals(activity_type, "ATTRACTION")) {
             newBooking.setAttraction(bookingToCheckout.getAttraction());
 
@@ -894,7 +898,7 @@ public class CartService {
         return newBooking;
     }
 
-    private Payment createPayment(Booking newBooking, BigDecimal totalAmountPayable, String payment_method_id) throws StripeException {
+    private Payment createPayment(Booking newBooking, BigDecimal totalAmountPayable, String payment_method_id) throws StripeException, NotFoundException {
         Payment bookingPayment = new Payment();
         bookingPayment.setPayment_amount(totalAmountPayable);
 
@@ -934,21 +938,26 @@ public class CartService {
 
         if (Objects.equals(activity_type, "TOUR")) {
             local = localRepository.findLocalByTour(newBooking.getTour());
-            local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
-            String stripe_account_id = local.getStripe_account_id();
+            if (local != null) {
+                local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
+                String stripe_account_id = local.getStripe_account_id();
 
-            Customer customer =
-                    Customer.retrieve(stripe_account_id);
+                Customer customer =
+                        Customer.retrieve(stripe_account_id);
 
-            Map<String, Object> params = new HashMap<>();
-            params.put("amount", payoutAmount.multiply(new BigDecimal("100")).intValueExact());
-            params.put("currency", "sgd");
-            Map<String, Object> metadata = new HashMap<>();
-            metadata.put("transaction_type", "Earnings");
-            params.put("metadata", metadata);
+                Map<String, Object> params = new HashMap<>();
+                params.put("amount", payoutAmount.multiply(new BigDecimal("100")).intValueExact());
+                params.put("currency", "sgd");
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("transaction_type", "Earnings");
+                params.put("metadata", metadata);
 
-            CustomerBalanceTransaction balanceTransaction =
-                    customer.balanceTransactions().create(params);
+                CustomerBalanceTransaction balanceTransaction =
+                        customer.balanceTransactions().create(params);
+            } else {
+                throw new NotFoundException("No locals found associated with tour");
+            }
+
         } else {
             if (Objects.equals(activity_type, "ATTRACTION")) {
                 vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
