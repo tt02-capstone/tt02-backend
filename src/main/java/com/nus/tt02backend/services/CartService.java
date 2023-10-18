@@ -769,7 +769,7 @@ public class CartService {
 
 
                         priceList.add(tour_booking.getPrice().multiply(BigDecimal.valueOf(tour_booking.getQuantity())));
-                        bookingsToCheckout.add(cartBookingToCreate);
+
                     }
                 }
 
