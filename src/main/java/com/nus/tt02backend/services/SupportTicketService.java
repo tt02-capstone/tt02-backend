@@ -269,6 +269,21 @@ public class SupportTicketService {
             }
         }
 
+        try {
+            String subject = "[WithinSG] Support Ticket To Admin Created";
+            String content = "<html><body style='font-family: Arial, sans-serif;'>"
+                    + "<p style='color: #333; font-size: 16px;'>Dear " + user.getName() + ",</p>"
+                    + "<p style='color: #333; font-size: 16px;'>You have submitted a support ticket to WithinSG's Internal Staff</p>"
+                    + "<p style='color: #333; font-size: 16px;'><strong>Ticket Id:</strong> " + supportTicket.getSupport_ticket_id().toString() + "</p>"
+                    + "<p style='color: #333; font-size: 16px;'><strong>Ticket Category:</strong> " + supportTicket.getTicket_category().toString() + "</p>"
+                    + "<p style='color: #333; font-size: 16px;'><strong>Message Contents:</strong> <em>" + supportTicket.getDescription() + "</em></p>"
+                    + "<p style='color: #333; font-size: 16px;'>Kind Regards,<br> WithinSG</p>"
+                    + "</body></html>";
+            sendEmail(user.getEmail(), subject, content);
+        } catch (MessagingException ex) {
+            throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
+        }
+
         return supportTicket;
     }
 

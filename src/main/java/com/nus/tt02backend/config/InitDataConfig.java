@@ -141,7 +141,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendor1.setService_description("애정수를 믿으세요?");
 
             Map<String, Object> customer_parameters = new HashMap<>();
-            customer_parameters.put("email", "vendor@gmail.com");
+            customer_parameters.put("email", "leahrj01@gmail.com");
             customer_parameters.put("name", "Business Name");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             vendor1.setStripe_account_id(stripe_account_id);
@@ -149,7 +149,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendor1 = vendorRepository.save(vendor1);
 
             VendorStaff vendorStaff = new VendorStaff();
-            vendorStaff.setEmail("vendor@gmail.com");
+            vendorStaff.setEmail("leahrj01@gmail.com");
             vendorStaff.setEmail_verified(true);
             vendorStaff.setName("Na Yeon"); //ewww
             vendorStaff.setPassword(passwordEncoder.encode("password1!"));
