@@ -743,18 +743,25 @@ public class CartService {
                         LocalTime startTime = LocalTime.of(Integer.parseInt(startHourMinute[0]), Integer.parseInt(startHourMinute[1]));
                         LocalTime endTime = LocalTime.of(Integer.parseInt(endHourMinute[0]), Integer.parseInt(endHourMinute[1]));
                         if ("PM".equals(start_parts[1])) {
-                            startTime = startTime.plusHours(12);
+                            if (startTime.getHour() != 12) {
+                                startTime = startTime.plusHours(12);
+                            }
                         }
 
                         if ("PM".equals(end_parts[1])) {
-                            endTime = endTime.plusHours(12);
+                            if (endTime.getHour() != 12) {
+                                endTime = endTime.plusHours(12);
+                            }
                         }
 
 
                         LocalDateTime startDateTime = LocalDateTime.of(tour_date, startTime);
                         LocalDateTime endDateTime = LocalDateTime.of(tour_date, endTime);
-
+                        System.out.println(startDateTime);
+                        System.out.println(endDateTime);
+                        System.out.println(tour_date.atStartOfDay());
                         TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
+                        System.out.println(selected_tourType.getTour_type_id());
                         Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date.atStartOfDay(), startDateTime, endDateTime);
                         System.out.println(tour.getTour_id());
                         cartBookingToCreate = new CartBooking();
