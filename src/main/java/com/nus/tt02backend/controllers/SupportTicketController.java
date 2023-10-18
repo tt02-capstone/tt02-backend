@@ -29,9 +29,15 @@ public class SupportTicketController {
         return ResponseEntity.ok(supportTicketList);
     }
 
-    @GetMapping("/getAllSupportTicketsByVendorStaff/{userId}")
-    public ResponseEntity<List<SupportTicket>> getAllSupportTicketsByVendorStaff(@PathVariable Long userId) throws NotFoundException, BadRequestException {
-        List<SupportTicket> supportTicketList = supportTicketService.getAllSupportTicketsByVendorStaff(userId);
+    @GetMapping("/getAllOutgoingSupportTicketsByVendorStaff/{userId}")
+    public ResponseEntity<List<SupportTicket>> getAllOutgoingSupportTicketsByVendorStaff(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        List<SupportTicket> supportTicketList = supportTicketService.getAllOutgoingSupportTicketsByVendorStaff(userId);
+        return ResponseEntity.ok(supportTicketList);
+    }
+
+    @GetMapping("/getAllIncomingSupportTicketsByVendorStaff/{userId}")
+    public ResponseEntity<List<SupportTicket>> getAllIncomingSupportTicketsByVendorStaff(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        List<SupportTicket> supportTicketList = supportTicketService.getAllIncomingSupportTicketsByVendorStaff(userId);
         return ResponseEntity.ok(supportTicketList);
     }
 

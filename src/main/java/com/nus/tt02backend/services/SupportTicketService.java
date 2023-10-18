@@ -110,11 +110,37 @@ public class SupportTicketService {
     }
 
 
-    public List<SupportTicket> getAllSupportTicketsByVendorStaff(Long vendorStaffId) throws NotFoundException {
+    public List<SupportTicket> getAllOutgoingSupportTicketsByVendorStaff(Long vendorStaffId) throws NotFoundException {
         VendorStaff vendorStaff = vendorStaffRepository.findById(vendorStaffId)
                 .orElseThrow(() -> new NotFoundException("VendorStaff not found"));
         vendorStaff.getVendor().setVendor_staff_list(null);
         List<SupportTicket> supportTickets = vendorStaff.getOutgoing_support_ticket_list();
+        for (SupportTicket s : supportTickets) {
+            if (!s.getReply_list().isEmpty()) {
+                List<Reply> replyList = s.getReply_list();
+                for (Reply r : replyList) {
+                    r.setVendor_staff_user(null);
+                    r.setInternal_staff_user(null);
+                    r.setTourist_user(null);
+                    r.setLocal_user(null);
+                }
+            }
+            if (s.getBooking() != null) {
+                s.getBooking().setPayment(null);
+                s.getBooking().setLocal_user(null);
+                s.getBooking().setTourist_user(null);
+            }
+        }
+        return supportTickets;
+    }
+
+
+
+    public List<SupportTicket> getAllIncomingSupportTicketsByVendorStaff(Long vendorStaffId) throws NotFoundException {
+        VendorStaff vendorStaff = vendorStaffRepository.findById(vendorStaffId)
+                .orElseThrow(() -> new NotFoundException("VendorStaff not found"));
+        vendorStaff.getVendor().setVendor_staff_list(null);
+        List<SupportTicket> supportTickets = vendorStaff.getIncoming_support_ticket_list();
         for (SupportTicket s : supportTickets) {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
