@@ -2,14 +2,14 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.TicketPerDay;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.models.VendorStaff;
 import com.nus.tt02backend.models.enums.ApplicationStatusEnum;
 import com.nus.tt02backend.repositories.VendorRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Account;
-import com.stripe.model.Person;
+import com.stripe.model.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -20,12 +20,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class VendorService {
@@ -49,91 +48,6 @@ public class VendorService {
 
 
         Vendor vendorToCreate = vendorStaffToCreate.getVendor();
-
-//        Map<String, Object> cardPayments =
-//                new HashMap<>();
-//        cardPayments.put("requested", true);
-//        Map<String, Object> transfers = new HashMap<>();
-//        transfers.put("requested", true);
-//        Map<String, Object> capabilities =
-//                new HashMap<>();
-//        capabilities.put("card_payments", cardPayments);
-//        capabilities.put("transfers", transfers);
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("type", "custom");
-//        params.put("country", "SG");
-//        params.put("email", vendorStaffToCreate.getEmail());
-//        Map<String, Object> company =
-//                new HashMap<>();
-//        company.put("name", vendorToCreate.getBusiness_name());
-//        Map<String, Object> company_address =
-//                new HashMap<>();
-//        company_address.put("line1", "Test test test");
-//        company_address.put("postal_code", "12345");
-//        company.put("address", company_address);
-//        company.put("phone", "90909090");
-//        company.put("tax_id", "12345678A");
-//        Map<String, Object> business_profile =
-//                new HashMap<>();
-//
-//        business_profile.put("mcc","7991");
-//        business_profile.put("url","https://www.rwsentosa.com/en/attractions/universal-studios-singapore");
-//
-//        params.put("business_profile", business_profile);
-//        company.put("owners_provided", true);
-//        company.put("directors_provided", true);
-//        Map<String, Object> verification =
-//                new HashMap<>();
-//        verification.put("document", "verified");
-//        company.put("verification", verification);
-//
-//        // Representative
-//        params.put("capabilities", capabilities);
-//        params.put("business_type", "company");
-//        params.put("company", company);
-//        Map<String, Object> tosParams = new HashMap<>();
-//        tosParams.put("date",  System.currentTimeMillis() / 1000L);
-//        tosParams.put("ip", "8.8.8.8");
-//        params.put("tos_acceptance", tosParams);
-//
-//
-//
-//        Account account = Account.create(params);
-//
-//        Map<String, Object> person_params = new HashMap<>();
-//        person_params.put("first_name", "Jane");
-//        person_params.put("last_name", "Diaz");
-//        person_params.put("email", "alvinsiah@u.nus.edu");
-//        person_params.put("nationality","SG");
-//        Map<String, Object> person_address =
-//                new HashMap<>();
-//        person_address.put("line1", "Test test test");
-//        person_address.put("postal_code", "12345");
-//        person_params.put("id_number", "S1234567A");
-//        Map<String, Object> dob_params = new HashMap<>();
-//        dob_params.put("day",1L);
-//        dob_params.put("month",1L);
-//        dob_params.put("year",1990L);
-//
-//        Map<String, Object> relationship_params = new HashMap<>();
-//        relationship_params.put("representative",true);
-//        relationship_params.put("executive",true);
-//        relationship_params.put("title","Team Lead");
-//        person_params.put("relationship", relationship_params);
-//        person_params.put("dob", dob_params);
-//        person_params.put("phone","+6597314137");
-//        person_params.put("address",person_address);
-//        //Set alias to false
-//
-//
-//
-//
-//        //account_params.put()
-//
-//
-//        Person person = account.persons().create(person_params);
-//
-//        System.out.println(account.getRequirements());
 
         Map<String, Object> customer_parameters = new HashMap<>();
         customer_parameters.put("email", vendorStaffToCreate.getEmail());
@@ -177,5 +91,108 @@ public class VendorService {
         mimeMessageHelper.setSubject(subject);
         mimeMessageHelper.setText(content, true);
         javaMailSender.send(mimeMessage);
+    }
+
+    public List<Vendor> getAllVendors() {
+        List<Vendor> vendorList = vendorRepository.findAll();
+
+        for (Vendor v : vendorList) {
+            v.setAttraction_list(null);
+            v.setAccommodation_list(null);
+            v.setRestaurant_list(null);
+            v.setTelecom_list(null);
+            v.setDeals_list(null);
+            v.setVendor_staff_list(null);
+            v.setStripe_account_id(null);
+        }
+
+        return vendorList;
+    }
+
+    public BigDecimal updateWallet(Long vendorId, BigDecimal updateAmount) throws BadRequestException, NotFoundException, StripeException {
+        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
+
+        if (vendorOptional.isPresent()) {
+            Vendor vendor = vendorOptional.get();
+            String stripe_account_id = vendor.getStripe_account_id();
+
+            Customer customer =
+                    Customer.retrieve(stripe_account_id);
+
+
+            BigDecimal updatedWalletBalance = vendor.getWallet_balance().add(updateAmount);
+            if (updatedWalletBalance.compareTo(BigDecimal.ZERO) >= 0) {
+                vendor.setWallet_balance(updatedWalletBalance);
+                vendorRepository.save(vendor);
+                Map<String, Object> params = new HashMap<>();
+                params.put("amount", updateAmount.multiply(new BigDecimal("100")).intValueExact());
+                params.put("currency", "sgd");
+                Map<String, Object> metadata = new HashMap<>();
+
+                if (updateAmount.signum() > 0) {
+                    metadata.put("transaction_type", "Manual Credit");
+                } else {
+                    metadata.put("transaction_type", "Manual Debit");
+                }
+
+                params.put("metadata", metadata);
+                CustomerBalanceTransaction balanceTransaction =
+                        customer.balanceTransactions().create(params);
+                return updatedWalletBalance;
+            } else {
+                throw new BadRequestException("Insufficient wallet balance to deduct from");
+            }
+
+        } else {
+            throw new NotFoundException("Vendor does not exist");
+        }
+
+    }
+
+    public List<HashMap<String, Object>> getWithdrawalRequests(Long vendorId) throws NotFoundException, StripeException {
+        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
+
+        if (vendorOptional.isPresent()) {
+            Vendor vendor = vendorOptional.get();
+            Customer customer =
+                    Customer.retrieve(vendor.getStripe_account_id());
+
+            Map<String, Object> params = new HashMap<>();
+
+
+            CustomerBalanceTransactionCollection balanceTransactions =
+                    customer.balanceTransactions().list(params);
+
+            List<HashMap<String, Object>> extractedData = new ArrayList<>();
+
+            for (CustomerBalanceTransaction transaction : balanceTransactions.getData()) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("id", transaction.getId());
+                BigDecimal amount = new BigDecimal(transaction.getAmount()).divide(new BigDecimal("100.0"));
+                map.put("amount", amount);
+
+                // Converting Unix timestamp to formatted date-time string
+                long timestamp = transaction.getCreated();
+                Date date = new Date(timestamp * 1000L);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                String formattedDate = sdf.format(date);
+
+                // Splitting the formattedDate into date and time
+                String[] dateTimeParts = formattedDate.split(" ");
+                map.put("date", dateTimeParts[0]);
+                map.put("time", dateTimeParts[1]);
+
+                map.put("type", transaction.getMetadata().get("transaction_type"));
+
+                extractedData.add(map);
+            }
+
+
+
+            return extractedData;
+
+        } else {
+            throw new NotFoundException("Vendor does not exist");
+        }
     }
 }

@@ -20,6 +20,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT COALESCE(SUM(p.payment_amount), 0) FROM Payment p WHERE p.is_paid = true AND p.booking.status != 'CANCELLED' AND  p.booking.deal.deal_id = ?1")
     Double retrieveSumOfBookingByDealId(Long id);
 
-    @Query("SELECT COALESCE(SUM(p.payment_amount),0) FROM Payment p WHERE p.is_paid = true AND p.booking.status = 'COMPLETED' AND p.booking.type = 'TOUR' AND p.booking.tour.tour_id = ?1")
+    @Query("SELECT COALESCE(SUM(p.payment_amount),0) FROM Payment p WHERE p.is_paid = true  AND p.booking.type = 'TOUR'")
     Double retrieveTourEarningsByLocalId(Long localId);
 }

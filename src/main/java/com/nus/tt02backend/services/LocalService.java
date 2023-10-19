@@ -3,10 +3,14 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.*;
 import com.nus.tt02backend.models.InternalStaff;
 import com.nus.tt02backend.models.Local;
+import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.UserRepository;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Account;
+import com.stripe.model.Customer;
+import com.stripe.model.CustomerBalanceTransaction;
+import com.stripe.model.CustomerBalanceTransactionCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
@@ -19,6 +23,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.time.*;
 
@@ -124,7 +130,7 @@ public class LocalService {
         javaMailSender.send(mimeMessage);
     }
 
-    public Local editLocalProfile(Local localToEdit) throws EditUserException {
+    public Local editLocalProfile(Local localToEdit) throws BadRequestException {
         try {
 
             Optional<Local> localOptional = localRepository.findById(localToEdit.getUser_id());
@@ -134,17 +140,17 @@ public class LocalService {
 
                 Long existingId = localRepository.getLocalIdByEmail(localToEdit.getEmail());
                 if (existingId != null && existingId != localToEdit.getUser_id()) { // but there is an existing email
-                    throw new EditUserException("Email currently in use. Please use a different email!");
+                    throw new BadRequestException("Email currently in use. Please use a different email!");
                 }
 
                 existingId = localRepository.getLocalIdByNRICNum(local.getNric_num());
                 if (existingId != null && existingId != localToEdit.getUser_id()) { // but there is a NRIC number
-                    throw new EditUserException("NRIC number currently in use. Please use a different NRIC number!");
+                    throw new BadRequestException("NRIC number currently in use. Please use a different NRIC number!");
                 }
 
                 existingId = localRepository.getLocalIdByMobileNum(localToEdit.getMobile_num());
                 if (existingId != null && existingId != localToEdit.getUser_id()) { // but there is a mobile number
-                    throw new CreateLocalException("Mobile number currently in use. Please use a different mobile number!");
+                    throw new BadRequestException("Mobile number currently in use. Please use a different mobile number!");
                 }
 
                 local.setEmail(localToEdit.getEmail());
@@ -159,10 +165,10 @@ public class LocalService {
                 return local;
 
             } else {
-                throw new EditUserException("Local not found!");
+                throw new BadRequestException("Local not found!");
             }
         } catch (Exception ex) {
-            throw new EditUserException(ex.getMessage());
+            throw new BadRequestException(ex.getMessage());
         }
     }
 
@@ -177,5 +183,95 @@ public class LocalService {
         }
 
         return localList;
+    }
+
+    public BigDecimal updateWallet(Long localId, BigDecimal updateAmount) throws BadRequestException, NotFoundException, StripeException {
+
+        Optional<Local> localOptional = localRepository.findById(localId);
+
+        if (localOptional.isPresent()) {
+            Local local = localOptional.get();
+            String stripe_account_id = local.getStripe_account_id();
+
+            Customer customer =
+                    Customer.retrieve(stripe_account_id);
+
+
+            BigDecimal updatedWalletBalance = local.getWallet_balance().add(updateAmount);
+            if (updatedWalletBalance.compareTo(BigDecimal.ZERO) >= 0) {
+                local.setWallet_balance(updatedWalletBalance);
+                localRepository.save(local);
+                Map<String, Object> params = new HashMap<>();
+                params.put("amount", updateAmount.multiply(new BigDecimal("100")).intValueExact());
+                params.put("currency", "sgd");
+                Map<String, Object> metadata = new HashMap<>();
+
+                if (updateAmount.signum() > 0) {
+                    metadata.put("transaction_type", "Manual Credit");
+                } else {
+                    metadata.put("transaction_type", "Manual Debit");
+                }
+
+                params.put("metadata", metadata);
+                CustomerBalanceTransaction balanceTransaction =
+                        customer.balanceTransactions().create(params);
+                return updatedWalletBalance;
+            } else {
+                throw new BadRequestException("Insufficient wallet balance to deduct from");
+            }
+
+        } else {
+            throw new NotFoundException("Local does not exist");
+        }
+    }
+
+    public List<HashMap<String, Object>> getWithdrawalRequests(Long localId) throws StripeException, NotFoundException {
+
+        Optional<Local> localOptional = localRepository.findById(localId);
+
+        if (localOptional.isPresent()) {
+            Local local = localOptional.get();
+            Customer customer =
+                    Customer.retrieve(local.getStripe_account_id());
+
+            Map<String, Object> params = new HashMap<>();
+
+
+            CustomerBalanceTransactionCollection balanceTransactions =
+                    customer.balanceTransactions().list(params);
+
+            List<HashMap<String, Object>> extractedData = new ArrayList<>();
+
+            for (CustomerBalanceTransaction transaction : balanceTransactions.getData()) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("id", transaction.getId());
+                BigDecimal amount = new BigDecimal(transaction.getAmount()).divide(new BigDecimal("100.0"));
+                map.put("amount", amount);
+
+                // Converting Unix timestamp to formatted date-time string
+                long timestamp = transaction.getCreated();
+                Date date = new Date(timestamp * 1000L);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                String formattedDate = sdf.format(date);
+
+                // Splitting the formattedDate into date and time
+                String[] dateTimeParts = formattedDate.split(" ");
+                map.put("date", dateTimeParts[0]);
+                map.put("time", dateTimeParts[1]);
+
+
+
+                map.put("type", transaction.getMetadata().get("transaction_type"));
+
+                extractedData.add(map);
+            }
+
+
+
+            return extractedData;
+
+        } else {
+            throw new NotFoundException("Vendor does not exist");
+        }
     }
 }

@@ -261,7 +261,7 @@ public class InternalStaffService {
         javaMailSender.send(mimeMessage);
     }
 
-    public InternalStaff editProfile(InternalStaff staffToEdit) throws EditAdminException {
+    public InternalStaff editProfile(InternalStaff staffToEdit) throws BadRequestException {
         try {
 
             Optional<InternalStaff> internalStaffOptional = internalStaffRepository.findById(staffToEdit.getUser_id());
@@ -271,7 +271,7 @@ public class InternalStaffService {
 
                 Long existingId = userRepository.retrieveIdByUserEmail(staffToEdit.getEmail());
                 if (existingId != null && existingId != staffToEdit.getUser_id()) { // but there is an existing email
-                    throw new EditAdminException("Email currently in use. Please use a different email!");
+                    throw new BadRequestException("Email currently in use. Please use a different email!");
                 }
 
                 internalStaff.setEmail(staffToEdit.getEmail());
@@ -280,10 +280,10 @@ public class InternalStaffService {
                 return internalStaff;
 
             } else {
-                throw new EditAdminException("Admin staff not found!");
+                throw new BadRequestException("Admin staff not found!");
             }
         } catch (Exception ex) {
-            throw new EditAdminException(ex.getMessage());
+            throw new BadRequestException(ex.getMessage());
         }
     }
 }
