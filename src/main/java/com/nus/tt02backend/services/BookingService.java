@@ -81,6 +81,9 @@ public class BookingService {
     @Autowired
     QrCodeRepository qrCodeRepository;
 
+    @Autowired
+    TourTypeRepository  tourTypeRepository;
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -618,5 +621,24 @@ public class BookingService {
         } else {
             throw new NotFoundException("Accommodation not found!");
         }
+    }
+
+    public String getTourImageByTourId(Long tourId) throws BadRequestException {
+        Optional<Tour> tourOptional = tourRepository.findById(tourId);
+        if (tourOptional.isEmpty()) {
+            throw new BadRequestException("Tour does not exist!");
+        }
+        Tour tour = tourOptional.get();
+
+        List<TourType> tourTypes = tourTypeRepository.findAll();
+        String tourImageLink = "";
+        for (TourType tourType : tourTypes) {
+            if (tourType.getTour_list().contains(tour)) {
+                tourImageLink = tourType.getTour_image_list().get(0);
+                break;
+            }
+        }
+
+        return tourImageLink;
     }
 }
