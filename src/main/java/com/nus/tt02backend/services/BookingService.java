@@ -211,10 +211,12 @@ public class BookingService {
                     Local local = booking.getLocal_user();
                     local.setBooking_list(null);
                     local.setCart_list(null);
+                    local.setSupport_ticket_list(null);
                 } else if (booking.getTourist_user() != null) {
                     Tourist tourist = booking.getTourist_user();
                     tourist.setCart_list(null);
                     tourist.setBooking_list(null);
+                    tourist.setSupport_ticket_list(null);
                 }
 
                 if (!booking.getType().equals(BookingTypeEnum.TELECOM) &&

@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nus.tt02backend.models.enums.InternalRoleEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
@@ -12,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class InternalStaff extends User {
 
     @Column(nullable = false, unique = true, length = 8)

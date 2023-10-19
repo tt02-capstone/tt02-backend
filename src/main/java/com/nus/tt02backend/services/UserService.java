@@ -52,6 +52,28 @@ public class UserService {
                 tourist.setPost_list(null);
                 tourist.setComment_list(null);
                 tourist.setCart_list(null);
+                tourist.setSupport_ticket_list(null);
+
+//                List<SupportTicket> supportTicketList = tourist.getSupport_ticket_list();
+//                for (SupportTicket s : supportTicketList) {
+//                    List<Reply> replyList = s.getReply_list();
+//                    for (Reply r : replyList) {
+//                        if (r.getLocal_user() != null) {
+//                            r.getLocal_user().setSupport_ticket_list(null);
+//                        } else if (r.getTourist_user() != null) {
+//                            r.getTourist_user().setSupport_ticket_list(null);
+//                        } else if (r.getVendor_staff_user() != null) {
+//                            r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+//                            r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+//                            r.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+//                        } else if (r.getInternal_staff_user() != null) {
+//                            r.getInternal_staff_user().setSupport_ticket_list(null);
+//                        }
+//                    }
+//                }
+//
+//                tourist.setSupport_ticket_list(supportTicketList);
+
                 return tourist;
 
             } else if (checkUser instanceof Local) {
@@ -60,6 +82,27 @@ public class UserService {
                 local.setPost_list(null);
                 local.setComment_list(null);
                 local.setCart_list(null);
+                local.setSupport_ticket_list(null);
+
+//                List<SupportTicket> supportTicketList = local.getSupport_ticket_list();
+//                for (SupportTicket s : supportTicketList) {
+//                    List<Reply> replyList = s.getReply_list();
+//                    for (Reply r : replyList) {
+//                        if (r.getLocal_user() != null) {
+//                            r.getLocal_user().setSupport_ticket_list(null);
+//                        } else if (r.getTourist_user() != null) {
+//                            r.getTourist_user().setSupport_ticket_list(null);
+//                        } else if (r.getVendor_staff_user() != null) {
+//                            r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+//                            r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+//                            r.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+//                        } else if (r.getInternal_staff_user() != null) {
+//                            r.getInternal_staff_user().setSupport_ticket_list(null);
+//                        }
+//                    }
+//                }
+//                local.setSupport_ticket_list(supportTicketList);
+
                 return local;
 
             } else {
@@ -88,7 +131,8 @@ public class UserService {
                 if (checkUser.getEmail_verified() &&
                         vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
                     vendorStaff.getVendor().setVendor_staff_list(null);
-                    vendorStaff.setSupport_ticket_list(null);
+                    vendorStaff.setIncoming_support_ticket_list(null);
+                    vendorStaff.setOutgoing_support_ticket_list(null);
                     vendorStaff.setComment_list(null);
                     vendorStaff.setPost_list(null);
 
@@ -131,7 +175,7 @@ public class UserService {
                 local.setRestaurant_list(null);
                 local.setTelecom_list(null);
                 local.setDeals_list(null);
-                local.setCart_list(null);
+                local.setSupport_ticket_list(null);
 
                 return local;
             }
