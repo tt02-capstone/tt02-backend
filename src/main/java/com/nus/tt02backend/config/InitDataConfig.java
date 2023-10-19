@@ -513,6 +513,7 @@ public class InitDataConfig implements CommandLineRunner {
             tourType.setSpecial_note("Avoid wearing loose items like sunglasses");
             tourType.setIs_published(true);
             tourType.setTour_list(new ArrayList<>());
+            tourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
             tourType = tourTypeRepository.save(tourType);
 
             local.getTour_type_list().add(tourType);
@@ -835,6 +836,7 @@ public class InitDataConfig implements CommandLineRunner {
         secondTourType.setSpecial_note("Bring along a poncho for water rides");
         secondTourType.setIs_published(true);
         secondTourType.setTour_list(new ArrayList<>());
+        secondTourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
         secondTourType = tourTypeRepository.save(secondTourType);
 
         local.getTour_type_list().add(secondTourType);
