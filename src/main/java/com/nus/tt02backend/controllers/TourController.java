@@ -61,6 +61,13 @@ public class TourController {
         return ResponseEntity.ok(updatedTourType);
     }
 
+    @PutMapping("/adminUpdateTourType/{tourTypeIdToUpdate}/{newPublishedStatus}")
+    public ResponseEntity<TourType> adminUpdateTourType(@PathVariable Long tourTypeIdToUpdate, @PathVariable Boolean newPublishedStatus)
+            throws BadRequestException {
+        TourType updatedTourType = tourService.adminUpdateTourType(tourTypeIdToUpdate, newPublishedStatus);
+        return ResponseEntity.ok(updatedTourType);
+    }
+
     @DeleteMapping("/deleteTourType/{tourTypeIdToDelete}")
     public ResponseEntity<String> deleteTourType(@PathVariable Long tourTypeIdToDelete) throws BadRequestException {
         String responseMessage = tourService.deleteTourType(tourTypeIdToDelete);
