@@ -350,7 +350,7 @@ public class UserService {
         return "Your password has been changed successfully";
     }
 
-    public void editPassword(Long userId, String oldPassword, String newPassword) throws EditPasswordException {
+    public void editPassword(Long userId, String oldPassword, String newPassword) throws BadRequestException {
         try {
             System.out.println(userId + ", " + oldPassword + ", " + newPassword);
             Optional<User> userOptional = userRepository.findById(userId);
@@ -359,25 +359,25 @@ public class UserService {
                 User user = userOptional.get();
 
                 if (oldPassword.equals(newPassword)) {
-                    throw new EditPasswordException("New password must be different from old password!");
+                    throw new BadRequestException("New password must be different from old password!");
 
                 } else if (encoder.matches(oldPassword, user.getPassword())) {
                     user.setPassword(encoder.encode(newPassword));
                     userRepository.save(user);
 
                 } else {
-                    throw new EditPasswordException("Incorrect old password!");
+                    throw new BadRequestException("Incorrect old password!");
                 }
 
             } else {
-                throw new EditUserException("User not found!");
+                throw new BadRequestException("User not found!");
             }
         } catch (Exception ex) {
-            throw new EditPasswordException(ex.getMessage());
+            throw new BadRequestException(ex.getMessage());
         }
     }
 
-    public User uploadNewProfilePic(Long userId, String img) throws UserNotFoundException {
+    public User uploadNewProfilePic(Long userId, String img) throws NotFoundException {
 
         Optional<User> userOptional = userRepository.findById(userId);
 
@@ -410,7 +410,7 @@ public class UserService {
                 return internalStaff;
             }
         } else {
-            throw new UserNotFoundException("User not found!");
+            throw new NotFoundException("User not found!");
         }
     }
 
@@ -460,7 +460,7 @@ public class UserService {
         return "Your password has been changed successfully";
     }
 
-    public User viewUserProfile(Long userId) throws UserNotFoundException {
+    public User viewUserProfile(Long userId) throws NotFoundException {
 
         Optional<User> userOptional = userRepository.findById(userId);
 
@@ -489,7 +489,7 @@ public class UserService {
 
             return user; // internal staff
         } else {
-            throw new UserNotFoundException("User not found!");
+            throw new NotFoundException("User not found!");
         }
     }
 

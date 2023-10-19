@@ -92,7 +92,7 @@ public class TouristService {
         javaMailSender.send(mimeMessage);
     }
 
-    public Tourist editTouristProfile(Tourist touristToEdit) throws EditUserException {
+    public Tourist editTouristProfile(Tourist touristToEdit) throws BadRequestException {
         try {
 
             Optional<Tourist> touristOptional = touristRepository.findById(touristToEdit.getUser_id());
@@ -102,17 +102,17 @@ public class TouristService {
 
                 Long existingId = touristRepository.getTouristIdByEmail(touristToEdit.getEmail());
                 if (existingId != null && existingId != touristToEdit.getUser_id()) { // but there is an existing email
-                    throw new EditUserException("Email currently in use. Please use a different email!");
+                    throw new BadRequestException("Email currently in use. Please use a different email!");
                 }
 
                 existingId = touristRepository.getTouristIdByPassportNum(touristToEdit.getPassport_num());
                 if (existingId != null && existingId != touristToEdit.getUser_id()) { // but there is a passport number
-                    throw new EditUserException("Passport number currently in use. Please use a different passport number!");
+                    throw new BadRequestException("Passport number currently in use. Please use a different passport number!");
                 }
 
                 existingId = touristRepository.getTouristIdByMobileNum(touristToEdit.getMobile_num());
                 if (existingId != null && existingId != touristToEdit.getUser_id()) { // but there is an existing mobile number
-                    throw new EditUserException("Mobile number currently in use. Please use a different mobile number!");
+                    throw new BadRequestException("Mobile number currently in use. Please use a different mobile number!");
                 }
 
                 tourist.setEmail(touristToEdit.getEmail());
@@ -127,10 +127,10 @@ public class TouristService {
                 return tourist;
 
             } else {
-                throw new EditUserException("Tourist not found!");
+                throw new BadRequestException("Tourist not found!");
             }
         } catch (Exception ex) {
-            throw new EditUserException(ex.getMessage());
+            throw new BadRequestException(ex.getMessage());
         }
     }
 

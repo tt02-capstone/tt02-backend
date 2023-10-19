@@ -45,6 +45,7 @@ public class InitDataConfig implements CommandLineRunner {
     private final CategoryItemRepository categoryItemRepository;
     private final TelecomRepository telecomRepository;
     private final TourTypeRepository tourTypeRepository;
+    private final TourRepository tourRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -70,8 +71,8 @@ public class InitDataConfig implements CommandLineRunner {
             log.debug("created ADMIN user - {}", staff);
         }
 
+        Local local = new Local();
         if (localRepository.count() == 0) {
-            Local local = new Local();
             local.setEmail("local@gmail.com");
             local.setName("Rowoon");
             local.setPassword(passwordEncoder.encode("password1!"));
@@ -84,6 +85,7 @@ public class InitDataConfig implements CommandLineRunner {
             local.setEmail_verified(true);
             local.setMobile_num("98989898");
             local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            local.setTour_type_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "local@gmail.com");
@@ -91,7 +93,7 @@ public class InitDataConfig implements CommandLineRunner {
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             local.setStripe_account_id(stripe_account_id);
 
-            localRepository.save(local);
+            local = localRepository.save(local);
 
             // init the ccd card here for the local account
             Map<String, Object> card = new HashMap<>();
@@ -184,6 +186,7 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setAttraction_image_list(new ArrayList<>());
             attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
             attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega2.jpeg");
+            attraction.setTour_type_list(new ArrayList<>());
 
             Price childPrice = new Price();
             childPrice.setLocal_amount(new BigDecimal(30));
@@ -485,6 +488,55 @@ public class InitDataConfig implements CommandLineRunner {
             vendorRepository.save(vendor2);
         }
 
+        if (tourTypeRepository.count() == 0) {
+            TourType tourType = new TourType();
+            tourType.setName("Mega Adventure Tour");
+            List<String> imageList = new ArrayList<>();
+            imageList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/web/mega_tour.jpg");
+            tourType.setTour_image_list(imageList);
+            tourType.setDescription("Join me on the mega adventure tour where we will embark on thrilling outdoor activities");
+            tourType.setPrice(new BigDecimal(10));
+            tourType.setRecommended_pax(10);
+            tourType.setEstimated_duration(2);
+            tourType.setSpecial_note("Avoid wearing loose items like sunglasses");
+            tourType.setIs_published(true);
+            tourType.setTour_list(new ArrayList<>());
+            tourType = tourTypeRepository.save(tourType);
+
+            local.getTour_type_list().add(tourType);
+
+            Attraction attraction = attractionRepository.findById(1L).get();
+            List<TourType> tourTypes = new ArrayList<>();
+            tourTypes.add(tourType);
+            attraction.setTour_type_list(tourTypes);
+            attractionRepository.save(attraction);
+
+            LocalDate currentDate = LocalDate.now();
+            LocalDate endDate = LocalDate.of(2023, 11, 20);
+            while (!currentDate.isAfter(endDate)) {
+                Tour tour1 = new Tour();
+                Tour tour2 = new Tour();
+                tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+                tour1.setStart_time(currentDate.atTime(10, 0));
+                tour1.setEnd_time(currentDate.atTime(12, 0));
+
+                tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+                tour2.setStart_time(currentDate.atTime(13, 0));
+                tour2.setEnd_time(currentDate.atTime(15, 0));
+
+                tour1 = tourRepository.save(tour1);
+                tour2 = tourRepository.save(tour2);
+
+                tourType.getTour_list().add(tour1);
+                tourType.getTour_list().add(tour2);
+
+                currentDate = currentDate.plusDays(1);
+            }
+            tourTypeRepository.save(tourType);
+
+            createSecondTourType(local);
+        }
+
         if (categoryRepository.count() == 0) {
             for (BookingTypeEnum value : BookingTypeEnum.values()) {
                 Category category = new Category();
@@ -756,6 +808,54 @@ public class InitDataConfig implements CommandLineRunner {
         currentList.add(attraction); // add on to the previous list
         vendor.setAttraction_list(currentList);
         vendorRepository.save(vendor);
+    }
+
+    public void createSecondTourType(Local local) {
+        TourType secondTourType = new TourType();
+        secondTourType.setName("USS Tour");
+        List<String> secondImageList = new ArrayList<>();
+        secondImageList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/web/uss_tour.jpg");
+        secondTourType.setTour_image_list(secondImageList);
+        secondTourType.setDescription("Join me on the USS tour to explore Southeast Asia's first and only Universal Studios theme");
+        secondTourType.setPrice(new BigDecimal(15));
+        secondTourType.setRecommended_pax(15);
+        secondTourType.setEstimated_duration(3);
+        secondTourType.setSpecial_note("Bring along a poncho for water rides");
+        secondTourType.setIs_published(true);
+        secondTourType.setTour_list(new ArrayList<>());
+        secondTourType = tourTypeRepository.save(secondTourType);
+
+        local.getTour_type_list().add(secondTourType);
+        localRepository.save(local);
+
+        Attraction secondAttraction = attractionRepository.findById(2L).get();
+        List<TourType> secondTourTypes = new ArrayList<>();
+        secondTourTypes.add(secondTourType);
+        secondAttraction.setTour_type_list(secondTourTypes);
+        attractionRepository.save(secondAttraction);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = LocalDate.of(2023, 11, 20);
+        while (!currentDate.isAfter(endDate)) {
+            Tour tour1 = new Tour();
+            Tour tour2 = new Tour();
+            tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour1.setStart_time(currentDate.atTime(10, 0));
+            tour1.setEnd_time(currentDate.atTime(12, 0));
+
+            tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour2.setStart_time(currentDate.atTime(13, 0));
+            tour2.setEnd_time(currentDate.atTime(15, 0));
+
+            tour1 = tourRepository.save(tour1);
+            tour2 = tourRepository.save(tour2);
+
+            secondTourType.getTour_list().add(tour1);
+            secondTourType.getTour_list().add(tour2);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        tourTypeRepository.save(secondTourType);
     }
 
     Vendor setUpVendor2(Vendor vendor2) {

@@ -196,7 +196,7 @@ public class PostService {
                     p.getTourist_user().setPost_list(null);
                     p.getTourist_user().setComment_list(null);
                     p.getTourist_user().setCart_list(null);
-                    p.getLocal_user().setBooking_list(null);
+                    p.getTourist_user().setBooking_list(null);
                 }
                 else if (p.getInternal_staff_user() != null) {
                     p.getInternal_staff_user().setPost_list(null);
@@ -221,7 +221,7 @@ public class PostService {
 
         if (postOptional.isPresent()) {
             Post p = postOptional.get();
-            // p.setComment_list(null); // might change in future
+
             List<Comment> childComments = new ArrayList<>();
             if (!p.getComment_list().isEmpty()) {
                 for (Comment comment : p.getComment_list()) {
