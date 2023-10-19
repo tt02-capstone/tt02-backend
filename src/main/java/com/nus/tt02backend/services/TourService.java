@@ -3,6 +3,7 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BookingTypeEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -108,7 +109,12 @@ public class TourService {
         tourType.setRecommended_pax(tourTypeToUpdate.getRecommended_pax());
         tourType.setSpecial_note(tourTypeToUpdate.getSpecial_note());
         tourType.setEstimated_duration(tourTypeToUpdate.getEstimated_duration());
-        tourType.setIs_published(tourTypeToUpdate.getIs_published());
+        if (tourType.getPublishedUpdatedBy().equals(UserTypeEnum.INTERNAL_STAFF) && !tourType.getIs_published()) {
+            // do not update
+        } else {
+            tourType.setIs_published(tourTypeToUpdate.getIs_published());
+            tourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        }
         tourTypeRepository.save(tourType);
 
         Attraction oldAttraction = attractionRepository.getAttractionTiedToTourType(tourType.getTour_type_id());
@@ -152,6 +158,20 @@ public class TourService {
         return tourType;
     }
 
+    public TourType adminUpdateTourType(Long tourTypeIdToUpdate, Boolean newPublishedStatus) throws BadRequestException {
+        Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeIdToUpdate);
+        if (tourTypeOptional.isEmpty()) {
+            throw new BadRequestException("Tour type does not exist!");
+        }
+        TourType tourType = tourTypeOptional.get();
+
+        tourType.setIs_published(newPublishedStatus);
+        tourType.setPublishedUpdatedBy(UserTypeEnum.INTERNAL_STAFF);
+
+        tourType = tourTypeRepository.save(tourType);
+
+        return tourType;
+    }
 
     public String deleteTourType(Long tourTypeIdToDelete) throws BadRequestException {
         Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeIdToDelete);
