@@ -300,6 +300,13 @@ public class TourService {
             throw new BadRequestException("Tour does not exist!");
         }
 
+        List<Booking> bookings = bookingRepository.getAllTourBookings(BookingTypeEnum.TOUR);
+        for (Booking booking : bookings) {
+            if (booking.getTour().getTour_id().equals(tourIdToDelete)) {
+                throw new BadRequestException("Tour cannot be deleted as there are existing bookings under it!");
+            }
+        }
+
         Tour tour = tourOptional.get();
         TourType tourType = tourTypeRepository.getTourTypeTiedToTour(tour.getTour_id());
 
