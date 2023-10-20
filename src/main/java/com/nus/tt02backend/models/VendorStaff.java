@@ -23,8 +23,13 @@ public class VendorStaff extends User {
     @ManyToOne(fetch = FetchType.LAZY)
     private Vendor vendor;
 
+    // tickets they send to admin
     @OneToMany(fetch = FetchType.LAZY)
-    private List<SupportTicket> support_ticket_list;
+    private List<SupportTicket> outgoing_support_ticket_list;
+
+    // tickets that they receive from users
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<SupportTicket> incoming_support_ticket_list;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendor_staff_user")
     private List<Comment> comment_list;
