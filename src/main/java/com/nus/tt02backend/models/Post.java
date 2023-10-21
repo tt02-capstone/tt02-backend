@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -22,11 +23,14 @@ public class Post {
     private Long post_id;
 
     @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
     private String content;
 
     @ElementCollection
     @CollectionTable(name="post_image_list")
-    private ArrayList<String> post_image_list;
+    private List<String> post_image_list;
 
     @Column(nullable = false)
     private LocalDateTime publish_time;
@@ -34,15 +38,13 @@ public class Post {
     @Column(nullable = false)
     private LocalDateTime updated_time;
 
-    @Column(nullable = false)
-    private Integer upvote;
+    @ElementCollection
+    @CollectionTable(name="upvoted_user_id_list")
+    private List<Long> upvoted_user_id_list;
 
-    @Column(nullable = false)
-    private Integer downvote;
-
-    @ManyToOne
-    @JoinColumn(name="category_item_id")
-    private CategoryItem category_item;
+    @ElementCollection
+    @CollectionTable(name="downvoted_user_id_list")
+    private List<Long> downvoted_user_id_list;
 
     @ManyToOne
     @JoinColumn(name = "tourist_id")
@@ -61,5 +63,5 @@ public class Post {
     private InternalStaff internal_staff_user;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "post")
-    private ArrayList<Comment> comment_list;
+    private List<Comment> comment_list;
 }

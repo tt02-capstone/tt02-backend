@@ -51,6 +51,29 @@ public class UserService {
                 tourist.setBooking_list(null);
                 tourist.setPost_list(null);
                 tourist.setComment_list(null);
+                tourist.setCart_list(null);
+                tourist.setSupport_ticket_list(null);
+
+//                List<SupportTicket> supportTicketList = tourist.getSupport_ticket_list();
+//                for (SupportTicket s : supportTicketList) {
+//                    List<Reply> replyList = s.getReply_list();
+//                    for (Reply r : replyList) {
+//                        if (r.getLocal_user() != null) {
+//                            r.getLocal_user().setSupport_ticket_list(null);
+//                        } else if (r.getTourist_user() != null) {
+//                            r.getTourist_user().setSupport_ticket_list(null);
+//                        } else if (r.getVendor_staff_user() != null) {
+//                            r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+//                            r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+//                            r.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+//                        } else if (r.getInternal_staff_user() != null) {
+//                            r.getInternal_staff_user().setSupport_ticket_list(null);
+//                        }
+//                    }
+//                }
+//
+//                tourist.setSupport_ticket_list(supportTicketList);
+
                 return tourist;
 
             } else if (checkUser instanceof Local) {
@@ -58,6 +81,28 @@ public class UserService {
                 local.setBooking_list(null);
                 local.setPost_list(null);
                 local.setComment_list(null);
+                local.setCart_list(null);
+                local.setSupport_ticket_list(null);
+
+//                List<SupportTicket> supportTicketList = local.getSupport_ticket_list();
+//                for (SupportTicket s : supportTicketList) {
+//                    List<Reply> replyList = s.getReply_list();
+//                    for (Reply r : replyList) {
+//                        if (r.getLocal_user() != null) {
+//                            r.getLocal_user().setSupport_ticket_list(null);
+//                        } else if (r.getTourist_user() != null) {
+//                            r.getTourist_user().setSupport_ticket_list(null);
+//                        } else if (r.getVendor_staff_user() != null) {
+//                            r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+//                            r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+//                            r.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+//                        } else if (r.getInternal_staff_user() != null) {
+//                            r.getInternal_staff_user().setSupport_ticket_list(null);
+//                        }
+//                    }
+//                }
+//                local.setSupport_ticket_list(supportTicketList);
+
                 return local;
 
             } else {
@@ -86,7 +131,8 @@ public class UserService {
                 if (checkUser.getEmail_verified() &&
                         vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
                     vendorStaff.getVendor().setVendor_staff_list(null);
-                    vendorStaff.setSupport_ticket_list(null);
+                    vendorStaff.setIncoming_support_ticket_list(null);
+                    vendorStaff.setOutgoing_support_ticket_list(null);
                     vendorStaff.setComment_list(null);
                     vendorStaff.setPost_list(null);
 
@@ -121,7 +167,6 @@ public class UserService {
                 local.setPost_list(null);
                 local.setBadge_list(null);
                 local.setCart_list(null);
-                local.setSupport_ticket_list(null);
                 local.setBooking_list(null);
                 local.setTour_type_list(null);
                 local.setAttraction_list(null);
@@ -129,6 +174,7 @@ public class UserService {
                 local.setRestaurant_list(null);
                 local.setTelecom_list(null);
                 local.setDeals_list(null);
+                local.setSupport_ticket_list(null);
 
                 return local;
             }
@@ -347,7 +393,7 @@ public class UserService {
         return "Your password has been changed successfully";
     }
 
-    public void editPassword(Long userId, String oldPassword, String newPassword) throws EditPasswordException {
+    public void editPassword(Long userId, String oldPassword, String newPassword) throws BadRequestException {
         try {
             System.out.println(userId + ", " + oldPassword + ", " + newPassword);
             Optional<User> userOptional = userRepository.findById(userId);
@@ -356,25 +402,25 @@ public class UserService {
                 User user = userOptional.get();
 
                 if (oldPassword.equals(newPassword)) {
-                    throw new EditPasswordException("New password must be different from old password!");
+                    throw new BadRequestException("New password must be different from old password!");
 
                 } else if (encoder.matches(oldPassword, user.getPassword())) {
                     user.setPassword(encoder.encode(newPassword));
                     userRepository.save(user);
 
                 } else {
-                    throw new EditPasswordException("Incorrect old password!");
+                    throw new BadRequestException("Incorrect old password!");
                 }
 
             } else {
-                throw new EditUserException("User not found!");
+                throw new BadRequestException("User not found!");
             }
         } catch (Exception ex) {
-            throw new EditPasswordException(ex.getMessage());
+            throw new BadRequestException(ex.getMessage());
         }
     }
 
-    public User uploadNewProfilePic(Long userId, String img) throws UserNotFoundException {
+    public User uploadNewProfilePic(Long userId, String img) throws NotFoundException {
 
         Optional<User> userOptional = userRepository.findById(userId);
 
@@ -407,7 +453,7 @@ public class UserService {
                 return internalStaff;
             }
         } else {
-            throw new UserNotFoundException("User not found!");
+            throw new NotFoundException("User not found!");
         }
     }
 
@@ -457,7 +503,7 @@ public class UserService {
         return "Your password has been changed successfully";
     }
 
-    public User viewUserProfile(Long userId) throws UserNotFoundException {
+    public User viewUserProfile(Long userId) throws NotFoundException {
 
         Optional<User> userOptional = userRepository.findById(userId);
 
@@ -486,7 +532,7 @@ public class UserService {
 
             return user; // internal staff
         } else {
-            throw new UserNotFoundException("User not found!");
+            throw new NotFoundException("User not found!");
         }
     }
 

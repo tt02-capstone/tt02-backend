@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.Attraction;
+import com.nus.tt02backend.models.Booking;
 import com.nus.tt02backend.models.Tour;
 import com.nus.tt02backend.models.TourType;
 import com.nus.tt02backend.services.TourService;
@@ -57,6 +58,13 @@ public class TourController {
     public ResponseEntity<TourType> updateTourType(@PathVariable Long attractionId, @RequestBody TourType tourTypeToUpdate)
             throws BadRequestException {
         TourType updatedTourType = tourService.updateTourType(attractionId, tourTypeToUpdate);
+        return ResponseEntity.ok(updatedTourType);
+    }
+
+    @PutMapping("/adminUpdateTourType/{tourTypeIdToUpdate}/{newPublishedStatus}")
+    public ResponseEntity<TourType> adminUpdateTourType(@PathVariable Long tourTypeIdToUpdate, @PathVariable Boolean newPublishedStatus)
+            throws BadRequestException {
+        TourType updatedTourType = tourService.adminUpdateTourType(tourTypeIdToUpdate, newPublishedStatus);
         return ResponseEntity.ok(updatedTourType);
     }
 
@@ -126,6 +134,18 @@ public class TourController {
 
         List<TourType> tourTypes = tourService.getAllTourTypesByAttraction(attractionId, localDateTime);
         return ResponseEntity.ok(tourTypes);
+    }
+
+    @GetMapping("/getAllBookingsByLocal/{userId}")
+    public ResponseEntity<List<Booking>> getAllBookingsByLocal(@PathVariable Long userId) throws BadRequestException {
+        List<Booking> bookings = tourService.getAllBookingsByLocal(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping("/getBookingByBookingId/{bookingId}")
+    public ResponseEntity<Booking> getBookingByBookingId(@PathVariable Long bookingId) throws BadRequestException {
+        Booking booking = tourService.getBookingByBookingId(bookingId);
+        return ResponseEntity.ok(booking);
     }
 
     /*

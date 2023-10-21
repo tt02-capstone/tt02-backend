@@ -2,13 +2,17 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.*;
+import com.nus.tt02backend.models.enums.BookingTypeEnum;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +31,9 @@ public class TourService {
 
     @Autowired
     LocalRepository localRepository;
+
+    @Autowired
+    BookingRepository bookingRepository;
 
     public TourType createTourType(Long userId, Long attractionId, TourType tourTypeToCreate)
             throws BadRequestException {
@@ -102,7 +109,12 @@ public class TourService {
         tourType.setRecommended_pax(tourTypeToUpdate.getRecommended_pax());
         tourType.setSpecial_note(tourTypeToUpdate.getSpecial_note());
         tourType.setEstimated_duration(tourTypeToUpdate.getEstimated_duration());
-        tourType.setIs_published(tourTypeToUpdate.getIs_published());
+        if (tourType.getPublishedUpdatedBy().equals(UserTypeEnum.INTERNAL_STAFF) && !tourType.getIs_published()) {
+            // do not update
+        } else {
+            tourType.setIs_published(tourTypeToUpdate.getIs_published());
+            tourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        }
         tourTypeRepository.save(tourType);
 
         Attraction oldAttraction = attractionRepository.getAttractionTiedToTourType(tourType.getTour_type_id());
@@ -134,8 +146,9 @@ public class TourService {
                             || (tourToCheck.getStart_time().isBefore(firstTour.getEnd_time())
                             && tourToCheck.getEnd_time().isAfter(firstTour.getEnd_time())
                             || (tourToCheck.getStart_time().isAfter(firstTour.getStart_time())
-                            && tourToCheck.getEnd_time().isBefore(firstTour.getEnd_time())))
-                    )) {
+                            && tourToCheck.getEnd_time().isBefore(firstTour.getEnd_time()))
+                            || tourToCheck.getStart_time().isEqual(firstTour.getStart_time())
+                    ))) {
                         throw new BadRequestException("Unable to update duration due to clashes in tour timings!");
                     }
                 }
@@ -145,6 +158,20 @@ public class TourService {
         return tourType;
     }
 
+    public TourType adminUpdateTourType(Long tourTypeIdToUpdate, Boolean newPublishedStatus) throws BadRequestException {
+        Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeIdToUpdate);
+        if (tourTypeOptional.isEmpty()) {
+            throw new BadRequestException("Tour type does not exist!");
+        }
+        TourType tourType = tourTypeOptional.get();
+
+        tourType.setIs_published(newPublishedStatus);
+        tourType.setPublishedUpdatedBy(UserTypeEnum.INTERNAL_STAFF);
+
+        tourType = tourTypeRepository.save(tourType);
+
+        return tourType;
+    }
 
     public String deleteTourType(Long tourTypeIdToDelete) throws BadRequestException {
         Optional<TourType> tourTypeOptional = tourTypeRepository.findById(tourTypeIdToDelete);
@@ -198,12 +225,15 @@ public class TourService {
                     || (existingTour.getStart_time().isBefore(tourToCreate.getEnd_time())
                     && existingTour.getEnd_time().isAfter(tourToCreate.getEnd_time())
                     || (existingTour.getStart_time().isAfter(tourToCreate.getStart_time())
-                    && existingTour.getEnd_time().isBefore(tourToCreate.getEnd_time())))
-            )) {
+                    && existingTour.getEnd_time().isBefore(tourToCreate.getEnd_time()))
+                    || existingTour.getStart_time().isEqual(tourToCreate.getStart_time())
+            ))) {
                 throw new BadRequestException("There is an existing tour that clashes with the timeslot!");
             }
         }
 
+        LocalDate date = tourToCreate.getDate().toLocalDate();
+        tourToCreate.setDate(date.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
         Tour createdTour = tourRepository.save(tourToCreate);
         tourType.getTour_list().add(createdTour);
         tourTypeRepository.save(tourType);
@@ -248,8 +278,9 @@ public class TourService {
                     || (existingTour.getStart_time().isBefore(tourToUpdate.getEnd_time())
                     && existingTour.getEnd_time().isAfter(tourToUpdate.getEnd_time())
                     || (existingTour.getStart_time().isAfter(tourToUpdate.getStart_time())
-                    && existingTour.getEnd_time().isBefore(tourToUpdate.getEnd_time())))
-            )) {
+                    && existingTour.getEnd_time().isBefore(tourToUpdate.getEnd_time()))
+                    || existingTour.getStart_time().isEqual(tourToUpdate.getStart_time())
+            ))) {
                 throw new BadRequestException("There is an existing tour that clashes with the timeslot!");
             }
         }
@@ -267,6 +298,13 @@ public class TourService {
 
         if (tourOptional.isEmpty()) {
             throw new BadRequestException("Tour does not exist!");
+        }
+
+        List<Booking> bookings = bookingRepository.getAllTourBookings(BookingTypeEnum.TOUR);
+        for (Booking booking : bookings) {
+            if (booking.getTour().getTour_id().equals(tourIdToDelete)) {
+                throw new BadRequestException("Tour cannot be deleted as there are existing bookings under it!");
+            }
         }
 
         Tour tour = tourOptional.get();
@@ -312,6 +350,61 @@ public class TourService {
         }
 
         return listOfAvailableTourTypes;
+    }
+
+    public List<Booking> getAllBookingsByLocal(Long userId) throws BadRequestException {
+        Optional<Local> localOptional = localRepository.findById(userId);
+
+        if (localOptional.isEmpty()) {
+            throw new BadRequestException("User does not exist!");
+        }
+
+        Local local = localOptional.get();
+        List<Tour> tours = new ArrayList<>();
+        for (TourType tourType : local.getTour_type_list()) {
+            tours.addAll(tourType.getTour_list());
+        }
+
+        List<Booking> bookings = new ArrayList<>();
+        List<Booking> listOfAllTourBookings = bookingRepository.getAllTourBookings(BookingTypeEnum.TOUR);
+        for (Booking booking : listOfAllTourBookings) {
+            if (tours.contains(booking.getTour())) {
+                bookings.add(booking);
+            }
+        }
+
+        for (Booking b : bookings) {
+            if (b.getLocal_user() != null) {
+                Local localUser = b.getLocal_user();
+                localUser.setBooking_list(null);
+            } else if (b.getTourist_user() != null) {
+                Tourist touristUser = b.getTourist_user();
+                touristUser.setBooking_list(null);
+            }
+            b.getPayment().setBooking(null);
+        }
+
+        return bookings;
+    }
+
+    public Booking getBookingByBookingId(Long bookingId) throws BadRequestException {
+        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+
+        if (bookingOptional.isEmpty()) {
+            throw new BadRequestException("Booking does not exist!");
+        }
+
+        Booking booking = bookingOptional.get();
+        if (booking.getLocal_user() != null) {
+            Local localUser = booking.getLocal_user();
+            localUser.setBooking_list(null);
+        } else if (booking.getTourist_user() != null) {
+            Tourist touristUser = booking.getTourist_user();
+            touristUser.setBooking_list(null);
+        }
+        booking.getPayment().setBooking(null);
+
+        return booking;
     }
 
     /*
