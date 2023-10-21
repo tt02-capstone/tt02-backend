@@ -113,7 +113,7 @@ public class PostService {
         post.setUpdated_time(LocalDateTime.now());
         if (postToUpdate.getPost_image_list() == null) {
             post.setPost_image_list(new ArrayList<>());
-        } else if (!postToUpdate.getPost_image_list().isEmpty()) {
+        } else {
             post.setPost_image_list(postToUpdate.getPost_image_list());
         }
         postRepository.save(post);
