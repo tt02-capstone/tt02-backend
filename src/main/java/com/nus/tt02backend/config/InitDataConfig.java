@@ -556,7 +556,7 @@ public class InitDataConfig implements CommandLineRunner {
                 String categoryName = value.toString().toLowerCase();
                 category.setName(categoryName.substring(0, 1).toUpperCase() + categoryName.substring(1));
                 category.setCategory_item_list(new ArrayList<>());
-                category.setIsPublished(true);
+                category.setIs_published(true);
                 category = categoryRepository.save(category);
                 List<CategoryItem> categoryItemList = new ArrayList<>();
 
@@ -567,7 +567,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(attraction.getName());
                         categoryItem.setImage(attraction.getAttraction_image_list().get(0));
-                        categoryItem.setIsPublished(true);
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -578,7 +578,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(accommodation.getName());
                         categoryItem.setImage(accommodation.getAccommodation_image_list().get(0));
-                        categoryItem.setIsPublished(true);
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -589,7 +589,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(telecom.getName());
                         categoryItem.setImage(telecom.getImage()); // init telecom w an image
-                        categoryItem.setIsPublished(true);
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -600,21 +600,21 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(tourType.getName());
                         categoryItem.setImage(tourType.getTour_image_list().get(0));
-                        categoryItem.setIsPublished(true);
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
                 }
 
                 category.getCategory_item_list().addAll(categoryItemList);
-                category.setIsPublished(true);
+                category.setIs_published(true);
                 categoryRepository.save(category);
             }
 
             Category category = new Category();
             category.setName("Restaurant");
             category.setCategory_item_list(new ArrayList<>());
-            category.setIsPublished(true);
+            category.setIs_published(true);
             category = categoryRepository.save(category);
             List<Restaurant> restaurants = restaurantRepository.findAll();
             List<CategoryItem> categoryItemList = new ArrayList<>();
@@ -623,19 +623,19 @@ public class InitDataConfig implements CommandLineRunner {
                 CategoryItem categoryItem = new CategoryItem();
                 categoryItem.setName(restaurant.getName());
                 categoryItem.setImage(restaurant.getRestaurant_image_list().get(0));
-                categoryItem.setIsPublished(true);
+                categoryItem.setIs_published(true);
                 categoryItem = categoryItemRepository.save(categoryItem);
                 categoryItemList.add(categoryItem);
             }
 
             category.getCategory_item_list().addAll(categoryItemList);
-            category.setIsPublished(true);
+            category.setIs_published(true);
             categoryRepository.save(category);
 
             Category category1 = new Category();
             category1.setName("Others"); // for all the misc forum post
             category1.setCategory_item_list(new ArrayList<>());
-            category1.setIsPublished(true);
+            category1.setIs_published(true);
             categoryRepository.save(category1);
         }
     }

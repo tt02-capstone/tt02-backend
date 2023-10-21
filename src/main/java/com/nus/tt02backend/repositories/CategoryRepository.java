@@ -8,7 +8,7 @@ import java.util.*;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    @Query("SELECT c FROM Category c WHERE c.isPublished = true ")
+    @Query("SELECT c FROM Category c WHERE c.is_published = true ")
     List<Category> getAllPublishedCategory();
 }
 

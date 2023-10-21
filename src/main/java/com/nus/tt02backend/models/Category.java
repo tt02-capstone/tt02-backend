@@ -28,6 +28,6 @@ public class Category {
     private List<CategoryItem> category_item_list;
 
     @Column(nullable = false)
-    private Boolean isPublished;
+    private Boolean is_published;
 
 }

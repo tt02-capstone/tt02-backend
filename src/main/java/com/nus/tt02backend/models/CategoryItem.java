@@ -30,6 +30,6 @@ public class CategoryItem {
     private List<Post> post_list;
 
     @Column(nullable = false)
-    private Boolean isPublished;
+    private Boolean is_published;
 
 }

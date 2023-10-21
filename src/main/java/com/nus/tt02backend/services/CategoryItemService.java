@@ -68,6 +68,7 @@ public class CategoryItemService {
         CategoryItem categoryItem = categoryItemOptional.get();
         categoryItem.setName(categoryItemToUpdate.getName());
         categoryItem.setImage(categoryItemToUpdate.getImage());
+        categoryItem.setIs_published(categoryItemToUpdate.getIs_published());
         categoryItemRepository.save(categoryItem);
 
         return categoryItem;
