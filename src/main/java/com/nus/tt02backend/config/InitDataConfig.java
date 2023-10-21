@@ -40,10 +40,12 @@ public class InitDataConfig implements CommandLineRunner {
     private final PaymentRepository paymentRepository;
     private final RestaurantRepository restaurantRepository;
     private final DishRepository dishRepository;
+    private final DealRepository dealRepository;
     private final CategoryRepository categoryRepository;
     private final CategoryItemRepository categoryItemRepository;
     private final TelecomRepository telecomRepository;
     private final TourTypeRepository tourTypeRepository;
+    private final TourRepository tourRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -69,8 +71,8 @@ public class InitDataConfig implements CommandLineRunner {
             log.debug("created ADMIN user - {}", staff);
         }
 
+        Local local = new Local();
         if (localRepository.count() == 0) {
-            Local local = new Local();
             local.setEmail("local@gmail.com");
             local.setName("Rowoon");
             local.setPassword(passwordEncoder.encode("password1!"));
@@ -83,6 +85,7 @@ public class InitDataConfig implements CommandLineRunner {
             local.setEmail_verified(true);
             local.setMobile_num("98989898");
             local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            local.setTour_type_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "local@gmail.com");
@@ -90,7 +93,7 @@ public class InitDataConfig implements CommandLineRunner {
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             local.setStripe_account_id(stripe_account_id);
 
-            localRepository.save(local);
+            local = localRepository.save(local);
 
             // init the ccd card here for the local account
             Map<String, Object> card = new HashMap<>();
@@ -126,9 +129,22 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setStripe_account_id(stripe_account_id);
 
             touristRepository.save(tourist);
+
+            // init the ccd card here for the tourist account
+            Map<String, Object> card = new HashMap<>();
+            card.put("token", "tok_visa");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("type", "card");
+            params.put("card", card);
+
+            PaymentMethod paymentMethod = PaymentMethod.create(params);
+
+            paymentService.addPaymentMethod("TOURIST", "tourist@gmail.com", paymentMethod.getId());
         }
 
         Vendor vendor1 = new Vendor();
+        Vendor vendor2 = new Vendor();
         if (vendorRepository.count() == 0) {
             vendor1.setBusiness_name("Business Name");
             vendor1.setPoc_name("Ha Joon");
@@ -161,6 +177,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setVendor(vendor1);
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
+            vendor2 = setUpVendor2(vendor2);
         }
 
         if (attractionRepository.count() == 0) {
@@ -181,6 +198,7 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setAttraction_image_list(new ArrayList<>());
             attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
             attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega2.jpeg");
+            attraction.setTour_type_list(new ArrayList<>());
 
             Price childPrice = new Price();
             childPrice.setLocal_amount(new BigDecimal(30));
@@ -201,25 +219,25 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
             TicketPerDay t1 = new TicketPerDay();
-            t1.setTicket_date(LocalDate.parse("2023-10-13"));
+            t1.setTicket_date(LocalDate.parse("2023-10-20"));
             t1.setTicket_count(5);
             t1.setTicket_type(TicketEnum.ADULT);
             t1 = ticketPerDayRepository.save(t1);
 
             TicketPerDay t2 = new TicketPerDay();
-            t2.setTicket_date(LocalDate.parse("2023-10-13"));
+            t2.setTicket_date(LocalDate.parse("2023-10-20"));
             t2.setTicket_count(5);
             t2.setTicket_type(TicketEnum.CHILD);
             t2 = ticketPerDayRepository.save(t2);
 
             TicketPerDay t3 = new TicketPerDay();
-            t3.setTicket_date(LocalDate.parse("2023-10-14"));
+            t3.setTicket_date(LocalDate.parse("2023-10-20"));
             t3.setTicket_count(5);
             t3.setTicket_type(TicketEnum.ADULT);
             t3 = ticketPerDayRepository.save(t3);
 
             TicketPerDay t4 = new TicketPerDay();
-            t4.setTicket_date(LocalDate.parse("2023-10-14"));
+            t4.setTicket_date(LocalDate.parse("2023-10-20"));
             t4.setTicket_count(5);
             t4.setTicket_type(TicketEnum.CHILD);
             t4 = ticketPerDayRepository.save(t4);
@@ -241,6 +259,45 @@ public class InitDataConfig implements CommandLineRunner {
 
             createSecondAttraction(currentList);
         }
+
+        if (dealRepository.count() == 0) {
+            Deal d1 = new Deal();
+            d1.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
+            d1.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
+            d1.setDiscount_percent(10);
+            d1.setDeal_type(DealCategoryEnum.BLACK_FRIDAY);
+            d1.setPromo_code("TOURING");
+            d1.setIs_govt_voucher(false);
+            d1.setIs_published(true);
+            List<String> imgList = new ArrayList<>();
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_1_black_friday_deal.jpeg");
+            d1.setDeal_image_list(imgList);
+
+            d1 = dealRepository.save(d1);
+            List<Deal> dList = new ArrayList<>();
+            dList.add(d1);
+            vendor1.setDeals_list(dList);
+            vendorRepository.save(vendor1);
+
+            Deal d2 = new Deal();
+            d2.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
+            d2.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
+            d2.setDiscount_percent(20);
+            d2.setDeal_type(DealCategoryEnum.GOVERNMENT);
+            d2.setPromo_code("WELCOME");
+            d2.setIs_govt_voucher(true);
+            d2.setIs_published(true);
+            List<String> imgList2 = new ArrayList<>();
+            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_2_gov_pic.png");
+            d2.setDeal_image_list(imgList2);
+
+            d2 = dealRepository.save(d2);
+            List<Deal> dList2 = new ArrayList<>();
+            dList2.add(d2);
+            vendor2.setDeals_list(dList2);
+            vendorRepository.save(vendor2);
+        }
+
 
         if (restaurantRepository.count() == 0) {
             Restaurant r1 = new Restaurant();
@@ -422,6 +479,75 @@ public class InitDataConfig implements CommandLineRunner {
             tList.add(t1);
             vendor1.setTelecom_list(tList);
             vendorRepository.save(vendor1);
+
+
+            Telecom t2 = new Telecom();
+            t2.setName("Singetel");
+            t2.setDescription("Singtel 14 Days 80GB plan");
+            t2.setPrice(new BigDecimal(60));
+            t2.setType(TelecomTypeEnum.PHYSICALSIM);
+            t2.setIs_published(true);
+            t2.setEstimated_price_tier(PriceTierEnum.TIER_3);
+            t2.setNum_of_days_valid(14);
+            t2.setData_limit(80);
+            t2.setData_limit_category(GBLimitEnum.VALUE_100);
+            t2.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_14_day.JPG");
+
+            t2 = telecomRepository.save(t2);
+            List<Telecom> tList2 = new ArrayList<>();
+            tList2.add(t2);
+            vendor2.setTelecom_list(tList2);
+            vendorRepository.save(vendor2);
+        }
+
+        if (tourTypeRepository.count() == 0) {
+            TourType tourType = new TourType();
+            tourType.setName("Mega Adventure Tour");
+            List<String> imageList = new ArrayList<>();
+            imageList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/web/mega_tour.jpg");
+            tourType.setTour_image_list(imageList);
+            tourType.setDescription("Join me on the mega adventure tour where we will embark on thrilling outdoor activities");
+            tourType.setPrice(new BigDecimal(10));
+            tourType.setRecommended_pax(10);
+            tourType.setEstimated_duration(2);
+            tourType.setSpecial_note("Avoid wearing loose items like sunglasses");
+            tourType.setIs_published(true);
+            tourType.setTour_list(new ArrayList<>());
+            tourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+            tourType = tourTypeRepository.save(tourType);
+
+            local.getTour_type_list().add(tourType);
+
+            Attraction attraction = attractionRepository.findById(1L).get();
+            List<TourType> tourTypes = new ArrayList<>();
+            tourTypes.add(tourType);
+            attraction.setTour_type_list(tourTypes);
+            attractionRepository.save(attraction);
+
+            LocalDate currentDate = LocalDate.now();
+            LocalDate endDate = LocalDate.of(2023, 11, 20);
+            while (!currentDate.isAfter(endDate)) {
+                Tour tour1 = new Tour();
+                Tour tour2 = new Tour();
+                tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+                tour1.setStart_time(currentDate.atTime(10, 0));
+                tour1.setEnd_time(currentDate.atTime(12, 0));
+
+                tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+                tour2.setStart_time(currentDate.atTime(13, 0));
+                tour2.setEnd_time(currentDate.atTime(15, 0));
+
+                tour1 = tourRepository.save(tour1);
+                tour2 = tourRepository.save(tour2);
+
+                tourType.getTour_list().add(tour1);
+                tourType.getTour_list().add(tour2);
+
+                currentDate = currentDate.plusDays(1);
+            }
+            tourTypeRepository.save(tourType);
+
+            createSecondTourType(local);
         }
 
         if (categoryRepository.count() == 0) {
@@ -695,5 +821,89 @@ public class InitDataConfig implements CommandLineRunner {
         currentList.add(attraction); // add on to the previous list
         vendor.setAttraction_list(currentList);
         vendorRepository.save(vendor);
+    }
+
+    public void createSecondTourType(Local local) {
+        TourType secondTourType = new TourType();
+        secondTourType.setName("USS Tour");
+        List<String> secondImageList = new ArrayList<>();
+        secondImageList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/web/uss_tour.jpg");
+        secondTourType.setTour_image_list(secondImageList);
+        secondTourType.setDescription("Join me on the USS tour to explore Southeast Asia's first and only Universal Studios theme");
+        secondTourType.setPrice(new BigDecimal(15));
+        secondTourType.setRecommended_pax(15);
+        secondTourType.setEstimated_duration(3);
+        secondTourType.setSpecial_note("Bring along a poncho for water rides");
+        secondTourType.setIs_published(true);
+        secondTourType.setTour_list(new ArrayList<>());
+        secondTourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        secondTourType = tourTypeRepository.save(secondTourType);
+
+        local.getTour_type_list().add(secondTourType);
+        localRepository.save(local);
+
+        Attraction secondAttraction = attractionRepository.findById(2L).get();
+        List<TourType> secondTourTypes = new ArrayList<>();
+        secondTourTypes.add(secondTourType);
+        secondAttraction.setTour_type_list(secondTourTypes);
+        attractionRepository.save(secondAttraction);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = LocalDate.of(2023, 11, 20);
+        while (!currentDate.isAfter(endDate)) {
+            Tour tour1 = new Tour();
+            Tour tour2 = new Tour();
+            tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour1.setStart_time(currentDate.atTime(10, 0));
+            tour1.setEnd_time(currentDate.atTime(12, 0));
+
+            tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour2.setStart_time(currentDate.atTime(13, 0));
+            tour2.setEnd_time(currentDate.atTime(15, 0));
+
+            tour1 = tourRepository.save(tour1);
+            tour2 = tourRepository.save(tour2);
+
+            secondTourType.getTour_list().add(tour1);
+            secondTourType.getTour_list().add(tour2);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        tourTypeRepository.save(secondTourType);
+    }
+
+    Vendor setUpVendor2(Vendor vendor2) {
+        vendor2.setBusiness_name("Business 2");
+        vendor2.setPoc_name("Ha Loon");
+        vendor2.setPoc_position("Manager");
+        vendor2.setCountry_code("+65");
+        vendor2.setPoc_mobile_num("96969697");
+        vendor2.setWallet_balance(new BigDecimal(0));
+        vendor2.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor2.setVendor_type(VendorEnum.ATTRACTION);
+        vendor2.setService_description("애정수를 믿으세요?");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "vendor2@gmail.com");
+        customer_parameters.put("name", "Business 2");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor2.setStripe_account_id(stripe_account_id);
+
+        vendor2 = vendorRepository.save(vendor2);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("vendor2@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Na HAHHAH"); //ewww
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor2);
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor2;
     }
 }

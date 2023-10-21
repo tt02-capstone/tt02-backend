@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,6 +42,9 @@ public class TourType {
 
     @Column(nullable = false)
     private Boolean is_published;
+
+    @Column
+    private UserTypeEnum publishedUpdatedBy;
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Tour> tour_list;

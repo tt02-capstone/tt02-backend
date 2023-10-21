@@ -192,7 +192,6 @@ public class ReplyService {
 
         for (Reply r : currentReplyList) {
             if (r.getReply_id().equals(replyId)) {
-
                 currentReplyList.remove(r);
                 supportTicket.setReply_list(currentReplyList);
                 supportTicketRepository.save(supportTicket);

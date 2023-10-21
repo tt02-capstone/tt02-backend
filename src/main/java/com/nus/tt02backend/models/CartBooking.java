@@ -26,6 +26,8 @@ public class CartBooking {
 
     private LocalDateTime end_datetime;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Vendor vendor;
 
     @Enumerated(EnumType.STRING)
     private BookingTypeEnum type;

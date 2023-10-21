@@ -221,7 +221,7 @@ public class VendorStaffService {
         javaMailSender.send(mimeMessage);
     }
 
-    public VendorStaff editVendorStaffProfile(VendorStaff vendorStaffToEdit) throws EditVendorStaffException {
+    public VendorStaff editVendorStaffProfile(VendorStaff vendorStaffToEdit) throws BadRequestException {
         try {
 
             Optional<VendorStaff> vendorStaffOptional = vendorStaffRepository.findById(vendorStaffToEdit.getUser_id());
@@ -231,7 +231,7 @@ public class VendorStaffService {
 
                 Long existingId = vendorStaffRepository.getVendorStaffIdByEmail(vendorStaffToEdit.getEmail());
                 if (existingId != null && existingId != vendorStaffToEdit.getUser_id()) { // but there is an existing email
-                    throw new EditVendorStaffException("Email currently in use. Please use a different email!");
+                    throw new BadRequestException("Email currently in use. Please use a different email!");
                 }
 
                 vendorStaff.setEmail(vendorStaffToEdit.getEmail());
@@ -254,10 +254,10 @@ public class VendorStaffService {
                 return vendorStaff;
 
             } else {
-                throw new EditVendorStaffException("Vendor staff not found!");
+                throw new BadRequestException("Vendor staff not found!");
             }
         } catch (Exception ex) {
-            throw new EditVendorStaffException(ex.getMessage());
+            throw new BadRequestException(ex.getMessage());
         }
     }
 
@@ -456,6 +456,9 @@ public class VendorStaffService {
             Map<String, Object> params = new HashMap<>();
             params.put("amount", -amount.multiply(new BigDecimal("100")).intValueExact());
             params.put("currency", "sgd");
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("transaction_type", "Withdrawals");
+            params.put("metadata", metadata);
 
             CustomerBalanceTransaction balanceTransaction =
                     customer.balanceTransactions().create(params);

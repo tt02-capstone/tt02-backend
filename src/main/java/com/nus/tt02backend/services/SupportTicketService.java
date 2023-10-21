@@ -6,7 +6,6 @@ import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -108,6 +107,56 @@ public class SupportTicketService {
         } catch (Exception ex) {
             throw new NotFoundException(ex.getMessage());
         }
+    }
+
+    public List<SupportTicket> getAllOutgoingSupportTicketsByVendorStaff(Long vendorStaffId) throws NotFoundException {
+        VendorStaff vendorStaff = vendorStaffRepository.findById(vendorStaffId)
+                .orElseThrow(() -> new NotFoundException("VendorStaff not found"));
+        vendorStaff.getVendor().setVendor_staff_list(null);
+        List<SupportTicket> supportTickets = vendorStaff.getOutgoing_support_ticket_list();
+        for (SupportTicket s : supportTickets) {
+            if (!s.getReply_list().isEmpty()) {
+                List<Reply> replyList = s.getReply_list();
+                for (Reply r : replyList) {
+                    r.setVendor_staff_user(null);
+                    r.setInternal_staff_user(null);
+                    r.setTourist_user(null);
+                    r.setLocal_user(null);
+                }
+            }
+            if (s.getBooking() != null) {
+                s.getBooking().setPayment(null);
+                s.getBooking().setLocal_user(null);
+                s.getBooking().setTourist_user(null);
+            }
+        }
+        return supportTickets;
+    }
+
+
+
+    public List<SupportTicket> getAllIncomingSupportTicketsByVendorStaff(Long vendorStaffId) throws NotFoundException {
+        VendorStaff vendorStaff = vendorStaffRepository.findById(vendorStaffId)
+                .orElseThrow(() -> new NotFoundException("VendorStaff not found"));
+        vendorStaff.getVendor().setVendor_staff_list(null);
+        List<SupportTicket> supportTickets = vendorStaff.getIncoming_support_ticket_list();
+        for (SupportTicket s : supportTickets) {
+            if (!s.getReply_list().isEmpty()) {
+                List<Reply> replyList = s.getReply_list();
+                for (Reply r : replyList) {
+                    r.setVendor_staff_user(null);
+                    r.setInternal_staff_user(null);
+                    r.setTourist_user(null);
+                    r.setLocal_user(null);
+                }
+            }
+            if (s.getBooking() != null) {
+                s.getBooking().setPayment(null);
+                s.getBooking().setLocal_user(null);
+                s.getBooking().setTourist_user(null);
+            }
+        }
+        return supportTickets;
     }
 
     public SupportTicket getSupportTicket(Long supportTicketId) throws NotFoundException {
@@ -331,7 +380,6 @@ public class SupportTicketService {
             }
             Accommodation accommodation = accommodationOptional.get();
             supportTicket.setAccommodation(accommodation);
-
             vendorStaffList = getVendorByAccommodation(activityId);
             activityName = "Accommodation: " + accommodation.getName();
 
@@ -342,10 +390,8 @@ public class SupportTicketService {
             }
             Attraction attraction = attractionOptional.get();
             supportTicket.setAttraction(attraction);
-
             vendorStaffList = getVendorByAttraction(activityId);
             activityName = "Attraction: " + attraction.getName();
-
         } else if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.RESTAURANT)) {
             Optional<Restaurant> restaurantOptional = restaurantRepository.findById(activityId);
             if (restaurantOptional.isEmpty()) {
@@ -353,10 +399,8 @@ public class SupportTicketService {
             }
             Restaurant restaurant = restaurantOptional.get();
             supportTicket.setRestaurant(restaurant);
-
             vendorStaffList = getVendorByRestaurant(activityId);
             activityName = "Restaurant: " + restaurant.getName();
-
         } else if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.TELECOM)) {
             Optional<Telecom> telecomOptional = telecomRepository.findById(activityId);
             if (telecomOptional.isEmpty()) {
@@ -364,7 +408,6 @@ public class SupportTicketService {
             }
             Telecom telecom = telecomOptional.get();
             supportTicket.setTelecom(telecom);
-
             vendorStaffList = getVendorByTelecom(activityId);
             activityName = "Telecom: " + telecom.getName();
         } else if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.DEAL)) {
@@ -374,7 +417,6 @@ public class SupportTicketService {
             }
             Deal deal = dealOptional.get();
             supportTicket.setDeal(deal);
-
             vendorStaffList = getVendorByDeal(activityId);
             activityName = "Deal: " + deal.getPromo_code();
         }
@@ -429,7 +471,6 @@ public class SupportTicketService {
     }
 
     public List<VendorStaff> getVendorByAttraction(Long attractionId) throws BadRequestException, NotFoundException {
-
         Optional<Attraction> attractionOptional = attractionRepository.findById(attractionId);
         if (attractionOptional.isEmpty()) {
             throw new BadRequestException("Attraction does not exist!");
@@ -588,7 +629,6 @@ public class SupportTicketService {
 
             if (bookingOptional.isPresent()) {
                 Booking booking = bookingOptional.get();
-
                 return booking;
             } else {
                 throw new NotFoundException("Booking not found");
@@ -721,7 +761,7 @@ public class SupportTicketService {
             String content = "<html><body style='font-family: Arial, sans-serif;'>"
                     + "<p style='color: #333; font-size: 16px;'>Dear " + user.getName() + ",</p>"
                     + "<p style='color: #333; font-size: 16px;'>You have submitted a support ticket to " + convertToTitleCase(supportTicket.getTicket_type().toString()) +
-                        " regarding your Booking #" + supportTicket.getBooking().getBooking_id() + activityName + "</p>"
+                    " regarding your Booking #" + supportTicket.getBooking().getBooking_id() + activityName + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Ticket Id:</strong> " + supportTicket.getSupport_ticket_id().toString() + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Ticket Category:</strong> " + convertToTitleCase(supportTicket.getTicket_category().toString()) + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Message Contents:</strong> <em>" + supportTicket.getDescription() + "</em></p>"
@@ -731,8 +771,6 @@ public class SupportTicketService {
         } catch (MessagingException ex) {
             throw new BadRequestException("We encountered a technical error while sending the signup confirmation email");
         }
-
-
 
         return supportTicket;
     }

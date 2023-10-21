@@ -45,6 +45,7 @@ public class PostService {
         postToCreate.setPublish_time(LocalDateTime.now());
         postToCreate.setUpdated_time(LocalDateTime.now());
         postToCreate.setComment_list(new ArrayList<>());
+
         if (postToCreate.getPost_image_list() == null) {
             postToCreate.setPost_image_list(new ArrayList<>());
         }
@@ -110,9 +111,10 @@ public class PostService {
         post.setTitle(postToUpdate.getTitle());
         post.setContent(postToUpdate.getContent());
         post.setUpdated_time(LocalDateTime.now());
-        if (post.getPost_image_list() != null && postToUpdate.getPost_image_list() != null) {
-            post.getPost_image_list().clear();
-            post.getPost_image_list().addAll(postToUpdate.getPost_image_list());
+        if (postToUpdate.getPost_image_list() == null) {
+            post.setPost_image_list(new ArrayList<>());
+        } else if (!postToUpdate.getPost_image_list().isEmpty()) {
+            post.setPost_image_list(postToUpdate.getPost_image_list());
         }
         postRepository.save(post);
 
@@ -186,15 +188,23 @@ public class PostService {
                 p.setComment_list(null);
                 if (p.getLocal_user() != null) {
                     p.getLocal_user().setPost_list(null);
+                    p.getLocal_user().setComment_list(null);
+                    p.getLocal_user().setCart_list(null);
+                    p.getLocal_user().setBooking_list(null);
                 }
                 else if (p.getTourist_user() != null) {
                     p.getTourist_user().setPost_list(null);
+                    p.getTourist_user().setComment_list(null);
+                    p.getTourist_user().setCart_list(null);
+                    p.getTourist_user().setBooking_list(null);
                 }
                 else if (p.getInternal_staff_user() != null) {
                     p.getInternal_staff_user().setPost_list(null);
+                    p.getInternal_staff_user().setComment_list(null);
                 }
                 else if (p.getVendor_staff_user() != null) {
                     p.getVendor_staff_user().setPost_list(null);
+                    p.getVendor_staff_user().setComment_list(null);
                     p.getVendor_staff_user().getVendor().setVendor_staff_list(null);
                 }
             }
@@ -211,21 +221,52 @@ public class PostService {
 
         if (postOptional.isPresent()) {
             Post p = postOptional.get();
-            p.setComment_list(null); // might change in future
+
+            List<Comment> childComments = new ArrayList<>();
+            if (!p.getComment_list().isEmpty()) {
+                for (Comment comment : p.getComment_list()) {
+                    comment.setPost(null);
+                    comment.setParent_comment(null);
+
+                    if (!comment.getChild_comment_list().isEmpty()) {
+                        childComments.addAll(comment.getChild_comment_list());
+                    }
+
+                    if (comment.getLocal_user() != null) {
+                        comment.getLocal_user().setComment_list(null);
+                    } else if (comment.getTourist_user() != null) {
+                        comment.getTourist_user().setComment_list(null);
+                    } else if (comment.getVendor_staff_user() != null) {
+                        comment.getVendor_staff_user().setComment_list(null);
+                    } else if (comment.getInternal_staff_user() != null) {
+                        comment.getInternal_staff_user().setComment_list(null);
+                    }
+                }
+            }
 
             if (p.getLocal_user() != null) {
                 p.getLocal_user().setPost_list(null);
+                p.getLocal_user().setComment_list(null);
+                p.getLocal_user().setCart_list(null);
+                p.getLocal_user().setBooking_list(null);
             }
             else if (p.getTourist_user() != null) {
                 p.getTourist_user().setPost_list(null);
+                p.getTourist_user().setComment_list(null);
+                p.getTourist_user().setCart_list(null);
+                p.getTourist_user().setBooking_list(null);
             }
             else if (p.getInternal_staff_user() != null) {
                 p.getInternal_staff_user().setPost_list(null);
+                p.getInternal_staff_user().setComment_list(null);
             }
             else if (p.getVendor_staff_user() != null) {
                 p.getVendor_staff_user().setPost_list(null);
+                p.getVendor_staff_user().setComment_list(null);
                 p.getVendor_staff_user().getVendor().setVendor_staff_list(null);
             }
+
+            p.getComment_list().removeAll(childComments);
 
             return p;
         } else {
@@ -242,17 +283,23 @@ public class PostService {
 
         User user = userOptional.get();
         Post post = postOptional.get();
+
+        // list does not contain user
         if (!post.getUpvoted_user_id_list().contains(user.getUser_id())) {
             post.getUpvoted_user_id_list().add(user.getUser_id());
             post.getDownvoted_user_id_list().remove(user.getUser_id());
-            postRepository.save(post);
 
-            post.setComment_list(null);
-            post.setInternal_staff_user(null);
-            post.setTourist_user(null);
-            post.setLocal_user(null);
-            post.setVendor_staff_user(null);
+        } else { // contains user
+            post.getUpvoted_user_id_list().remove(user.getUser_id());
         }
+
+        postRepository.save(post);
+
+        post.setComment_list(null);
+        post.setInternal_staff_user(null);
+        post.setTourist_user(null);
+        post.setLocal_user(null);
+        post.setVendor_staff_user(null);
 
         return post;
     }
@@ -266,17 +313,23 @@ public class PostService {
 
         User user = userOptional.get();
         Post post = postOptional.get();
+
+        // list does not contain user
         if (!post.getDownvoted_user_id_list().contains(user.getUser_id())) {
             post.getDownvoted_user_id_list().add(user.getUser_id());
             post.getUpvoted_user_id_list().remove(user.getUser_id());
-            postRepository.save(post);
 
-            post.setComment_list(null);
-            post.setInternal_staff_user(null);
-            post.setTourist_user(null);
-            post.setLocal_user(null);
-            post.setVendor_staff_user(null);
+        } else { // contains user
+            post.getDownvoted_user_id_list().remove(user.getUser_id());
         }
+
+        postRepository.save(post);
+
+        post.setComment_list(null);
+        post.setInternal_staff_user(null);
+        post.setTourist_user(null);
+        post.setLocal_user(null);
+        post.setVendor_staff_user(null);
 
         return post;
     }

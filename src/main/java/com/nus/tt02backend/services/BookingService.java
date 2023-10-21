@@ -10,6 +10,8 @@ import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
+import com.stripe.model.CustomerBalanceTransaction;
 import com.stripe.model.Refund;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -79,6 +81,9 @@ public class BookingService {
     @Autowired
     QrCodeRepository qrCodeRepository;
 
+    @Autowired
+    TourTypeRepository  tourTypeRepository;
+
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
@@ -110,6 +115,7 @@ public class BookingService {
         try {
             Tourist tourist = touristRepository.getTouristByUserId(touristId);
             if (tourist != null) {
+                tourist.setCart_list(null);
                 return tourist;
             } else {
                 throw new NotFoundException("Tourist not found!");
@@ -123,6 +129,7 @@ public class BookingService {
         try {
             Local local = localRepository.getLocalByUserId(localId);
             if (local != null) {
+                local.setCart_list(null);
                 return local;
             } else {
                 throw new NotFoundException("Local not found!");
@@ -206,9 +213,11 @@ public class BookingService {
                 if (booking.getLocal_user() != null) {
                     Local local = booking.getLocal_user();
                     local.setBooking_list(null);
+                    local.setCart_list(null);
                     local.setSupport_ticket_list(null);
                 } else if (booking.getTourist_user() != null) {
                     Tourist tourist = booking.getTourist_user();
+                    tourist.setCart_list(null);
                     tourist.setBooking_list(null);
                     tourist.setSupport_ticket_list(null);
                 }
@@ -273,19 +282,75 @@ public class BookingService {
 
             Payment payment = booking.getPayment();
 
-            Attraction selected_attraction = booking.getAttraction();
-
-            Vendor vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
+            String bookingType = String.valueOf(booking.getType());
 
             BigDecimal commission = payment.getPayment_amount().multiply(payment.getComission_percentage());
 
             BigDecimal payoutAmount = payment.getPayment_amount().subtract(commission);
 
-            BigDecimal currentWalletBalance = vendor.getWallet_balance();
+            Vendor vendor = null;
+            Local local = null;
 
-            vendor.setWallet_balance(currentWalletBalance.subtract(payoutAmount));
+            if (Objects.equals(bookingType, "TOUR")) {
+                local = localRepository.findLocalByTour(booking.getTour());
 
-            vendorRepository.save(vendor);
+                BigDecimal currentWalletBalance = local.getWallet_balance();
+
+                local.setWallet_balance(currentWalletBalance.subtract(payoutAmount));
+
+                String stripe_account_id = local.getStripe_account_id();
+
+                Customer customer =
+                        Customer.retrieve(stripe_account_id);
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("amount", -payoutAmount.multiply(new BigDecimal("100")).intValueExact());
+                params.put("currency", "sgd");
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("transaction_type", "Refunds");
+                params.put("metadata", metadata);
+
+                CustomerBalanceTransaction balanceTransaction =
+                        customer.balanceTransactions().create(params);
+
+                localRepository.save(local);
+            } else {
+                if (Objects.equals(bookingType, "ATTRACTION")) {
+                    vendor = vendorRepository.findVendorByAttractionName(booking.getAttraction().getName());
+
+                } else if (Objects.equals(bookingType, "TELECOM")) {
+                    vendor = vendorRepository.findVendorByTelecomName(booking.getTelecom().getName());
+
+                } else if (Objects.equals(bookingType, "ACCOMMODATION")) {
+                    vendor = vendorRepository.findVendorByAccommodationName(booking.getActivity_name());
+                }
+
+                if (!(vendor == null)) {
+                    BigDecimal currentWalletBalance = vendor.getWallet_balance();
+
+                    vendor.setWallet_balance(currentWalletBalance.subtract(payoutAmount));
+
+                    String stripe_account_id = vendor.getStripe_account_id();
+
+                    Customer customer =
+                            Customer.retrieve(stripe_account_id);
+
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("amount", -payoutAmount.multiply(new BigDecimal("100")).intValueExact());
+                    params.put("currency", "sgd");
+                    Map<String, Object> metadata = new HashMap<>();
+                    metadata.put("transaction_type", "Refunds");
+                    params.put("metadata", metadata);
+
+                    CustomerBalanceTransaction balanceTransaction =
+                            customer.balanceTransactions().create(params);
+
+                    vendorRepository.save(vendor);
+                }
+            }
+
+
+
         }
 
         List<QrCode> qrCodes = new ArrayList<QrCode>();
@@ -560,5 +625,24 @@ public class BookingService {
         } else {
             throw new NotFoundException("Accommodation not found!");
         }
+    }
+
+    public String getTourImageByTourId(Long tourId) throws BadRequestException {
+        Optional<Tour> tourOptional = tourRepository.findById(tourId);
+        if (tourOptional.isEmpty()) {
+            throw new BadRequestException("Tour does not exist!");
+        }
+        Tour tour = tourOptional.get();
+
+        List<TourType> tourTypes = tourTypeRepository.findAll();
+        String tourImageLink = "";
+        for (TourType tourType : tourTypes) {
+            if (tourType.getTour_list().contains(tour)) {
+                tourImageLink = tourType.getTour_image_list().get(0);
+                break;
+            }
+        }
+
+        return tourImageLink;
     }
 }
