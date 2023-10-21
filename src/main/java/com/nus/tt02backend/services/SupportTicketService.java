@@ -353,11 +353,7 @@ public class SupportTicketService {
 
     public SupportTicket createSupportTicketToVendor(Long userId, Long activityId, SupportTicket supportTicketToCreate) throws BadRequestException, NotFoundException {
 
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new BadRequestException("User does not exist!");
-        }
-        User user = userOptional.get();
+        User user = findUser(userId);
 
         supportTicketToCreate.setCreated_time(LocalDateTime.now());
         supportTicketToCreate.setUpdated_time(LocalDateTime.now());
@@ -373,6 +369,8 @@ public class SupportTicketService {
 
         SupportTicket supportTicket = supportTicketRepository.save(supportTicketToCreate);
 
+        System.out.println("Support Ticket Ticket Category" + supportTicket.getTicket_category());
+
         if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.ACCOMMODATION)) {
             Optional<Accommodation> accommodationOptional = accommodationRepository.findById(activityId);
             if (accommodationOptional.isEmpty()) {
@@ -384,6 +382,9 @@ public class SupportTicketService {
             activityName = "Accommodation: " + accommodation.getName();
 
         } else if (supportTicket.getTicket_category().equals(SupportTicketCategoryEnum.ATTRACTION)) {
+            System.out.println("Entered the attraction loop");
+            System.out.println("activity Id" + activityId);
+
             Optional<Attraction> attractionOptional = attractionRepository.findById(activityId);
             if (attractionOptional.isEmpty()) {
                 throw new BadRequestException("Attraction does not exist!");
@@ -463,11 +464,13 @@ public class SupportTicketService {
 
     public List<Attraction> retrieveAllAttractionsByVendor(Vendor vendor) throws NotFoundException {
 
+        List<Attraction> listToReturn = new ArrayList<>();
+
         if (!vendor.getAttraction_list().isEmpty()) {
-            return vendor.getAttraction_list();
-        } else {
-            throw new NotFoundException("Attractions not found!");
+            listToReturn = vendor.getAttraction_list();
         }
+
+        return listToReturn;
     }
 
     public List<VendorStaff> getVendorByAttraction(Long attractionId) throws BadRequestException, NotFoundException {
@@ -495,11 +498,14 @@ public class SupportTicketService {
 
     public List<Accommodation> retrieveAllAccommodationsByVendor(Vendor vendor) throws NotFoundException {
 
+        List<Accommodation> listToReturn = new ArrayList<>();
+
         if (!vendor.getAccommodation_list().isEmpty()) {
-            return vendor.getAccommodation_list();
-        } else {
-            throw new NotFoundException("Accommodations not found!");
+            listToReturn = vendor.getAccommodation_list();
         }
+
+        return listToReturn;
+
     }
 
     public List<VendorStaff> getVendorByAccommodation(Long accommodationId) throws BadRequestException, NotFoundException {
@@ -528,11 +534,13 @@ public class SupportTicketService {
 
     public List<Restaurant> retrieveAllRestaurantsByVendor(Vendor vendor) throws NotFoundException {
 
+        List<Restaurant> listToReturn = new ArrayList<>();
+
         if (!vendor.getRestaurant_list().isEmpty()) {
-            return vendor.getRestaurant_list();
-        } else {
-            throw new NotFoundException("Restaurants not found!");
+            listToReturn = vendor.getRestaurant_list();
         }
+
+        return listToReturn;
     }
 
     public List<VendorStaff> getVendorByRestaurant(Long restaurantId) throws BadRequestException, NotFoundException {
@@ -561,11 +569,14 @@ public class SupportTicketService {
 
     public List<Telecom> retrieveAllTelecomsByVendor(Vendor vendor) throws NotFoundException {
 
+        List<Telecom> listToReturn = new ArrayList<>();
+
         if (!vendor.getTelecom_list().isEmpty()) {
-            return vendor.getTelecom_list();
-        } else {
-            throw new NotFoundException("Telecom packages not found!");
+            listToReturn = vendor.getTelecom_list();
         }
+
+        return listToReturn;
+
     }
 
     public List<VendorStaff> getVendorByTelecom(Long telecomId) throws BadRequestException, NotFoundException {
@@ -594,11 +605,13 @@ public class SupportTicketService {
 
     public List<Deal> retrieveAllDealsByVendor(Vendor vendor) throws NotFoundException {
 
+        List<Deal> listToReturn = new ArrayList<>();
+
         if (!vendor.getDeals_list().isEmpty()) {
-            return vendor.getDeals_list();
-        } else {
-            throw new NotFoundException("Deals not found!");
+            listToReturn = vendor.getDeals_list();
         }
+
+        return listToReturn;
     }
 
     public List<VendorStaff> getVendorByDeal(Long dealId) throws BadRequestException, NotFoundException {
