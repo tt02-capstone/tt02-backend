@@ -45,6 +45,7 @@ public class InitDataConfig implements CommandLineRunner {
     private final CategoryItemRepository categoryItemRepository;
     private final TelecomRepository telecomRepository;
     private final TourTypeRepository tourTypeRepository;
+    private final TourRepository tourRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -70,8 +71,8 @@ public class InitDataConfig implements CommandLineRunner {
             log.debug("created ADMIN user - {}", staff);
         }
 
+        Local local = new Local();
         if (localRepository.count() == 0) {
-            Local local = new Local();
             local.setEmail("local@gmail.com");
             local.setName("Rowoon");
             local.setPassword(passwordEncoder.encode("password1!"));
@@ -84,6 +85,7 @@ public class InitDataConfig implements CommandLineRunner {
             local.setEmail_verified(true);
             local.setMobile_num("98989898");
             local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            local.setTour_type_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "local@gmail.com");
@@ -91,7 +93,7 @@ public class InitDataConfig implements CommandLineRunner {
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             local.setStripe_account_id(stripe_account_id);
 
-            localRepository.save(local);
+            local = localRepository.save(local);
 
             // init the ccd card here for the local account
             Map<String, Object> card = new HashMap<>();
@@ -127,6 +129,18 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setStripe_account_id(stripe_account_id);
 
             touristRepository.save(tourist);
+
+            // init the ccd card here for the tourist account
+            Map<String, Object> card = new HashMap<>();
+            card.put("token", "tok_visa");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("type", "card");
+            params.put("card", card);
+
+            PaymentMethod paymentMethod = PaymentMethod.create(params);
+
+            paymentService.addPaymentMethod("TOURIST", "tourist@gmail.com", paymentMethod.getId());
         }
 
         Vendor vendor1 = new Vendor();
@@ -184,6 +198,7 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setAttraction_image_list(new ArrayList<>());
             attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
             attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega2.jpeg");
+            attraction.setTour_type_list(new ArrayList<>());
 
             Price childPrice = new Price();
             childPrice.setLocal_amount(new BigDecimal(30));
@@ -204,25 +219,25 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
             TicketPerDay t1 = new TicketPerDay();
-            t1.setTicket_date(LocalDate.parse("2023-10-13"));
+            t1.setTicket_date(LocalDate.parse("2023-10-20"));
             t1.setTicket_count(5);
             t1.setTicket_type(TicketEnum.ADULT);
             t1 = ticketPerDayRepository.save(t1);
 
             TicketPerDay t2 = new TicketPerDay();
-            t2.setTicket_date(LocalDate.parse("2023-10-13"));
+            t2.setTicket_date(LocalDate.parse("2023-10-20"));
             t2.setTicket_count(5);
             t2.setTicket_type(TicketEnum.CHILD);
             t2 = ticketPerDayRepository.save(t2);
 
             TicketPerDay t3 = new TicketPerDay();
-            t3.setTicket_date(LocalDate.parse("2023-10-14"));
+            t3.setTicket_date(LocalDate.parse("2023-10-20"));
             t3.setTicket_count(5);
             t3.setTicket_type(TicketEnum.ADULT);
             t3 = ticketPerDayRepository.save(t3);
 
             TicketPerDay t4 = new TicketPerDay();
-            t4.setTicket_date(LocalDate.parse("2023-10-14"));
+            t4.setTicket_date(LocalDate.parse("2023-10-20"));
             t4.setTicket_count(5);
             t4.setTicket_type(TicketEnum.CHILD);
             t4 = ticketPerDayRepository.save(t4);
@@ -485,12 +500,63 @@ public class InitDataConfig implements CommandLineRunner {
             vendorRepository.save(vendor2);
         }
 
+        if (tourTypeRepository.count() == 0) {
+            TourType tourType = new TourType();
+            tourType.setName("Mega Adventure Tour");
+            List<String> imageList = new ArrayList<>();
+            imageList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/web/mega_tour.jpg");
+            tourType.setTour_image_list(imageList);
+            tourType.setDescription("Join me on the mega adventure tour where we will embark on thrilling outdoor activities");
+            tourType.setPrice(new BigDecimal(10));
+            tourType.setRecommended_pax(10);
+            tourType.setEstimated_duration(2);
+            tourType.setSpecial_note("Avoid wearing loose items like sunglasses");
+            tourType.setIs_published(true);
+            tourType.setTour_list(new ArrayList<>());
+            tourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+            tourType = tourTypeRepository.save(tourType);
+
+            local.getTour_type_list().add(tourType);
+
+            Attraction attraction = attractionRepository.findById(1L).get();
+            List<TourType> tourTypes = new ArrayList<>();
+            tourTypes.add(tourType);
+            attraction.setTour_type_list(tourTypes);
+            attractionRepository.save(attraction);
+
+            LocalDate currentDate = LocalDate.now();
+            LocalDate endDate = LocalDate.of(2023, 11, 20);
+            while (!currentDate.isAfter(endDate)) {
+                Tour tour1 = new Tour();
+                Tour tour2 = new Tour();
+                tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+                tour1.setStart_time(currentDate.atTime(10, 0));
+                tour1.setEnd_time(currentDate.atTime(12, 0));
+
+                tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+                tour2.setStart_time(currentDate.atTime(13, 0));
+                tour2.setEnd_time(currentDate.atTime(15, 0));
+
+                tour1 = tourRepository.save(tour1);
+                tour2 = tourRepository.save(tour2);
+
+                tourType.getTour_list().add(tour1);
+                tourType.getTour_list().add(tour2);
+
+                currentDate = currentDate.plusDays(1);
+            }
+            tourTypeRepository.save(tourType);
+
+            createSecondTourType(local);
+        }
+
         if (categoryRepository.count() == 0) {
             for (BookingTypeEnum value : BookingTypeEnum.values()) {
                 Category category = new Category();
                 String categoryName = value.toString().toLowerCase();
                 category.setName(categoryName.substring(0, 1).toUpperCase() + categoryName.substring(1));
                 category.setCategory_item_list(new ArrayList<>());
+                category.setIs_published(true);
                 category = categoryRepository.save(category);
                 List<CategoryItem> categoryItemList = new ArrayList<>();
 
@@ -501,6 +567,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(attraction.getName());
                         categoryItem.setImage(attraction.getAttraction_image_list().get(0));
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -511,6 +578,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(accommodation.getName());
                         categoryItem.setImage(accommodation.getAccommodation_image_list().get(0));
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -521,6 +589,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(telecom.getName());
                         categoryItem.setImage(telecom.getImage()); // init telecom w an image
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -531,18 +600,21 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(tourType.getName());
                         categoryItem.setImage(tourType.getTour_image_list().get(0));
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
                 }
 
                 category.getCategory_item_list().addAll(categoryItemList);
+                category.setIs_published(true);
                 categoryRepository.save(category);
             }
 
             Category category = new Category();
             category.setName("Restaurant");
             category.setCategory_item_list(new ArrayList<>());
+            category.setIs_published(true);
             category = categoryRepository.save(category);
             List<Restaurant> restaurants = restaurantRepository.findAll();
             List<CategoryItem> categoryItemList = new ArrayList<>();
@@ -551,16 +623,19 @@ public class InitDataConfig implements CommandLineRunner {
                 CategoryItem categoryItem = new CategoryItem();
                 categoryItem.setName(restaurant.getName());
                 categoryItem.setImage(restaurant.getRestaurant_image_list().get(0));
+                categoryItem.setIs_published(true);
                 categoryItem = categoryItemRepository.save(categoryItem);
                 categoryItemList.add(categoryItem);
             }
 
             category.getCategory_item_list().addAll(categoryItemList);
+            category.setIs_published(true);
             categoryRepository.save(category);
 
             Category category1 = new Category();
             category1.setName("Others"); // for all the misc forum post
             category1.setCategory_item_list(new ArrayList<>());
+            category1.setIs_published(true);
             categoryRepository.save(category1);
         }
     }
@@ -756,6 +831,55 @@ public class InitDataConfig implements CommandLineRunner {
         currentList.add(attraction); // add on to the previous list
         vendor.setAttraction_list(currentList);
         vendorRepository.save(vendor);
+    }
+
+    public void createSecondTourType(Local local) {
+        TourType secondTourType = new TourType();
+        secondTourType.setName("USS Tour");
+        List<String> secondImageList = new ArrayList<>();
+        secondImageList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/web/uss_tour.jpg");
+        secondTourType.setTour_image_list(secondImageList);
+        secondTourType.setDescription("Join me on the USS tour to explore Southeast Asia's first and only Universal Studios theme");
+        secondTourType.setPrice(new BigDecimal(15));
+        secondTourType.setRecommended_pax(15);
+        secondTourType.setEstimated_duration(3);
+        secondTourType.setSpecial_note("Bring along a poncho for water rides");
+        secondTourType.setIs_published(true);
+        secondTourType.setTour_list(new ArrayList<>());
+        secondTourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        secondTourType = tourTypeRepository.save(secondTourType);
+
+        local.getTour_type_list().add(secondTourType);
+        localRepository.save(local);
+
+        Attraction secondAttraction = attractionRepository.findById(2L).get();
+        List<TourType> secondTourTypes = new ArrayList<>();
+        secondTourTypes.add(secondTourType);
+        secondAttraction.setTour_type_list(secondTourTypes);
+        attractionRepository.save(secondAttraction);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = LocalDate.of(2023, 11, 20);
+        while (!currentDate.isAfter(endDate)) {
+            Tour tour1 = new Tour();
+            Tour tour2 = new Tour();
+            tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour1.setStart_time(currentDate.atTime(10, 0));
+            tour1.setEnd_time(currentDate.atTime(12, 0));
+
+            tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour2.setStart_time(currentDate.atTime(13, 0));
+            tour2.setEnd_time(currentDate.atTime(15, 0));
+
+            tour1 = tourRepository.save(tour1);
+            tour2 = tourRepository.save(tour2);
+
+            secondTourType.getTour_list().add(tour1);
+            secondTourType.getTour_list().add(tour2);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        tourTypeRepository.save(secondTourType);
     }
 
     Vendor setUpVendor2(Vendor vendor2) {

@@ -3,11 +3,12 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Comment;
-import com.nus.tt02backend.models.Post;
 import com.nus.tt02backend.services.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
 
 @RestController
 @CrossOrigin
@@ -17,9 +18,7 @@ public class CommentController {
     CommentService commentService;
 
     @PostMapping("/createComment/{postId}/{parentCommentId}/{userId}")
-    public ResponseEntity<Comment> createPost(@PathVariable Long postId, @PathVariable Long parentCommentId,
-                                           @PathVariable Long userId, @RequestBody Comment commentToCreate)
-            throws BadRequestException {
+    public ResponseEntity<Comment> createComment(@PathVariable Long postId, @PathVariable Long parentCommentId, @PathVariable Long userId, @RequestBody Comment commentToCreate) throws BadRequestException {
         Comment comment = commentService.createComment(postId, parentCommentId, userId, commentToCreate);
         return ResponseEntity.ok(comment);
     }
@@ -50,5 +49,11 @@ public class CommentController {
             throws BadRequestException {
         Comment comment = commentService.downvoteComment(userId, commentId);
         return ResponseEntity.ok(comment);
+    }
+
+    @GetMapping("/getAllPostComment/{postId}")
+    public ResponseEntity<List<Comment>> getAllPostComment(@PathVariable Long postId) throws NotFoundException {
+        List<Comment> commentList = commentService.getAllPostComment(postId);
+        return ResponseEntity.ok(commentList);
     }
 }

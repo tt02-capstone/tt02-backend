@@ -52,6 +52,28 @@ public class UserService {
                 tourist.setPost_list(null);
                 tourist.setComment_list(null);
                 tourist.setCart_list(null);
+                tourist.setSupport_ticket_list(null);
+
+//                List<SupportTicket> supportTicketList = tourist.getSupport_ticket_list();
+//                for (SupportTicket s : supportTicketList) {
+//                    List<Reply> replyList = s.getReply_list();
+//                    for (Reply r : replyList) {
+//                        if (r.getLocal_user() != null) {
+//                            r.getLocal_user().setSupport_ticket_list(null);
+//                        } else if (r.getTourist_user() != null) {
+//                            r.getTourist_user().setSupport_ticket_list(null);
+//                        } else if (r.getVendor_staff_user() != null) {
+//                            r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+//                            r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+//                            r.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+//                        } else if (r.getInternal_staff_user() != null) {
+//                            r.getInternal_staff_user().setSupport_ticket_list(null);
+//                        }
+//                    }
+//                }
+//
+//                tourist.setSupport_ticket_list(supportTicketList);
+
                 return tourist;
 
             } else if (checkUser instanceof Local) {
@@ -60,6 +82,27 @@ public class UserService {
                 local.setPost_list(null);
                 local.setComment_list(null);
                 local.setCart_list(null);
+                local.setSupport_ticket_list(null);
+
+//                List<SupportTicket> supportTicketList = local.getSupport_ticket_list();
+//                for (SupportTicket s : supportTicketList) {
+//                    List<Reply> replyList = s.getReply_list();
+//                    for (Reply r : replyList) {
+//                        if (r.getLocal_user() != null) {
+//                            r.getLocal_user().setSupport_ticket_list(null);
+//                        } else if (r.getTourist_user() != null) {
+//                            r.getTourist_user().setSupport_ticket_list(null);
+//                        } else if (r.getVendor_staff_user() != null) {
+//                            r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+//                            r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+//                            r.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+//                        } else if (r.getInternal_staff_user() != null) {
+//                            r.getInternal_staff_user().setSupport_ticket_list(null);
+//                        }
+//                    }
+//                }
+//                local.setSupport_ticket_list(supportTicketList);
+
                 return local;
 
             } else {
@@ -88,7 +131,8 @@ public class UserService {
                 if (checkUser.getEmail_verified() &&
                         vendorStaff.getVendor().getApplication_status() == ApplicationStatusEnum.APPROVED) {
                     vendorStaff.getVendor().setVendor_staff_list(null);
-                    vendorStaff.setSupport_ticket_list(null);
+                    vendorStaff.setIncoming_support_ticket_list(null);
+                    vendorStaff.setOutgoing_support_ticket_list(null);
                     vendorStaff.setComment_list(null);
                     vendorStaff.setPost_list(null);
 
@@ -123,7 +167,6 @@ public class UserService {
                 local.setPost_list(null);
                 local.setBadge_list(null);
                 local.setCart_list(null);
-                local.setSupport_ticket_list(null);
                 local.setBooking_list(null);
                 local.setTour_type_list(null);
                 local.setAttraction_list(null);
@@ -131,7 +174,7 @@ public class UserService {
                 local.setRestaurant_list(null);
                 local.setTelecom_list(null);
                 local.setDeals_list(null);
-                local.setCart_list(null);
+                local.setSupport_ticket_list(null);
 
                 return local;
             }
@@ -470,24 +513,90 @@ public class UserService {
             if (user instanceof VendorStaff) {
                 VendorStaff vendorStaff = (VendorStaff) user;
                 vendorStaff.getVendor().setVendor_staff_list(null);
+                for (Post p : vendorStaff.getPost_list()) {
+                    p.setComment_list(null);
+                    p.setTourist_user(null);
+                    p.setLocal_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                }
+                for (Comment c : vendorStaff.getComment_list()) {
+                    c.setPost(null);
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setLocal_user(null);
+                    c.setTourist_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
                 return vendorStaff;
 
             }  else if (user instanceof Tourist) {
                 Tourist tourist = (Tourist) user;
                 tourist.setBooking_list(null);
-                tourist.setPost_list(null);
-                tourist.setComment_list(null);
+                tourist.setCart_list(null);
+                for (Post p : tourist.getPost_list()) {
+                    p.setComment_list(null);
+                    p.setTourist_user(null);
+                    p.setLocal_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                }
+                for (Comment c : tourist.getComment_list()) {
+                    c.setPost(null);
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setLocal_user(null);
+                    c.setTourist_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
                 return tourist;
 
             } else if (user instanceof Local) {
                 Local local = (Local) user;
                 local.setBooking_list(null);
-                local.setPost_list(null);
-                local.setComment_list(null);
+                local.setCart_list(null);
+                for (Post p : local.getPost_list()) {
+                    p.setComment_list(null);
+                    p.setTourist_user(null);
+                    p.setLocal_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                }
+                for (Comment c : local.getComment_list()) {
+                    c.setPost(null);
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setLocal_user(null);
+                    c.setTourist_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
                 return local;
+
+            } else if (user instanceof InternalStaff) {
+                InternalStaff internalStaff = (InternalStaff) user;
+                for (Post p : internalStaff.getPost_list()) {
+                    p.setComment_list(null);
+                    p.setTourist_user(null);
+                    p.setLocal_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                }
+                for (Comment c : internalStaff.getComment_list()) {
+                    c.setPost(null);
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setLocal_user(null);
+                    c.setTourist_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
+                return internalStaff;
             }
 
-            return user; // internal staff
+            return user; // unreachable
         } else {
             throw new NotFoundException("User not found!");
         }

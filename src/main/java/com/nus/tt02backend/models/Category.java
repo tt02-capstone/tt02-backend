@@ -27,4 +27,7 @@ public class Category {
     @OneToMany(fetch = FetchType.LAZY)
     private List<CategoryItem> category_item_list;
 
+    @Column(nullable = false)
+    private Boolean is_published;
+
 }
