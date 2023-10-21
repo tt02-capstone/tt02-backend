@@ -191,25 +191,26 @@ public class ReplyService {
         List<Reply> currentReplyList = supportTicket.getReply_list();
 
         for (Reply r : currentReplyList) {
-            if(r.getReply_id().equals(replyId)) {
-
+            if (r.getReply_id().equals(replyId)) {
                 currentReplyList.remove(r);
                 supportTicket.setReply_list(currentReplyList);
                 supportTicketRepository.save(supportTicket);
                 replyRepository.deleteById(replyId);
                 break;
-            } else {
-                if (r.getVendor_staff_user() != null) {
-                    r.getVendor_staff_user().setVendor(null);
-                    r.getVendor_staff_user().setIncoming_support_ticket_list(null);
-                    r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
-                } else if (r.getLocal_user() != null) {
-                    r.getLocal_user().setSupport_ticket_list(null);
-                } else if (r.getTourist_user() != null) {
-                    r.getTourist_user().setSupport_ticket_list(null);
-                } else if (r.getInternal_staff_user() != null) {
-                    r.getInternal_staff_user().setSupport_ticket_list(null);
-                }
+            }
+        }
+
+        for (Reply r : currentReplyList) {
+            if (r.getVendor_staff_user() != null) {
+                r.getVendor_staff_user().setVendor(null);
+                r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+            } else if (r.getLocal_user() != null) {
+                r.getLocal_user().setSupport_ticket_list(null);
+            } else if (r.getTourist_user() != null) {
+                r.getTourist_user().setSupport_ticket_list(null);
+            } else if (r.getInternal_staff_user() != null) {
+                r.getInternal_staff_user().setSupport_ticket_list(null);
             }
         }
 

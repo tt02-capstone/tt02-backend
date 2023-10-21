@@ -247,7 +247,9 @@ public class BookingService {
                 }
 
                 bookingRepository.save(booking);
-                booking.getPayment().setBooking(null);
+                if (booking.getPayment() != null) {
+                    booking.getPayment().setBooking(null);
+                }
 
                 return booking;
             } else {

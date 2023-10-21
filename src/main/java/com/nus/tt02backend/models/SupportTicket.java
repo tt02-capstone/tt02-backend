@@ -39,6 +39,10 @@ public class SupportTicket {
     @Enumerated(EnumType.STRING)
     private UserTypeEnum submitted_user;
 
+    private Long submitted_user_id;
+
+    private String submitted_user_name;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<Reply> reply_list;
 
