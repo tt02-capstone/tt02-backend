@@ -35,6 +35,12 @@ public class SupportTicketController {
         return ResponseEntity.ok(supportTicketList);
     }
 
+    @GetMapping("/getAllSupportTicketsByAdmin/{userId}")
+    public ResponseEntity<List<SupportTicket>> getAllSupportTicketsByAdmin(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        List<SupportTicket> supportTicketList = supportTicketService.getAllSupportTicketsByAdmin(userId);
+        return ResponseEntity.ok(supportTicketList);
+    }
+
     @GetMapping("/getSupportTicket/{supportTicketId}")
     public ResponseEntity<SupportTicket> getSupportTicket(@PathVariable Long supportTicketId) throws NotFoundException, BadRequestException {
         SupportTicket supportTicket = supportTicketService.getSupportTicket(supportTicketId);
@@ -117,5 +123,11 @@ public class SupportTicketController {
     public ResponseEntity<List<Reply>> deleteReply(@PathVariable Long supportTicketId ,@PathVariable Long replyId) throws NotFoundException, BadRequestException {
         List<Reply> replyList =  replyService.deleteReply(supportTicketId,replyId);
         return ResponseEntity.ok(replyList);
+    }
+
+    @GetMapping("/getUserAvatarImage/{userId}")
+    public ResponseEntity<String> getUserAvatarImage(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        String image = supportTicketService.getUserAvatarImage(userId);
+        return ResponseEntity.ok(image);
     }
 }
