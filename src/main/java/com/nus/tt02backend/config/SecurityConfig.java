@@ -91,7 +91,8 @@ public class SecurityConfig {
               "/post/**", // to remove
               "/comment/**", // to remove
               "/supportTicket/**", // to remove
-                "/reply/**", // to remove
+              "/reply/**", // to remove
+              "/report/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
@@ -100,8 +101,9 @@ public class SecurityConfig {
               "/post/**", // to remove
               "/comment/**", // to remove
               "/supportTicket/**", // to remove
-                "/reply/**", // to remove
-                "/booking/**", // to remove
+              "/reply/**", // to remove
+              "/booking/**", // to remove
+              "/report/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
               "/category/**", // to remove
@@ -109,7 +111,8 @@ public class SecurityConfig {
               "/post/**", // to remove
               "/comment/**", // to remove
               "/supportTicket/**", // to remove
-                "/reply/**", // to remove
+              "/reply/**", // to remove
+              "/report/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.DELETE,
                 "/supportTicket/**" // to remove

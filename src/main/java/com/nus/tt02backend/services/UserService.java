@@ -514,24 +514,90 @@ public class UserService {
             if (user instanceof VendorStaff) {
                 VendorStaff vendorStaff = (VendorStaff) user;
                 vendorStaff.getVendor().setVendor_staff_list(null);
+                for (Post p : vendorStaff.getPost_list()) {
+                    p.setComment_list(null);
+                    p.setTourist_user(null);
+                    p.setLocal_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                }
+                for (Comment c : vendorStaff.getComment_list()) {
+                    c.setPost(null);
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setLocal_user(null);
+                    c.setTourist_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
                 return vendorStaff;
 
             }  else if (user instanceof Tourist) {
                 Tourist tourist = (Tourist) user;
                 tourist.setBooking_list(null);
-                tourist.setPost_list(null);
-                tourist.setComment_list(null);
+                tourist.setCart_list(null);
+                for (Post p : tourist.getPost_list()) {
+                    p.setComment_list(null);
+                    p.setTourist_user(null);
+                    p.setLocal_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                }
+                for (Comment c : tourist.getComment_list()) {
+                    c.setPost(null);
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setLocal_user(null);
+                    c.setTourist_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
                 return tourist;
 
             } else if (user instanceof Local) {
                 Local local = (Local) user;
                 local.setBooking_list(null);
-                local.setPost_list(null);
-                local.setComment_list(null);
+                local.setCart_list(null);
+                for (Post p : local.getPost_list()) {
+                    p.setComment_list(null);
+                    p.setTourist_user(null);
+                    p.setLocal_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                }
+                for (Comment c : local.getComment_list()) {
+                    c.setPost(null);
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setLocal_user(null);
+                    c.setTourist_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
                 return local;
+
+            } else if (user instanceof InternalStaff) {
+                InternalStaff internalStaff = (InternalStaff) user;
+                for (Post p : internalStaff.getPost_list()) {
+                    p.setComment_list(null);
+                    p.setTourist_user(null);
+                    p.setLocal_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                }
+                for (Comment c : internalStaff.getComment_list()) {
+                    c.setPost(null);
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setLocal_user(null);
+                    c.setTourist_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
+                return internalStaff;
             }
 
-            return user; // internal staff
+            return user; // unreachable
         } else {
             throw new NotFoundException("User not found!");
         }
