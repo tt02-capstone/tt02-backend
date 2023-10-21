@@ -29,8 +29,7 @@ public class CategoryItemService {
         Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
 
         if (categoryOptional.isPresent()) {
-            Category category = categoryOptional.get();
-            List<CategoryItem> list = category.getCategory_item_list();
+            List<CategoryItem> list = categoryItemRepository.getAllPublishedCategoryItemByCategoryId(categoryId);
 
             for (CategoryItem i : list) {
                 i.setPost_list(null);

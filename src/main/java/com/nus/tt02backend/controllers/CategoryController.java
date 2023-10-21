@@ -17,6 +17,12 @@ public class CategoryController {
     @Autowired
     CategoryService categoryService;
 
+    @PostMapping("/create")
+    public ResponseEntity<Category> create(@RequestBody Category newCategory) {
+        Category category = categoryService.create(newCategory);
+        return ResponseEntity.ok(category);
+    }
+
     @GetMapping("/getAll")
     public ResponseEntity<List<Category>> getAllCategories() {
         List<Category> list = categoryService.getAllCategories();

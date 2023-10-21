@@ -25,7 +25,7 @@ public class CategoryService {
     }
 
     public List<Category> getAllCategories() {
-        List<Category> list = categoryRepository.findAll();
+        List<Category> list = categoryRepository.getAllPublishedCategory();
 
         for (Category c : list) {
             for (CategoryItem i : c.getCategory_item_list()) {

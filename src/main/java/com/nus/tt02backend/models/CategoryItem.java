@@ -29,4 +29,7 @@ public class CategoryItem {
     @OneToMany(fetch = FetchType.LAZY)
     private List<Post> post_list;
 
+    @Column(nullable = false)
+    private Boolean isPublished;
+
 }
