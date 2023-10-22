@@ -142,6 +142,7 @@ public class TouristService {
             t.setBooking_list(null);
             t.setPost_list(null);
             t.setComment_list(null);
+            t.setSupport_ticket_list(null);
         }
 
         return touristList;
