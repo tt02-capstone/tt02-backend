@@ -702,7 +702,7 @@ public class CartService {
 
         // Should fetch via User if possible
         List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
-
+        int index = 0;
         CartBooking cartBookingToCreate = null;
         for (CartBooking booking : bookingsToCheckout) {
 
@@ -772,14 +772,48 @@ public class CartService {
                         cartBookingToCreate.setTour(tour);
                         cartBookingToCreate.setCart_item_list(cartItems);
 
+                        BigDecimal tour_rawtotal = tour_booking.getPrice().multiply(BigDecimal.valueOf(tour_booking.getQuantity()));
+
+                        BigDecimal attraction_rawtotal = BigDecimal.ZERO;
+
+                        for (CartItem item : booking.getCart_item_list()) {
+                            attraction_rawtotal = attraction_rawtotal.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                        }
 
 
-                        priceList.add(tour_booking.getPrice().multiply(BigDecimal.valueOf(tour_booking.getQuantity())));
+                        BigDecimal raw_total = tour_rawtotal.add(attraction_rawtotal);
+
+                        BigDecimal discounted_total = priceList.get(index);
+
+                        BigDecimal attraction_subtotal = BigDecimal.ZERO;
+
+                        BigDecimal tour_subtotal = BigDecimal.ZERO;
+
+                        if (!(raw_total.equals(discounted_total))) {
+                            BigDecimal difference = raw_total.subtract(discounted_total);
+                            BigDecimal rate = difference.divide(raw_total, 4, RoundingMode.HALF_UP);
+
+                            attraction_subtotal = attraction_rawtotal.subtract(attraction_rawtotal.multiply( rate));
+                            tour_subtotal = tour_rawtotal.subtract(tour_rawtotal.multiply( rate));
+
+
+                        } else {
+                            attraction_subtotal = attraction_rawtotal;
+                            tour_subtotal = tour_rawtotal;
+                        }
+
+
+
+                        priceList.set(index, attraction_subtotal.setScale(2, RoundingMode.HALF_UP));
+
+                        priceList.add(tour_subtotal.setScale(2, RoundingMode.HALF_UP));
 
                     }
                 }
 
             }
+
+            index++;
         }
 
 
