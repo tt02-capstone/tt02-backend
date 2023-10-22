@@ -190,11 +190,21 @@ public class BookingService {
 
             if (b.getLocal_user() != null) {
                 Local local = b.getLocal_user();
+                local.setPost_list(null);
+                local.setComment_list(null);
+                local.setCart_list(null);
                 local.setBooking_list(null);
+                local.setTour_type_list(null);
+                local.setSupport_ticket_list(null);
 
             } else if (b.getTourist_user() != null) {
                 Tourist tourist = b.getTourist_user();
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                tourist.setCart_list(null);
                 tourist.setBooking_list(null);
+                tourist.setTour_type_list(null);
+                tourist.setSupport_ticket_list(null);
             }
 
             listToReturn.add(b);
@@ -247,8 +257,28 @@ public class BookingService {
                 }
 
                 bookingRepository.save(booking);
+
                 if (booking.getPayment() != null) {
                     booking.getPayment().setBooking(null);
+                }
+
+                if (booking.getLocal_user() != null) {
+                    Local local = booking.getLocal_user();
+                    local.setPost_list(null);
+                    local.setComment_list(null);
+                    local.setCart_list(null);
+                    local.setBooking_list(null);
+                    local.setTour_type_list(null);
+                    local.setSupport_ticket_list(null);
+
+                } else if (booking.getTourist_user() != null) {
+                    Tourist tourist = booking.getTourist_user();
+                    tourist.setPost_list(null);
+                    tourist.setComment_list(null);
+                    tourist.setCart_list(null);
+                    tourist.setBooking_list(null);
+                    tourist.setTour_type_list(null);
+                    tourist.setSupport_ticket_list(null);
                 }
 
                 return booking;

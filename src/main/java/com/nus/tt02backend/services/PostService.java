@@ -191,21 +191,26 @@ public class PostService {
                     p.getLocal_user().setComment_list(null);
                     p.getLocal_user().setCart_list(null);
                     p.getLocal_user().setBooking_list(null);
+                    p.getLocal_user().setSupport_ticket_list(null);
                 }
                 else if (p.getTourist_user() != null) {
                     p.getTourist_user().setPost_list(null);
                     p.getTourist_user().setComment_list(null);
                     p.getTourist_user().setCart_list(null);
                     p.getTourist_user().setBooking_list(null);
+                    p.getTourist_user().setSupport_ticket_list(null);
                 }
                 else if (p.getInternal_staff_user() != null) {
                     p.getInternal_staff_user().setPost_list(null);
                     p.getInternal_staff_user().setComment_list(null);
+                    p.getInternal_staff_user().setSupport_ticket_list(null);
                 }
                 else if (p.getVendor_staff_user() != null) {
                     p.getVendor_staff_user().setPost_list(null);
                     p.getVendor_staff_user().setComment_list(null);
                     p.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+                    p.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                    p.getVendor_staff_user().setOutgoing_support_ticket_list(null);
                 }
             }
 
@@ -235,6 +240,7 @@ public class PostService {
                 p.getLocal_user().setCart_list(null);
                 p.getLocal_user().setBooking_list(null);
                 p.getLocal_user().setTour_type_list(null);
+                p.getLocal_user().setSupport_ticket_list(null);
             }
             else if (p.getTourist_user() != null) {
                 p.getTourist_user().setPost_list(null);
@@ -242,15 +248,19 @@ public class PostService {
                 p.getTourist_user().setCart_list(null);
                 p.getTourist_user().setBooking_list(null);
                 p.getTourist_user().setTour_type_list(null);
+                p.getTourist_user().setSupport_ticket_list(null);
             }
             else if (p.getInternal_staff_user() != null) {
                 p.getInternal_staff_user().setPost_list(null);
                 p.getInternal_staff_user().setComment_list(null);
+                p.getInternal_staff_user().setSupport_ticket_list(null);
             }
             else if (p.getVendor_staff_user() != null) {
                 p.getVendor_staff_user().setPost_list(null);
                 p.getVendor_staff_user().setComment_list(null);
                 p.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+                p.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                p.getVendor_staff_user().setOutgoing_support_ticket_list(null);
             }
 
             p.getComment_list().removeAll(childComments);
