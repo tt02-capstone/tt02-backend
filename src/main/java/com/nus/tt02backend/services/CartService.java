@@ -777,7 +777,10 @@ public class CartService {
                         BigDecimal attraction_rawtotal = BigDecimal.ZERO;
 
                         for (CartItem item : booking.getCart_item_list()) {
-                            attraction_rawtotal = attraction_rawtotal.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                            if (!("TOUR".equals(String.valueOf(item.getType())))) {
+                                attraction_rawtotal = attraction_rawtotal.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                            }
+
                         }
 
 
@@ -790,11 +793,13 @@ public class CartService {
                         BigDecimal tour_subtotal = BigDecimal.ZERO;
 
                         if (!(raw_total.equals(discounted_total))) {
+
                             BigDecimal difference = raw_total.subtract(discounted_total);
+
                             BigDecimal rate = difference.divide(raw_total, 4, RoundingMode.HALF_UP);
 
-                            attraction_subtotal = attraction_rawtotal.subtract(attraction_rawtotal.multiply( rate));
-                            tour_subtotal = tour_rawtotal.subtract(tour_rawtotal.multiply( rate));
+                            attraction_subtotal = attraction_rawtotal.subtract(attraction_rawtotal.multiply(rate));
+                            tour_subtotal = tour_rawtotal.subtract(tour_rawtotal.multiply(rate));
 
 
                         } else {
