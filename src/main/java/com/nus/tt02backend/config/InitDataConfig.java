@@ -46,6 +46,9 @@ public class InitDataConfig implements CommandLineRunner {
     private final TelecomRepository telecomRepository;
     private final TourTypeRepository tourTypeRepository;
     private final TourRepository tourRepository;
+    private final BookingRepository bookingRepository;
+    private final SupportTicketRepository supportTicketRepository;
+    private final ReplyRepository replyRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -59,7 +62,7 @@ public class InitDataConfig implements CommandLineRunner {
         if (internalStaffRepository.count() == 0) {
             InternalStaff staff = (InternalStaff) InternalStaff.builder()
                     .email("admin@gmail.com")
-                    .name("admin")
+                    .name("Nicole")
                     .password(passwordEncoder.encode("password1!"))
                     .user_type(UserTypeEnum.INTERNAL_STAFF)
                     .is_blocked(false)
@@ -637,6 +640,67 @@ public class InitDataConfig implements CommandLineRunner {
             category1.setCategory_item_list(new ArrayList<>());
             category1.setIs_published(true);
             categoryRepository.save(category1);
+        }
+
+//        if (bookingRepository.count() == 0) {
+//            Booking b1 = new Booking();
+//            b1.setStart_datetime(LocalDateTime.now().plusDays(2l));
+//            b1.setEnd_datetime(LocalDateTime.now().plusDays(5l));
+//            b1.setLast_update(LocalDateTime.now());
+//            b1.setStatus(BookingStatusEnum.UPCOMING);
+//            b1.setType(BookingTypeEnum.TELECOM);
+//            b1.setActivity_name("M1");
+//            b1.setBooked_user(UserTypeEnum.TOURIST);
+//            b1.setTelecom(telecomRepository.findById(1l).get());
+//            // didnt do booking item list or qr code list
+//            bookingRepository.save(b1);
+//
+//            Payment payment = new Payment();
+//            payment.setPayment_amount(new BigDecimal("123"));
+//            payment.setComission_percentage(BigDecimal.valueOf(0.1));
+//            payment.setIs_paid(true);
+//            payment.setBooking(b1);
+//            paymentRepository.save(payment);
+//
+//            Tourist tourist = touristRepository.getTouristByUserId(3l);
+//            b1.setTourist_user(tourist);
+//            b1.setPayment(payment);
+//            tourist.getBooking_list().add(b1);
+//            touristRepository.save(tourist);
+//            bookingRepository.save(b1);
+//        }
+
+        if (supportTicketRepository.count() == 0) {
+            SupportTicket s1 = new SupportTicket();
+            s1.setCreated_time(LocalDateTime.now().minusDays(1).minusHours(1));
+            s1.setUpdated_time(LocalDateTime.now().minusDays(1).minusHours(1));
+            s1.setDescription("Is it possible to rent a car via your app?");
+            s1.setIs_resolved(true);
+            s1.setTicket_category(SupportTicketCategoryEnum.GENERAL_ENQUIRY);
+            s1.setTicket_type(SupportTicketTypeEnum.ADMIN);
+            s1.setSubmitted_user(UserTypeEnum.TOURIST);
+            s1.setSubmitted_user_id(3l);
+            s1.setSubmitted_user_name("Cho Bo Ah");
+            s1.setTelecom(telecomRepository.findById(1l).get());
+
+            List<Reply> replyList = new ArrayList<Reply>();
+            Reply r1 = new Reply();
+            r1.setCreated_time(LocalDateTime.now().minusHours(2));
+            r1.setUpdated_time(LocalDateTime.now().minusHours(2));
+            r1.setMessage("Unfortunately, we do not currently support car rentals. You can check out Car Rental SG's website instead. Thank you.");
+
+            InternalStaff internalStaff = internalStaffRepository.findById(1l).get();
+            r1.setInternal_staff_user(internalStaff);
+
+            replyRepository.save(r1);
+            replyList.add(r1);
+
+            s1.setReply_list(replyList);
+            SupportTicket supportTicket = supportTicketRepository.save(s1);
+
+//            Tourist tourist = touristRepository.getTouristByUserId(3l);
+//            tourist.getSupport_ticket_list().add(supportTicket);
+//            touristRepository.save(tourist);
         }
     }
 
