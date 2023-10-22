@@ -232,6 +232,7 @@ public class TourService {
             }
         }
 
+        tourToCreate.setRemaining_slot(tourType.getRecommended_pax());
         LocalDate date = tourToCreate.getDate().toLocalDate();
         tourToCreate.setDate(date.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
         Tour createdTour = tourRepository.save(tourToCreate);
