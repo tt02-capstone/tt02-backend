@@ -219,25 +219,25 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
             TicketPerDay t1 = new TicketPerDay();
-            t1.setTicket_date(LocalDate.parse("2023-10-20"));
+            t1.setTicket_date(LocalDate.parse("2023-10-27"));
             t1.setTicket_count(5);
             t1.setTicket_type(TicketEnum.ADULT);
             t1 = ticketPerDayRepository.save(t1);
 
             TicketPerDay t2 = new TicketPerDay();
-            t2.setTicket_date(LocalDate.parse("2023-10-20"));
+            t2.setTicket_date(LocalDate.parse("2023-10-27"));
             t2.setTicket_count(5);
             t2.setTicket_type(TicketEnum.CHILD);
             t2 = ticketPerDayRepository.save(t2);
 
             TicketPerDay t3 = new TicketPerDay();
-            t3.setTicket_date(LocalDate.parse("2023-10-20"));
+            t3.setTicket_date(LocalDate.parse("2023-10-27"));
             t3.setTicket_count(5);
             t3.setTicket_type(TicketEnum.ADULT);
             t3 = ticketPerDayRepository.save(t3);
 
             TicketPerDay t4 = new TicketPerDay();
-            t4.setTicket_date(LocalDate.parse("2023-10-20"));
+            t4.setTicket_date(LocalDate.parse("2023-10-27"));
             t4.setTicket_count(5);
             t4.setTicket_type(TicketEnum.CHILD);
             t4 = ticketPerDayRepository.save(t4);
@@ -795,25 +795,25 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
         TicketPerDay t1 = new TicketPerDay();
-        t1.setTicket_date(LocalDate.parse("2023-10-13"));
+        t1.setTicket_date(LocalDate.parse("2023-10-27"));
         t1.setTicket_count(5);
         t1.setTicket_type(TicketEnum.ADULT);
         t1 = ticketPerDayRepository.save(t1);
 
         TicketPerDay t2 = new TicketPerDay();
-        t2.setTicket_date(LocalDate.parse("2023-10-13"));
+        t2.setTicket_date(LocalDate.parse("2023-10-27"));
         t2.setTicket_count(5);
         t2.setTicket_type(TicketEnum.CHILD);
         t2 = ticketPerDayRepository.save(t2);
 
         TicketPerDay t3 = new TicketPerDay();
-        t3.setTicket_date(LocalDate.parse("2023-10-14"));
+        t3.setTicket_date(LocalDate.parse("2023-10-27"));
         t3.setTicket_count(5);
         t3.setTicket_type(TicketEnum.ADULT);
         t3 = ticketPerDayRepository.save(t3);
 
         TicketPerDay t4 = new TicketPerDay();
-        t4.setTicket_date(LocalDate.parse("2023-10-14"));
+        t4.setTicket_date(LocalDate.parse("2023-10-27"));
         t4.setTicket_count(5);
         t4.setTicket_type(TicketEnum.CHILD);
         t4 = ticketPerDayRepository.save(t4);
