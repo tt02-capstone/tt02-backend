@@ -89,6 +89,7 @@ public class SecurityConfig {
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
+              "/supportTicket/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
               "/user/**").permitAll()

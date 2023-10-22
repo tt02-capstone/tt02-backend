@@ -720,9 +720,8 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setSupport_ticket_list(list);
             touristRepository.save(tourist);
 
-            InternalStaff staff = internalStaffRepository.getInternalStaffByUserId(1l);
-            staff.setSupport_ticket_list(list);
-            internalStaffRepository.save(staff);
+            internalStaff.setSupport_ticket_list(list);
+            internalStaffRepository.save(internalStaff);
         }
     }
 

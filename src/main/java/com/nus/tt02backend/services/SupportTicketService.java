@@ -118,7 +118,8 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
                     r.setInternal_staff_user(null);
                     r.setTourist_user(null);
                     r.setLocal_user(null);
@@ -144,7 +145,8 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
                     r.setInternal_staff_user(null);
                     r.setTourist_user(null);
                     r.setLocal_user(null);
@@ -212,7 +214,8 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
                     r.setInternal_staff_user(null);
                     r.setTourist_user(null);
                     r.setLocal_user(null);
@@ -238,7 +241,8 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
                     r.setInternal_staff_user(null);
                     r.setTourist_user(null);
                     r.setLocal_user(null);
@@ -262,7 +266,8 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
                     r.setInternal_staff_user(null);
                     r.setTourist_user(null);
                     r.setLocal_user(null);
