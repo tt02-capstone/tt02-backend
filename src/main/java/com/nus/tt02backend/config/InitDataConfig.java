@@ -283,7 +283,7 @@ public class InitDataConfig implements CommandLineRunner {
             d1.setIs_govt_voucher(false);
             d1.setIs_published(true);
             List<String> imgList = new ArrayList<>();
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_1_black_friday_deal.jpeg");
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_backfriday.jpeg");
             d1.setDeal_image_list(imgList);
 
             d1 = dealRepository.save(d1);
@@ -301,7 +301,7 @@ public class InitDataConfig implements CommandLineRunner {
             d2.setIs_govt_voucher(true);
             d2.setIs_published(true);
             List<String> imgList2 = new ArrayList<>();
-            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_2_gov_pic.png");
+            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.png");
             d2.setDeal_image_list(imgList2);
 
             d2 = dealRepository.save(d2);
