@@ -27,4 +27,7 @@ public class Tour {
 
     @Column(nullable = false)
     private LocalDateTime end_time;
+
+    @Column(nullable = false)
+    private Integer remaining_slot;
 }

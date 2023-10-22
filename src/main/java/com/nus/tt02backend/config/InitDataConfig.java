@@ -532,10 +532,12 @@ public class InitDataConfig implements CommandLineRunner {
                 tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
                 tour1.setStart_time(currentDate.atTime(10, 0));
                 tour1.setEnd_time(currentDate.atTime(12, 0));
+                tour1.setRemaining_slot(10);
 
                 tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
                 tour2.setStart_time(currentDate.atTime(13, 0));
                 tour2.setEnd_time(currentDate.atTime(15, 0));
+                tour2.setRemaining_slot(10);
 
                 tour1 = tourRepository.save(tour1);
                 tour2 = tourRepository.save(tour2);
@@ -866,10 +868,12 @@ public class InitDataConfig implements CommandLineRunner {
             tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
             tour1.setStart_time(currentDate.atTime(10, 0));
             tour1.setEnd_time(currentDate.atTime(12, 0));
+            tour1.setRemaining_slot(10);
 
             tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
             tour2.setStart_time(currentDate.atTime(13, 0));
             tour2.setEnd_time(currentDate.atTime(15, 0));
+            tour2.setRemaining_slot(10);
 
             tour1 = tourRepository.save(tour1);
             tour2 = tourRepository.save(tour2);
