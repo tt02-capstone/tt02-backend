@@ -46,6 +46,9 @@ public class InitDataConfig implements CommandLineRunner {
     private final TelecomRepository telecomRepository;
     private final TourTypeRepository tourTypeRepository;
     private final TourRepository tourRepository;
+    private final BookingRepository bookingRepository;
+    private final SupportTicketRepository supportTicketRepository;
+    private final ReplyRepository replyRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -59,7 +62,7 @@ public class InitDataConfig implements CommandLineRunner {
         if (internalStaffRepository.count() == 0) {
             InternalStaff staff = (InternalStaff) InternalStaff.builder()
                     .email("admin@gmail.com")
-                    .name("admin")
+                    .name("Piyush Gupta")
                     .password(passwordEncoder.encode("password1!"))
                     .user_type(UserTypeEnum.INTERNAL_STAFF)
                     .is_blocked(false)
@@ -74,11 +77,11 @@ public class InitDataConfig implements CommandLineRunner {
         Local local = new Local();
         if (localRepository.count() == 0) {
             local.setEmail("local@gmail.com");
-            local.setName("Rowoon");
+            local.setName("Alice Tan");
             local.setPassword(passwordEncoder.encode("password1!"));
             local.setUser_type(UserTypeEnum.LOCAL);
             local.setIs_blocked(false);
-            local.setNric_num("S9911111A");
+            local.setNric_num("S9914132A");
             local.setDate_of_birth(new Date());
             local.setWallet_balance(new BigDecimal(0));
             local.setCountry_code("+65");
@@ -89,7 +92,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "local@gmail.com");
-            customer_parameters.put("name", "Rowoon");
+            customer_parameters.put("name", "Alice Tan");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             local.setStripe_account_id(stripe_account_id);
 
@@ -111,20 +114,20 @@ public class InitDataConfig implements CommandLineRunner {
         if (touristRepository.count() == 0) {
             Tourist tourist = new Tourist();
             tourist.setEmail("tourist@gmail.com");
-            tourist.setName("Cho Bo Ah");
+            tourist.setName("Rowoon");
             tourist.setPassword(passwordEncoder.encode("password1!"));
             tourist.setUser_type(UserTypeEnum.TOURIST);
             tourist.setIs_blocked(false);
-            tourist.setPassport_num("A111111");
+            tourist.setPassport_num("A152335");
             tourist.setDate_of_birth(new Date());
-            tourist.setCountry_code("+65");
+            tourist.setCountry_code("+82");
             tourist.setEmail_verified(true);
-            tourist.setMobile_num("9797979797");
+            tourist.setMobile_num("01037596775");
             tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "tourist@gmail.com");
-            customer_parameters.put("name", "Cho Bo Ah");
+            customer_parameters.put("name", "Rowoon");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             tourist.setStripe_account_id(stripe_account_id);
 
@@ -145,29 +148,34 @@ public class InitDataConfig implements CommandLineRunner {
 
         Vendor vendor1 = new Vendor();
         Vendor vendor2 = new Vendor();
+        Vendor vendor3 = new Vendor();
+        Vendor vendor4 = new Vendor();
+        Vendor vendor5 = new Vendor();
+        Vendor vendor6 = new Vendor();
+
         if (vendorRepository.count() == 0) {
-            vendor1.setBusiness_name("Business Name");
-            vendor1.setPoc_name("Ha Joon");
+            vendor1.setBusiness_name("Sentosa Leisure Management");
+            vendor1.setPoc_name("Bob Tan Beng Hai");
             vendor1.setPoc_position("Manager");
             vendor1.setCountry_code("+65");
             vendor1.setPoc_mobile_num("96969696");
             vendor1.setWallet_balance(new BigDecimal(0));
             vendor1.setApplication_status(ApplicationStatusEnum.APPROVED);
             vendor1.setVendor_type(VendorEnum.ATTRACTION);
-            vendor1.setService_description("애정수를 믿으세요?");
+            vendor1.setService_description("Sentosa, a place where children dreams come true!");
 
             Map<String, Object> customer_parameters = new HashMap<>();
-            customer_parameters.put("email", "vendor@gmail.com");
-            customer_parameters.put("name", "Business Name");
+            customer_parameters.put("email", "attraction@gmail.com");
+            customer_parameters.put("name", "Sentosa Leisure Management");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             vendor1.setStripe_account_id(stripe_account_id);
 
             vendor1 = vendorRepository.save(vendor1);
 
             VendorStaff vendorStaff = new VendorStaff();
-            vendorStaff.setEmail("vendor@gmail.com");
+            vendorStaff.setEmail("attraction@gmail.com");
             vendorStaff.setEmail_verified(true);
-            vendorStaff.setName("Na Yeon"); //ewww
+            vendorStaff.setName("Bob Tan Beng Hai");
             vendorStaff.setPassword(passwordEncoder.encode("password1!"));
             vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
             vendorStaff.setIs_blocked(false);
@@ -177,7 +185,12 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setVendor(vendor1);
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
-            vendor2 = setUpVendor2(vendor2);
+
+            vendor2 = setUpVendor2(vendor2); // telecom - M1
+            vendor3 = setUpVendor3(vendor3); // accommodation
+            vendor4 = setUpVendor4(vendor4); // restaurant - The Kitchen Table
+            vendor5 = setUpVendor5(vendor5); // restaurant - 8 Noodles
+            vendor6 = setUpVendor6(vendor6); // telecom - Singtel
         }
 
         if (attractionRepository.count() == 0) {
@@ -367,9 +380,10 @@ public class InitDataConfig implements CommandLineRunner {
             r1 = restaurantRepository.save(r1);
             List<Restaurant> rList = new ArrayList<>();
             rList.add(r1);
-            vendor1.setRestaurant_list(rList);
-            vendorRepository.save(vendor1);
-            secondRestaurant(rList);
+            vendor4.setRestaurant_list(rList);
+            vendorRepository.save(vendor4);
+
+            secondRestaurant(vendor5);
         }
 
         if (accommodationRepository.count() == 0) {
@@ -390,6 +404,10 @@ public class InitDataConfig implements CommandLineRunner {
             a1.setEstimated_price_tier(PriceTierEnum.TIER_5);
             accommodationRepository.save(a1);
 
+            if (vendor1.getAccommodation_list() == null) vendor1.setAccommodation_list(new ArrayList<>());
+            vendor1.getAccommodation_list().add(a1);
+            vendorRepository.save(vendor1);
+
             Accommodation a2 = new Accommodation();
             a2.setName("Mangrove Sentosa");
             List<String> list2 = new ArrayList<>();
@@ -407,10 +425,9 @@ public class InitDataConfig implements CommandLineRunner {
             a2.setEstimated_price_tier(PriceTierEnum.TIER_1);
             accommodationRepository.save(a2);
 
-            if (vendor1.getAccommodation_list() == null) vendor1.setAccommodation_list(new ArrayList<>());
-            vendor1.getAccommodation_list().add(a1);
-            vendor1.getAccommodation_list().add(a2);
-            vendorRepository.save(vendor1);
+            if (vendor3.getAccommodation_list() == null) vendor3.setAccommodation_list(new ArrayList<>());
+            vendor3.getAccommodation_list().add(a2);
+            vendorRepository.save(vendor3);
 
             Room r1 = new Room();
             r1.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/rwsroom1.png");
@@ -477,12 +494,11 @@ public class InitDataConfig implements CommandLineRunner {
             t1 = telecomRepository.save(t1);
             List<Telecom> tList = new ArrayList<>();
             tList.add(t1);
-            vendor1.setTelecom_list(tList);
-            vendorRepository.save(vendor1);
-
+            vendor2.setTelecom_list(tList);
+            vendorRepository.save(vendor2);
 
             Telecom t2 = new Telecom();
-            t2.setName("Singetel");
+            t2.setName("Singtel");
             t2.setDescription("Singtel 14 Days 80GB plan");
             t2.setPrice(new BigDecimal(60));
             t2.setType(TelecomTypeEnum.PHYSICALSIM);
@@ -496,8 +512,8 @@ public class InitDataConfig implements CommandLineRunner {
             t2 = telecomRepository.save(t2);
             List<Telecom> tList2 = new ArrayList<>();
             tList2.add(t2);
-            vendor2.setTelecom_list(tList2);
-            vendorRepository.save(vendor2);
+            vendor6.setTelecom_list(tList2);
+            vendorRepository.save(vendor6);
         }
 
         if (tourTypeRepository.count() == 0) {
@@ -638,9 +654,70 @@ public class InitDataConfig implements CommandLineRunner {
             category1.setIs_published(true);
             categoryRepository.save(category1);
         }
+
+//        if (bookingRepository.count() == 0) {
+//            Booking b1 = new Booking();
+//            b1.setStart_datetime(LocalDateTime.now().plusDays(2l));
+//            b1.setEnd_datetime(LocalDateTime.now().plusDays(5l));
+//            b1.setLast_update(LocalDateTime.now());
+//            b1.setStatus(BookingStatusEnum.UPCOMING);
+//            b1.setType(BookingTypeEnum.TELECOM);
+//            b1.setActivity_name("M1");
+//            b1.setBooked_user(UserTypeEnum.TOURIST);
+//            b1.setTelecom(telecomRepository.findById(1l).get());
+//            // didnt do booking item list or qr code list
+//            bookingRepository.save(b1);
+//
+//            Payment payment = new Payment();
+//            payment.setPayment_amount(new BigDecimal("123"));
+//            payment.setComission_percentage(BigDecimal.valueOf(0.1));
+//            payment.setIs_paid(true);
+//            payment.setBooking(b1);
+//            paymentRepository.save(payment);
+//
+//            Tourist tourist = touristRepository.getTouristByUserId(3l);
+//            b1.setTourist_user(tourist);
+//            b1.setPayment(payment);
+//            tourist.getBooking_list().add(b1);
+//            touristRepository.save(tourist);
+//            bookingRepository.save(b1);
+//        }
+
+        if (supportTicketRepository.count() == 0) {
+            SupportTicket s1 = new SupportTicket();
+            s1.setCreated_time(LocalDateTime.now().minusDays(1).minusHours(1));
+            s1.setUpdated_time(LocalDateTime.now().minusDays(1).minusHours(1));
+            s1.setDescription("Is it possible to rent a car via your app?");
+            s1.setIs_resolved(true);
+            s1.setTicket_category(SupportTicketCategoryEnum.GENERAL_ENQUIRY);
+            s1.setTicket_type(SupportTicketTypeEnum.ADMIN);
+            s1.setSubmitted_user(UserTypeEnum.TOURIST);
+            s1.setSubmitted_user_id(3l);
+            s1.setSubmitted_user_name("Cho Bo Ah");
+            s1.setTelecom(telecomRepository.findById(1l).get());
+
+            List<Reply> replyList = new ArrayList<Reply>();
+            Reply r1 = new Reply();
+            r1.setCreated_time(LocalDateTime.now().minusHours(2));
+            r1.setUpdated_time(LocalDateTime.now().minusHours(2));
+            r1.setMessage("Unfortunately, we do not currently support car rentals. You can check out Car Rental SG's website instead. Thank you.");
+
+            InternalStaff internalStaff = internalStaffRepository.findById(1l).get();
+            r1.setInternal_staff_user(internalStaff);
+
+            replyRepository.save(r1);
+            replyList.add(r1);
+
+            s1.setReply_list(replyList);
+            SupportTicket supportTicket = supportTicketRepository.save(s1);
+
+//            Tourist tourist = touristRepository.getTouristByUserId(3l);
+//            tourist.getSupport_ticket_list().add(supportTicket);
+//            touristRepository.save(tourist);
+        }
     }
 
-    public void secondRestaurant(List<Restaurant> rList) {
+    public void secondRestaurant(Vendor vendor) {
         Restaurant r1 = new Restaurant();
         r1.setName("8 Noodles");
         r1.setDescription("Casual and authentic eatery at Shangri-La Rasa Sentosa that serves Asian noodles and more!");
@@ -751,9 +828,9 @@ public class InitDataConfig implements CommandLineRunner {
         r1.getDish_list().add(d10);
 
         restaurantRepository.save(r1);
-        Vendor vendor = vendorRepository.findById(1L).get();
-        rList.add(r1);
-        vendor.setRestaurant_list(rList);
+        List<Restaurant> list = new ArrayList<>();
+        list.add(r1);
+        vendor.setRestaurant_list(list);
         vendorRepository.save(vendor);
     }
 
@@ -883,28 +960,28 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     Vendor setUpVendor2(Vendor vendor2) {
-        vendor2.setBusiness_name("Business 2");
-        vendor2.setPoc_name("Ha Loon");
+        vendor2.setBusiness_name("M1");
+        vendor2.setPoc_name("Ang Shih Huei");
         vendor2.setPoc_position("Manager");
         vendor2.setCountry_code("+65");
         vendor2.setPoc_mobile_num("96969697");
         vendor2.setWallet_balance(new BigDecimal(0));
         vendor2.setApplication_status(ApplicationStatusEnum.APPROVED);
-        vendor2.setVendor_type(VendorEnum.ATTRACTION);
-        vendor2.setService_description("애정수를 믿으세요?");
+        vendor2.setVendor_type(VendorEnum.TELECOM);
+        vendor2.setService_description("The best telecom service you can find in Singapore! It's M1!");
 
         Map<String, Object> customer_parameters = new HashMap<>();
-        customer_parameters.put("email", "vendor2@gmail.com");
-        customer_parameters.put("name", "Business 2");
+        customer_parameters.put("email", "telecom@gmail.com");
+        customer_parameters.put("name", "M1");
         String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
         vendor2.setStripe_account_id(stripe_account_id);
 
         vendor2 = vendorRepository.save(vendor2);
 
         VendorStaff vendorStaff = new VendorStaff();
-        vendorStaff.setEmail("vendor2@gmail.com");
+        vendorStaff.setEmail("telecom@gmail.com");
         vendorStaff.setEmail_verified(true);
-        vendorStaff.setName("Na HAHHAH"); //ewww
+        vendorStaff.setName("Ang Shih Huei"); //ewww
         vendorStaff.setPassword(passwordEncoder.encode("password1!"));
         vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
         vendorStaff.setIs_blocked(false);
@@ -915,5 +992,145 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaffRepository.save(vendorStaff);
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor2;
+    }
+
+    Vendor setUpVendor3(Vendor vendor) {
+        vendor.setBusiness_name("Mangrove Singapore");
+        vendor.setPoc_name("Angelene Chan");
+        vendor.setPoc_position("Manager");
+        vendor.setCountry_code("+65");
+        vendor.setPoc_mobile_num("96963457");
+        vendor.setWallet_balance(new BigDecimal(0));
+        vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor.setVendor_type(VendorEnum.ACCOMMODATION);
+        vendor.setService_description("We are Mangrove Singapore. A global hotel service provider!");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "accommodation@gmail.com");
+        customer_parameters.put("name", "Mangrove Singapore");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor.setStripe_account_id(stripe_account_id);
+
+        vendor = vendorRepository.save(vendor);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("accommodation@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Angelene Chan");
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor);
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor;
+    }
+
+    Vendor setUpVendor4(Vendor vendor) {
+        vendor.setBusiness_name("The Kitchen Table");
+        vendor.setPoc_name("Keith Tan");
+        vendor.setPoc_position("Manager");
+        vendor.setCountry_code("+65");
+        vendor.setPoc_mobile_num("96963431");
+        vendor.setWallet_balance(new BigDecimal(0));
+        vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor.setVendor_type(VendorEnum.RESTAURANT);
+        vendor.setService_description("We are The Kitchen Table! Our speciality is Singapore classic!");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "restaurant@gmail.com");
+        customer_parameters.put("name", "The Kitchen Table");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor.setStripe_account_id(stripe_account_id);
+
+        vendor = vendorRepository.save(vendor);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("restaurant@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Keith Tan");
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor);
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor;
+    }
+
+    Vendor setUpVendor5(Vendor vendor) {
+        vendor.setBusiness_name("8 Noodles");
+        vendor.setPoc_name("Tan Boon Heng");
+        vendor.setPoc_position("Manager");
+        vendor.setCountry_code("+65");
+        vendor.setPoc_mobile_num("96963123");
+        vendor.setWallet_balance(new BigDecimal(0));
+        vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor.setVendor_type(VendorEnum.RESTAURANT);
+        vendor.setService_description("We are 8 Noodles! Try our noodles!");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "restaurant2@gmail.com");
+        customer_parameters.put("name", "8 Noodles");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor.setStripe_account_id(stripe_account_id);
+
+        vendor = vendorRepository.save(vendor);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("restaurant2@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Tan Boon Heng");
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor);
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor;
+    }
+
+    Vendor setUpVendor6(Vendor vendor) {
+        vendor.setBusiness_name("Singtel");
+        vendor.setPoc_name("See Heng How");
+        vendor.setPoc_position("Manager");
+        vendor.setCountry_code("+65");
+        vendor.setPoc_mobile_num("96553123");
+        vendor.setWallet_balance(new BigDecimal(0));
+        vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor.setVendor_type(VendorEnum.TELECOM);
+        vendor.setService_description("Want the best telecom network? Join Singtel!");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "telecom2@gmail.com");
+        customer_parameters.put("name", "Singtel");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor.setStripe_account_id(stripe_account_id);
+
+        vendor = vendorRepository.save(vendor);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("telecom2@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("See Heng How");
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor);
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor;
     }
 }
