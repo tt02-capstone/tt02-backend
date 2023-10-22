@@ -695,8 +695,7 @@ public class InitDataConfig implements CommandLineRunner {
             s1.setTicket_type(SupportTicketTypeEnum.ADMIN);
             s1.setSubmitted_user(UserTypeEnum.TOURIST);
             s1.setSubmitted_user_id(3l);
-            s1.setSubmitted_user_name("Cho Bo Ah");
-            s1.setTelecom(telecomRepository.findById(1l).get());
+            s1.setSubmitted_user_name("Rowoon");
 
             List<Reply> replyList = new ArrayList<Reply>();
             Reply r1 = new Reply();
