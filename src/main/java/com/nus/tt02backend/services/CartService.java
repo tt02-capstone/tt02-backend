@@ -258,7 +258,7 @@ public class CartService {
         }
 
         List<CartItem> addedCartItems = new ArrayList<>();
-
+        Integer totalTickets = 0;
         for (CartItem cartItemToCreate : cartItems) {
             // [LOG1] To include code to check for existing cartItem
             CartItem newCartItem = cartItemRepository.save(cartItemToCreate);
@@ -278,9 +278,58 @@ public class CartService {
                     currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItemToCreate.getQuantity());
                     ticketPerDayRepository.save(currentTicket);
                     currentTickets.set(foundTicketIndex, currentTicket);
-
+                    totalTickets += cartItemToCreate.getQuantity();
                 } else {
                     throw new NotFoundException("No tickets found for this date!");
+                }
+            } else {
+                LocalDate tour_date = cartItemToCreate.getStart_datetime();
+                String tour_details = cartItemToCreate.getActivity_selection();
+                Pattern pattern = Pattern.compile("(.+) \\((.+) - (.+)\\)");
+
+                // Create a Matcher and apply the pattern to the formatted string
+                Matcher matcher = pattern.matcher(tour_details);
+
+                if (matcher.matches()) {
+                    String selectedTourTypeName = matcher.group(1);
+                    String startTimeStr = matcher.group(2);
+                    String endTimeStr = matcher.group(3);
+                    String[] start_parts = startTimeStr.split(" ");
+                    String[] end_parts = endTimeStr.split(" ");
+                    startTimeStr = start_parts[0];
+                    endTimeStr = end_parts[0];
+
+
+                    String[] startHourMinute = startTimeStr.split(":");
+                    String[] endHourMinute = endTimeStr.split(":");
+
+                    LocalTime startTime = LocalTime.of(Integer.parseInt(startHourMinute[0]), Integer.parseInt(startHourMinute[1]));
+                    LocalTime endTime = LocalTime.of(Integer.parseInt(endHourMinute[0]), Integer.parseInt(endHourMinute[1]));
+                    if ("PM".equals(start_parts[1])) {
+                        if (startTime.getHour() != 12) {
+                            startTime = startTime.plusHours(12);
+                        }
+                    }
+
+                    if ("PM".equals(end_parts[1])) {
+                        if (endTime.getHour() != 12) {
+                            endTime = endTime.plusHours(12);
+                        }
+                    }
+
+
+                    LocalDateTime startDateTime = LocalDateTime.of(tour_date, startTime);
+                    LocalDateTime endDateTime = LocalDateTime.of(tour_date, endTime);
+                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
+                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date.atStartOfDay(), startDateTime, endDateTime);
+                    Integer remainder = tour.getRemaining_slot() - totalTickets;
+                    if (remainder >= 0) {
+                        tour.setRemaining_slot(remainder);
+                        tourRepository.save(tour);
+                    } else {
+                        throw new NotFoundException("Not enough slots for tour");
+                    }
+
                 }
             }
         }
