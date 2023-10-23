@@ -19,6 +19,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class SupportTicketService {
 
@@ -896,12 +898,15 @@ public class SupportTicketService {
         supportTicket.getBooking().setLocal_user(null);
         supportTicket.getBooking().setTourist_user(null);
 
+        String datePart = booking.getStart_datetime().format(DateTimeFormatter.ofPattern("ddMyyyy"));
+        String bookingNumber = "" + booking.getBooking_id() + datePart;
+
         try {
             String subject = "[WithinSG] Support Ticket To " +  convertToTitleCase(supportTicket.getTicket_type().toString()) + " Created";
             String content = "<html><body style='font-family: Arial, sans-serif;'>"
                     + "<p style='color: #333; font-size: 16px;'>Dear " + user.getName() + ",</p>"
                     + "<p style='color: #333; font-size: 16px;'>You have submitted a support ticket to " + convertToTitleCase(supportTicket.getTicket_type().toString()) +
-                    " regarding your Booking #" + supportTicket.getBooking().getBooking_id() + activityName + "</p>"
+                    " regarding your Booking #" + bookingNumber + activityName + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Ticket Id:</strong> " + supportTicket.getSupport_ticket_id().toString() + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Ticket Category:</strong> " + convertToTitleCase(supportTicket.getTicket_category().toString()) + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Message Contents:</strong> <em>" + supportTicket.getDescription() + "</em></p>"
