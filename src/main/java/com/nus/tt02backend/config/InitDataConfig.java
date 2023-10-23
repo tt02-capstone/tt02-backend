@@ -659,34 +659,6 @@ public class InitDataConfig implements CommandLineRunner {
             categoryRepository.save(category1);
         }
 
-//        if (bookingRepository.count() == 0) {
-//            Booking b1 = new Booking();
-//            b1.setStart_datetime(LocalDateTime.now().plusDays(2l));
-//            b1.setEnd_datetime(LocalDateTime.now().plusDays(5l));
-//            b1.setLast_update(LocalDateTime.now());
-//            b1.setStatus(BookingStatusEnum.UPCOMING);
-//            b1.setType(BookingTypeEnum.TELECOM);
-//            b1.setActivity_name("M1");
-//            b1.setBooked_user(UserTypeEnum.TOURIST);
-//            b1.setTelecom(telecomRepository.findById(1l).get());
-//            // didnt do booking item list or qr code list
-//            bookingRepository.save(b1);
-//
-//            Payment payment = new Payment();
-//            payment.setPayment_amount(new BigDecimal("123"));
-//            payment.setComission_percentage(BigDecimal.valueOf(0.1));
-//            payment.setIs_paid(true);
-//            payment.setBooking(b1);
-//            paymentRepository.save(payment);
-//
-//            Tourist tourist = touristRepository.getTouristByUserId(3l);
-//            b1.setTourist_user(tourist);
-//            b1.setPayment(payment);
-//            tourist.getBooking_list().add(b1);
-//            touristRepository.save(tourist);
-//            bookingRepository.save(b1);
-//        }
-
         if (supportTicketRepository.count() == 0) {
             SupportTicket s1 = new SupportTicket();
             s1.setCreated_time(LocalDateTime.now().minusDays(1).minusHours(1));

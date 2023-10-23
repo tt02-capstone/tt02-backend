@@ -170,11 +170,26 @@ public class SupportTicketService {
                 if (!supportTicket.getReply_list().isEmpty()) {
                     List<Reply> replyList = supportTicket.getReply_list();
                     for (Reply r : replyList) {
-                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
-                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
-                        r.getInternal_staff_user().setSupport_ticket_list(null);
-                        r.getTourist_user().setSupport_ticket_list(null);
-                        r.getLocal_user().setSupport_ticket_list(null);
+                        if (r.getVendor_staff_user() != null) {
+                            r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                            r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        } else if (r.getInternal_staff_user() != null) {
+                            r.getInternal_staff_user().setSupport_ticket_list(null);
+                        } else if (r.getTourist_user() != null) {
+                            r.getTourist_user().setSupport_ticket_list(null);
+                            r.getTourist_user().setBooking_list(null);
+                            r.getTourist_user().setPost_list(null);
+                            r.getTourist_user().setComment_list(null);
+                            r.getTourist_user().setCart_list(null);
+                            r.getTourist_user().setTour_type_list(null);
+                        } else if (r.getLocal_user() != null) {
+                            r.getLocal_user().setSupport_ticket_list(null);
+                            r.getLocal_user().setBooking_list(null);
+                            r.getLocal_user().setPost_list(null);
+                            r.getLocal_user().setComment_list(null);
+                            r.getLocal_user().setCart_list(null);
+                            r.getLocal_user().setTour_type_list(null);
+                        }
                     }
                 }
 

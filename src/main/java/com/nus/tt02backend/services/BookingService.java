@@ -220,18 +220,6 @@ public class BookingService {
             if (bookingOptional.isPresent()) {
                 Booking booking = bookingOptional.get();
 
-                if (booking.getLocal_user() != null) {
-                    Local local = booking.getLocal_user();
-                    local.setBooking_list(null);
-                    local.setCart_list(null);
-                    local.setSupport_ticket_list(null);
-                } else if (booking.getTourist_user() != null) {
-                    Tourist tourist = booking.getTourist_user();
-                    tourist.setCart_list(null);
-                    tourist.setBooking_list(null);
-                    tourist.setSupport_ticket_list(null);
-                }
-
                 if (!booking.getType().equals(BookingTypeEnum.TELECOM) &&
                         booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
                     for (BookingItem bookingItem : booking.getBooking_item_list()) {
