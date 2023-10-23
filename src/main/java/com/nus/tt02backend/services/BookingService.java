@@ -451,10 +451,20 @@ public class BookingService {
         for (Booking b : bookingsToReturn) {
             if (b.getLocal_user() != null) {
                 Local local = b.getLocal_user();
+                local.setSupport_ticket_list(null);
                 local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                local.setCart_list(null);
+                local.setTour_type_list(null);
             } else if (b.getTourist_user() != null) {
                 Tourist tourist = b.getTourist_user();
+                tourist.setSupport_ticket_list(null);
                 tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                tourist.setCart_list(null);
+                tourist.setTour_type_list(null);
             }
             b.getPayment().setBooking(null);
         }

@@ -118,11 +118,31 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
@@ -145,11 +165,31 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
@@ -173,8 +213,13 @@ public class SupportTicketService {
                         if (r.getVendor_staff_user() != null) {
                             r.getVendor_staff_user().setIncoming_support_ticket_list(null);
                             r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                            r.getVendor_staff_user().setVendor(null);
+                            r.getVendor_staff_user().setPost_list(null);
+                            r.getVendor_staff_user().setComment_list(null);
                         } else if (r.getInternal_staff_user() != null) {
                             r.getInternal_staff_user().setSupport_ticket_list(null);
+                            r.getInternal_staff_user().setPost_list(null);
+                            r.getInternal_staff_user().setComment_list(null);
                         } else if (r.getTourist_user() != null) {
                             r.getTourist_user().setSupport_ticket_list(null);
                             r.getTourist_user().setBooking_list(null);
@@ -229,11 +274,31 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
@@ -256,11 +321,31 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
@@ -281,17 +366,38 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setIncoming_support_ticket_list(null);
-                    if (r.getVendor_staff_user() != null) r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
 //                s.getBooking().setPayment(null);
                 s.getBooking().setLocal_user(null);
 //                s.getBooking().setTourist_user(null);
+                s.getBooking().setPayment(null);
             }
         }
 
