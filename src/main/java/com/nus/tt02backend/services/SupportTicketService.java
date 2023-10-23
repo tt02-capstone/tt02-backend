@@ -930,7 +930,14 @@ public class SupportTicketService {
             Boolean currentStatus = supportTicket.getIs_resolved();
             supportTicket.setIs_resolved(!currentStatus);
             supportTicketRepository.save(supportTicket);
-
+            supportTicket.setAccommodation(null);
+            supportTicket.setReply_list(null);
+            supportTicket.setBooking(null);
+            supportTicket.setAttraction(null);
+            supportTicket.setDeal(null);
+            supportTicket.setTour(null);
+            supportTicket.setDeal(null);
+            supportTicket.setTelecom(null);
             return supportTicket;
 
         } else {
