@@ -274,9 +274,9 @@ public class SupportTicketService {
                 }
             }
             if (s.getBooking() != null) {
-                s.getBooking().setPayment(null);
+//                s.getBooking().setPayment(null);
                 s.getBooking().setLocal_user(null);
-                s.getBooking().setTourist_user(null);
+//                s.getBooking().setTourist_user(null);
             }
         }
 
@@ -841,7 +841,6 @@ public class SupportTicketService {
         }
 
         SupportTicket supportTicket = supportTicketOptional.get();
-        List<SupportTicket> supportTicketList = getAllSupportTickets();
 
         if (!supportTicket.getReply_list().isEmpty()) {
             throw new BadRequestException("Unable to delete support ticket as there are existing replies.");
