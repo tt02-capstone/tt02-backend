@@ -8,6 +8,7 @@ import com.nus.tt02backend.repositories.*;
 import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,6 +31,8 @@ public class PostService {
     CommentRepository commentRepository;
     @Autowired
     CategoryItemRepository categoryItemRepository;
+    @Autowired
+    BadgeService badgeService;
 
     public Post createPost(Long userId, Long categoryItemId, Post postToCreate) throws BadRequestException {
         Optional<User> userOptional = userRepository.findById(userId);
@@ -52,50 +55,62 @@ public class PostService {
         Post post = postRepository.save(postToCreate);
 
         User user = userOptional.get();
-        UserTypeEnum userType;
+        UserTypeEnum userType = UserTypeEnum.TOURIST;
         if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
+            userType = UserTypeEnum.TOURIST;
             Tourist tourist = (Tourist) user;
             tourist.getPost_list().add(post);
             touristRepository.save(tourist);
 
             post.setTourist_user(tourist);
             postRepository.save(post);
-
-            post.getTourist_user().setPost_list(null);
         } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
+            userType = UserTypeEnum.LOCAL;
             Local local = (Local) user;
             local.getPost_list().add(post);
             localRepository.save(local);
 
             post.setLocal_user(local);
             postRepository.save(post);
-
-            post.getLocal_user().setPost_list(null);
         } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
+            userType = UserTypeEnum.VENDOR_STAFF;
             VendorStaff vendorStaff = (VendorStaff) user;
             vendorStaff.getPost_list().add(post);
             vendorStaffRepository.save(vendorStaff);
 
             post.setVendor_staff_user(vendorStaff);
             postRepository.save(post);
-
-            post.getVendor_staff_user().setPost_list(null);
-            post.getVendor_staff_user().getVendor().setVendor_staff_list(null);
-
         } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
+            userType = UserTypeEnum.INTERNAL_STAFF;
             InternalStaff internalStaff = (InternalStaff) user;
             internalStaff.getPost_list().add(post);
             internalStaffRepository.save(internalStaff);
 
             post.setInternal_staff_user(internalStaff);
             postRepository.save(post);
-
-            post.getInternal_staff_user().setPost_list(null);
         }
 
         CategoryItem categoryItem = categoryItemOptional.get();
         categoryItem.getPost_list().add(post);
         categoryItemRepository.save(categoryItem);
+
+        badgeService.awardBadge(user, userType, categoryItemId);
+
+        if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
+            post.getTourist_user().setPost_list(null);
+            post.getTourist_user().setSupport_ticket_list(null);
+        } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
+            post.getLocal_user().setPost_list(null);
+            post.getLocal_user().setSupport_ticket_list(null);
+        } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
+            post.getVendor_staff_user().setPost_list(null);
+            post.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+            post.getVendor_staff_user().setIncoming_support_ticket_list(null);
+            post.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+        } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
+            post.getInternal_staff_user().setPost_list(null);
+            post.getInternal_staff_user().setSupport_ticket_list(null);
+        }
 
         return post;
     }
