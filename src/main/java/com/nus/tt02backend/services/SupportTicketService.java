@@ -935,7 +935,6 @@ public class SupportTicketService {
             supportTicket.setBooking(null);
             supportTicket.setAttraction(null);
             supportTicket.setDeal(null);
-            supportTicket.setDeal(null);
             supportTicket.setTelecom(null);
             return supportTicket;
 
