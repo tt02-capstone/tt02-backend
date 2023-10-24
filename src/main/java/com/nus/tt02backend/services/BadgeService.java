@@ -145,6 +145,34 @@ public class BadgeService {
         } else {
             InternalStaff internalStaff = (InternalStaff) user;
             postList = internalStaff.getPost_list();
+
+            eligibleForBadge = validateBadgeForInternalStaff(category, internalStaff);
+            if (eligibleForBadge && internalStaff.getBadge_list().stream().noneMatch(badge ->
+                    badge.getBadge_type().equals(badgeType))) {
+                Badge categoryBadge = new Badge();
+                categoryBadge.setBadge_type(badgeType);
+                categoryBadge.setBadge_icon(getBadgeIcon(badgeType));
+                categoryBadge.setCreation_date(LocalDateTime.now());
+                categoryBadge = badgeRepository.save(categoryBadge);
+
+                internalStaff.getBadge_list().add(categoryBadge);
+            }
+
+            eligibleForTopContributor = validateTopContributor(postList);
+            if (eligibleForTopContributor && internalStaff.getBadge_list().stream().noneMatch(badge ->
+                    badge.getBadge_type().equals(BadgeTypeEnum.TOP_CONTRIBUTOR))) {
+                Badge topContributorBadge = new Badge();
+                topContributorBadge.setBadge_type(BadgeTypeEnum.TOP_CONTRIBUTOR);
+                topContributorBadge.setBadge_icon("https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/TOP_CONTRIBUTOR.png");
+                topContributorBadge.setCreation_date(LocalDateTime.now());
+                topContributorBadge = badgeRepository.save(topContributorBadge);
+
+                internalStaff.getBadge_list().add(topContributorBadge);
+            }
+
+            if (eligibleForBadge || eligibleForTopContributor) {
+                internalStaffRepository.save(internalStaff);
+            }
         }
     }
 
