@@ -70,6 +70,7 @@ public class InitDataConfig implements CommandLineRunner {
                     .staff_num(48323233L)
                     .profile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg")
                     .build();
+            staff.setBadge_list(new ArrayList<>());
             internalStaffRepository.save(staff);
             log.debug("created ADMIN user - {}", staff);
         }
@@ -89,6 +90,7 @@ public class InitDataConfig implements CommandLineRunner {
             local.setMobile_num("98989898");
             local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
             local.setTour_type_list(new ArrayList<>());
+            local.setBadge_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "local@gmail.com");
@@ -124,6 +126,7 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setEmail_verified(true);
             tourist.setMobile_num("01037596775");
             tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            tourist.setBadge_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "darrylgoh51@gmail.com");
@@ -183,6 +186,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setIs_master_account(true);
             vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
             vendorStaff.setVendor(vendor1);
+            vendorStaff.setBadge_list(new ArrayList<>());
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
 
@@ -971,6 +975,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaff.setIs_master_account(true);
         vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
         vendorStaff.setVendor(vendor2);
+        vendorStaff.setBadge_list(new ArrayList<>());
         vendorStaffRepository.save(vendorStaff);
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor2;
@@ -1006,6 +1011,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaff.setIs_master_account(true);
         vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
         vendorStaff.setVendor(vendor);
+        vendorStaff.setBadge_list(new ArrayList<>());
         vendorStaffRepository.save(vendorStaff);
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor;
@@ -1041,6 +1047,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaff.setIs_master_account(true);
         vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
         vendorStaff.setVendor(vendor);
+        vendorStaff.setBadge_list(new ArrayList<>());
         vendorStaffRepository.save(vendorStaff);
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor;
@@ -1076,6 +1083,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaff.setIs_master_account(true);
         vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
         vendorStaff.setVendor(vendor);
+        vendorStaff.setBadge_list(new ArrayList<>());
         vendorStaffRepository.save(vendorStaff);
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor;
@@ -1111,6 +1119,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaff.setIs_master_account(true);
         vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
         vendorStaff.setVendor(vendor);
+        vendorStaff.setBadge_list(new ArrayList<>());
         vendorStaffRepository.save(vendorStaff);
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor;
