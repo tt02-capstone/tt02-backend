@@ -94,7 +94,10 @@ public class PostService {
         categoryItem.getPost_list().add(post);
         categoryItemRepository.save(categoryItem);
 
-        badgeService.awardBadge(user, userType, categoryItemId);
+        // Check if eligible for new badge (for Tourists, Locals and Vendor Staff)
+        if (!userType.equals(UserTypeEnum.INTERNAL_STAFF)) {
+            badgeService.awardBadge(user, userType, categoryItemId);
+        }
 
         if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
             post.getTourist_user().setPost_list(null);

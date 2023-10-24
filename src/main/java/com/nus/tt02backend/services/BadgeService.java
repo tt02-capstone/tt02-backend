@@ -146,7 +146,7 @@ public class BadgeService {
             if (eligibleForBadge || eligibleForTopContributor) {
                 vendorStaffRepository.save(vendorStaff);
             }
-        } else {
+        } /* else {
             InternalStaff internalStaff = (InternalStaff) user;
             postList = internalStaff.getPost_list();
 
@@ -177,7 +177,7 @@ public class BadgeService {
             if (eligibleForBadge || eligibleForTopContributor) {
                 internalStaffRepository.save(internalStaff);
             }
-        }
+        } */
     }
 
     public Boolean validateTopContributor(List<Post> postList) {
@@ -296,10 +296,10 @@ public class BadgeService {
         } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
             VendorStaff vendorStaff = (VendorStaff) user;
             badgeList = vendorStaff.getBadge_list();
-        } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
+        } /* else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
             InternalStaff internalStaff = (InternalStaff) user;
             badgeList = internalStaff.getBadge_list();
-        }
+        } */
 
         LocalDateTime currentDateTime = LocalDateTime.now();
         LocalDateTime twentySecondsBefore = currentDateTime.minus(20, ChronoUnit.SECONDS);
@@ -330,10 +330,10 @@ public class BadgeService {
         } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
             VendorStaff vendorStaff = (VendorStaff) user;
             badgeList = vendorStaff.getBadge_list();
-        } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
+        } /* else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
             InternalStaff internalStaff = (InternalStaff) user;
             badgeList = internalStaff.getBadge_list();
-        }
+        } */
 
         return badgeList;
     }
