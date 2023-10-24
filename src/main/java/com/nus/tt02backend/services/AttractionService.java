@@ -130,11 +130,12 @@ public class AttractionService {
     public List<Attraction> retrieveAllAttractionByVendor(Long vendorStaffId) throws NotFoundException {
         VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
         Vendor vendor = vendorStaff.getVendor();
+        vendor.setVendor_staff_list(null);
 
-        if (!vendor.getAttraction_list().isEmpty()) {
+        if (vendor.getAttraction_list() != null && !vendor.getAttraction_list().isEmpty()) {
             return vendor.getAttraction_list();
         } else {
-            throw new NotFoundException("Attractions not found!");
+            return new ArrayList<>();
         }
     }
 
