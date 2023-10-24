@@ -312,4 +312,29 @@ public class BadgeService {
 
         return null;
     }
+
+    public List<Badge> retrieveBadgesByUserId(Long userId) throws BadRequestException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new BadRequestException("User does not exist!");
+        }
+        User user = userOptional.get();
+
+        List<Badge> badgeList = new ArrayList<>();
+        if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
+            Tourist tourist = (Tourist) user;
+            badgeList = tourist.getBadge_list();
+        } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
+            Local local = (Local) user;
+            badgeList = local.getBadge_list();
+        } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
+            VendorStaff vendorStaff = (VendorStaff) user;
+            badgeList = vendorStaff.getBadge_list();
+        } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
+            InternalStaff internalStaff = (InternalStaff) user;
+            badgeList = internalStaff.getBadge_list();
+        }
+
+        return badgeList;
+    }
 }

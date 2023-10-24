@@ -23,4 +23,10 @@ public class BadgeController {
         Badge newBadge = badgeService.awardedNewBadge(userId);
         return ResponseEntity.ok(newBadge);
     }
+
+    @GetMapping("/retrieveBadgesByUserId/{userId}")
+    public ResponseEntity<List<Badge>> retrieveBadgesByUserId(@PathVariable Long userId) throws BadRequestException {
+        List<Badge> badges = badgeService.retrieveBadgesByUserId(userId);
+        return ResponseEntity.ok(badges);
+    }
 }
