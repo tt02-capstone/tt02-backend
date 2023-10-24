@@ -1,5 +1,6 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BadgeTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
@@ -7,10 +8,13 @@ import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class BadgeService {
@@ -177,7 +181,7 @@ public class BadgeService {
     }
 
     public Boolean validateTopContributor(List<Post> postList) {
-        // For purpose for demo
+        // For demo purposes
         if (postList.size() >= 4) {
             return true;
         } else {
@@ -196,7 +200,7 @@ public class BadgeService {
                 .filter(post -> post.getTourist_user() != null &&
                         post.getTourist_user().getUser_id().equals(tourist.getUser_id())).count());
 
-        // For purpose for demo
+        // For demo purposes
         if (numberOfPosts >= 2) {
             return true;
         } else {
@@ -215,7 +219,7 @@ public class BadgeService {
                 .filter(post -> post.getLocal_user() != null &&
                         post.getLocal_user().getUser_id().equals(local.getUser_id())).count());
 
-        // For purpose for demo
+        // For demo purposes
         if (numberOfPosts >= 2) {
             return true;
         } else {
@@ -234,7 +238,7 @@ public class BadgeService {
                 .filter(post -> post.getInternal_staff_user() != null &&
                         post.getInternal_staff_user().getUser_id().equals(internalStaff.getUser_id())).count());
 
-        // For purpose for demo
+        // For demo purposes
         if (numberOfPosts >= 2) {
             return true;
         } else {
@@ -253,7 +257,7 @@ public class BadgeService {
                 .filter(post -> post.getVendor_staff_user() != null &&
                         post.getVendor_staff_user().getUser_id().equals(vendorStaff.getUser_id())).count());
 
-        // For purpose for demo
+        // For demo purposes
         if (numberOfPosts >= 2) {
             return true;
         } else {
@@ -273,5 +277,39 @@ public class BadgeService {
         } else {
             return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/FOODIE_EXPERT.png";
         }
+    }
+
+    public Badge awardedNewBadge(Long userId) throws BadRequestException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new BadRequestException("User does not exist!");
+        }
+        User user = userOptional.get();
+
+        List<Badge> badgeList = new ArrayList<>();
+        if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
+            Tourist tourist = (Tourist) user;
+            badgeList = tourist.getBadge_list();
+        } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
+            Local local = (Local) user;
+            badgeList = local.getBadge_list();
+        } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
+            VendorStaff vendorStaff = (VendorStaff) user;
+            badgeList = vendorStaff.getBadge_list();
+        } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
+            InternalStaff internalStaff = (InternalStaff) user;
+            badgeList = internalStaff.getBadge_list();
+        }
+
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        LocalDateTime twentySecondsBefore = currentDateTime.minus(20, ChronoUnit.SECONDS);
+        for (Badge badge : badgeList) {
+            if (badge.getCreation_date().isAfter(twentySecondsBefore) &&
+                    badge.getCreation_date().isBefore(currentDateTime)) {
+                return badge;
+            }
+        }
+
+        return null;
     }
 }
