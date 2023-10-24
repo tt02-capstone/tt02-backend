@@ -961,6 +961,12 @@ public class SupportTicketService {
 
         supportTicketRepository.save(supportTicket);
 
+        if (supportTicket.getBooking() != null) {
+            supportTicket.getBooking().setPayment(null);
+            supportTicket.getBooking().setLocal_user(null);
+            supportTicket.getBooking().setTourist_user(null);
+        }
+
         return supportTicket;
     }
 
