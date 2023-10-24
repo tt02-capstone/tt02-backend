@@ -1,10 +1,12 @@
 package com.nus.tt02backend.config;
 
+import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import com.nus.tt02backend.services.AttractionService;
 import com.nus.tt02backend.services.PaymentService;
+import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentMethod;
 import com.stripe.model.Token;
 import com.stripe.param.PaymentMethodCreateParams;
@@ -21,6 +23,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -144,6 +152,10 @@ public class InitDataConfig implements CommandLineRunner {
             PaymentMethod paymentMethod = PaymentMethod.create(params);
 
             paymentService.addPaymentMethod("TOURIST", "darrylgoh51@gmail.com", paymentMethod.getId());
+
+            // Large data-init
+
+            createTourists(100);
         }
 
         Vendor vendor1 = new Vendor();
@@ -1115,4 +1127,46 @@ public class InitDataConfig implements CommandLineRunner {
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor;
     }
+
+    String createTourists(Integer numberOfTourists) throws StripeException, BadRequestException {
+
+        for (int i = 0; i < numberOfTourists; i++) { // X is the number of tourists you want to generate
+            Tourist tourist = new Tourist();
+            Random rand = new Random();
+
+            // Generate a random email
+            String email = UUID.randomUUID().toString() + "@gmail.com";
+
+            // Generate a random name
+            String name = "Name" + rand.nextInt(1000);
+
+            // Generate a random country code
+            String[] countryCodes = {"+86", "+62", "+91", "+60", "+61"};
+            String countryCode = countryCodes[rand.nextInt(countryCodes.length)];
+
+            // Set attributes
+            tourist.setEmail(email);
+            tourist.setName(name);
+            tourist.setPassword(passwordEncoder.encode("password1!"));
+            tourist.setUser_type(UserTypeEnum.TOURIST);
+            tourist.setIs_blocked(false);
+            tourist.setPassport_num("A" + rand.nextInt(100000));
+            tourist.setDate_of_birth(new Date());
+            tourist.setCountry_code(countryCode);
+            tourist.setEmail_verified(true);
+            tourist.setMobile_num("010" + rand.nextInt(10000000));
+            tourist.setProfile_pic("");
+
+
+            tourist.setStripe_account_id("");
+
+            touristRepository.save(tourist);
+
+
+        }
+
+        return "";
+    }
+
+
 }
