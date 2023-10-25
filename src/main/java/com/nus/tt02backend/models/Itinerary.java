@@ -23,10 +23,10 @@ public class Itinerary {
     private Long itinerary_id;
 
     @Column(nullable = false)
-    private Date start_date;
+    private LocalDateTime start_date;
 
     @Column(nullable = false)
-    private Date end_date;
+    private LocalDateTime end_date;
 
     private Integer number_of_pax;
 
@@ -35,8 +35,5 @@ public class Itinerary {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<DIYEvent> diy_event_list;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<Booking> booking_list;
 
 }
