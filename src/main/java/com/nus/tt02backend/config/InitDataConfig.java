@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -64,6 +66,7 @@ public class InitDataConfig implements CommandLineRunner {
     AttractionService attractionService;
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
 
         if (internalStaffRepository.count() == 0) {
@@ -154,7 +157,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             // Large data-init
 
-            createTourists(100);
+            createTourists(10);
         }
 
         Vendor vendor1 = new Vendor();
@@ -284,42 +287,57 @@ public class InitDataConfig implements CommandLineRunner {
             createSecondAttraction(currentList);
         }
 
-        if (dealRepository.count() == 0) {
-            Deal d1 = new Deal();
-            d1.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
-            d1.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
-            d1.setDiscount_percent(10);
-            d1.setDeal_type(DealCategoryEnum.BLACK_FRIDAY);
-            d1.setPromo_code("TOURING");
-            d1.setIs_govt_voucher(false);
-            d1.setIs_published(true);
-            List<String> imgList = new ArrayList<>();
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_backfriday.jpeg");
-            d1.setDeal_image_list(imgList);
+        if (dealRepository.count() >= 0) {
+            int numOfDeals = 10;
+            Random random = new Random();
 
-            d1 = dealRepository.save(d1);
-            List<Deal> dList = new ArrayList<>();
-            dList.add(d1);
-            vendor1.setDeals_list(dList);
-            vendorRepository.save(vendor1);
+            for (int i = 0; i < numOfDeals; i++) {
+                Deal d1 = new Deal();
 
-            Deal d2 = new Deal();
-            d2.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
-            d2.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
-            d2.setDiscount_percent(20);
-            d2.setDeal_type(DealCategoryEnum.GOVERNMENT);
-            d2.setPromo_code("WELCOME");
-            d2.setIs_govt_voucher(true);
-            d2.setIs_published(true);
-            List<String> imgList2 = new ArrayList<>();
-            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.png");
-            d2.setDeal_image_list(imgList2);
+                LocalDateTime startDate = LocalDateTime.now().plusDays(random.nextInt(365));
+                d1.setStart_datetime(startDate);
 
-            d2 = dealRepository.save(d2);
-            List<Deal> dList2 = new ArrayList<>();
-            dList2.add(d2);
-            vendor2.setDeals_list(dList2);
-            vendorRepository.save(vendor2);
+                // Generate random end date (within a reasonable range) after the start date
+                LocalDateTime endDate = startDate.plusDays(random.nextInt(30)); // You can adjust the range as needed
+                d1.setEnd_datetime(endDate);
+
+                int discountPercent = random.nextInt(50);
+                d1.setDiscount_percent(discountPercent);
+
+                DealCategoryEnum[] dealTypes = DealCategoryEnum.values();
+                DealCategoryEnum randomDealType = dealTypes[random.nextInt(dealTypes.length)];
+                d1.setDeal_type(randomDealType);
+
+                d1.setPromo_code(generateRandomPromoCode(7));
+
+                boolean isGovtVoucher = random.nextBoolean();
+                d1.setIs_govt_voucher(isGovtVoucher);
+
+                d1.setIs_published(true);
+                List<String> imgList = new ArrayList<>();
+                imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.jpeg");
+                d1.setDeal_image_list(imgList);
+
+                d1 = dealRepository.save(d1);
+                List<Deal> dList = new ArrayList<>();
+                dList.add(d1);
+
+                List<Long> vendorList = vendorRepository.getAllVendorId();
+                Long randomIndex = random.nextLong(vendorList.size());
+                Long randomLong = vendorList.get(Math.toIntExact(randomIndex));
+                System.out.println(vendorList);
+
+                Vendor ven = vendorRepository.findById(randomLong).get();
+                System.out.println("Vendor id" + ven.getVendor_id());
+
+                if (ven.getDeals_list() == null) {
+                    ven.setDeals_list(dList);
+                } else {
+                    ven.getDeals_list().addAll(dList);
+                }
+                System.out.println("Vendor 1" + ven.getDeals_list());
+                vendorRepository.save(ven);
+            }
         }
 
 
@@ -1258,16 +1276,19 @@ public class InitDataConfig implements CommandLineRunner {
 
             // Below will be randomly set based on init data
 
-            if (Objects.equals(activity_type, "ATTRACTION")) {
-                newBooking.setAttraction(bookingToCheckout.getAttraction());
 
-            } else if (Objects.equals(activity_type, "TELECOM")) {
-                newBooking.setTelecom(bookingToCheckout.getTelecom());
-            } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
-                newBooking.setRoom(bookingToCheckout.getRoom());
-            }   else if (Objects.equals(activity_type, "TOUR")) {
-                newBooking.setTour(bookingToCheckout.getTour());
-            }
+            //Leah: I'm commenting this as bookingToCheckout is not defined and backend cannot run
+
+//            if (Objects.equals(activity_type, "ATTRACTION")) {
+//                newBooking.setAttraction(bookingToCheckout.getAttraction());
+//
+//            } else if (Objects.equals(activity_type, "TELECOM")) {
+//                newBooking.setTelecom(bookingToCheckout.getTelecom());
+//            } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
+//                newBooking.setRoom(bookingToCheckout.getRoom());
+//            }   else if (Objects.equals(activity_type, "TOUR")) {
+//                newBooking.setTour(bookingToCheckout.getTour());
+//            }
 
             newBooking.setBooking_item_list(bookingItems);
             newBooking.setQr_code_list(new ArrayList<>());
@@ -1287,7 +1308,7 @@ public class InitDataConfig implements CommandLineRunner {
             bookingRepository.save(newBooking);
 
             Payment bookingPayment = new Payment();
-            BigDecimal totalAmountPayable = 0; // Quantity times price
+            BigDecimal totalAmountPayable = BigDecimal.valueOf(0); // Quantity times price
             bookingPayment.setPayment_amount(totalAmountPayable);
 
             // Assuming a 10% commission for the example
@@ -1351,4 +1372,14 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
 
+    private String generateRandomPromoCode(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        Random random = new Random();
+        StringBuilder promoCode = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+            promoCode.append(characters.charAt(index));
+        }
+        return promoCode.toString();
+    }
 }
