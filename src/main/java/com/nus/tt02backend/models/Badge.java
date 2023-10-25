@@ -27,6 +27,6 @@ public class Badge {
     private String badge_icon;
 
     @Column(nullable = false)
-    private Date creation_date;
+    private LocalDateTime creation_date;
 
 }
