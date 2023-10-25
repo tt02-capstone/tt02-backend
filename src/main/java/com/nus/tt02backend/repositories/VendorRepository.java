@@ -13,6 +13,9 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
     @Query("SELECT v FROM Vendor v WHERE v.application_status=?1")
     List<Vendor> retrievePendingVendorApplications(ApplicationStatusEnum applicationStatus);
 
+    @Query("SELECT v.vendor_id FROM Vendor v")
+    List<Long> getAllVendorId();
+
     @Query("SELECT v.stripe_account_id FROM Vendor v WHERE v.business_name=?1")
     String getStripeIdByName(String business_name);
 
