@@ -1,16 +1,16 @@
 package com.nus.tt02backend.config;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import com.nus.tt02backend.services.AttractionService;
 import com.nus.tt02backend.services.PaymentService;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
+import com.stripe.model.CustomerBalanceTransaction;
 import com.stripe.model.PaymentMethod;
-import com.stripe.model.Token;
-import com.stripe.param.PaymentMethodCreateParams;
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,12 +18,10 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +55,7 @@ public class InitDataConfig implements CommandLineRunner {
     private final BookingRepository bookingRepository;
     private final SupportTicketRepository supportTicketRepository;
     private final ReplyRepository replyRepository;
+    private final BookingItemRepository bookingItemRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -1128,7 +1127,7 @@ public class InitDataConfig implements CommandLineRunner {
         return vendor;
     }
 
-    String createTourists(Integer numberOfTourists) throws StripeException, BadRequestException {
+    void createTourists(Integer numberOfTourists) {
 
         for (int i = 0; i < numberOfTourists; i++) { // X is the number of tourists you want to generate
             Tourist tourist = new Tourist();
@@ -1165,7 +1164,190 @@ public class InitDataConfig implements CommandLineRunner {
 
         }
 
-        return "";
+    }
+
+    void createBookingsAndPayments(Integer numberOfBookingsAndPayments) throws NotFoundException {
+
+        for (int i = 0; i < numberOfBookingsAndPayments; i++) {
+
+            List<BookingItem> bookingItems = new ArrayList<>();
+
+            Random rand = new Random();
+
+            String[] activityTypes = {"ACCOMMODATION", "TELECOM", "ATTRACTION"};
+            String activity_type = activityTypes[rand.nextInt(activityTypes.length)];
+
+            Long selected_id = null;
+
+            Integer selected_quantity = null;
+
+            LocalDate selected_start = null;
+
+            LocalDate selected_end = null;
+
+            LocalDateTime selected_startTime = null;
+
+            LocalDateTime selected_endTime = null;
+
+            String selected_activity = null;
+
+            String bookingStatus = null;
+
+            User user = null;
+
+            if (activity_type.equals("ACCOMMODATION")) {
+                Long[] accom_ids = {1L, 2L};
+                selected_id = accom_ids[rand.nextInt(accom_ids.length)];
+                Optional<Accommodation> accomodation_optional = accommodationRepository.findById(selected_id);
+                if (accomodation_optional.isPresent()) {
+                    Accommodation accommodation = accomodation_optional.get();
+
+                }
+            } else if (activity_type.equals("TELECOM")) {
+                Long[] telecom_ids = {1L, 2L};
+                selected_id = telecom_ids[rand.nextInt(telecom_ids.length)];
+            } else if (activity_type.equals("ATTRACTION")) {
+                Long[] attraction_ids = {1L, 2L};
+                selected_id = attraction_ids[rand.nextInt(attraction_ids.length)];
+            }
+
+            int numberOfBookingItems = 3;
+
+            for (int j = 0; j < numberOfBookingItems; j++) {
+                // Create the Booking Item
+
+                // If attraction would need to random number of booking items else rest should be just 1?
+
+                BookingItem newBookingItem = new BookingItem();
+                newBookingItem.setQuantity(selected_quantity); // Random
+
+                // Booking dates would vary based on activity
+
+                // If attraction same day
+
+                // If telecom depending on the item selected
+
+                // If accomodation within 1 - 5 days
+
+                newBookingItem.setStart_datetime(selected_start); //Need to make sense (Like book within their iternary?)
+                newBookingItem.setEnd_datetime(selected_end);
+
+                // Activity would be main determiner
+
+                newBookingItem.setType(BookingTypeEnum.valueOf(activity_type));
+
+                //
+
+                newBookingItem.setActivity_selection(selected_activity);
+                bookingItemRepository.save(newBookingItem);
+                bookingItems.add(newBookingItem);
+            }
+
+            Booking newBooking = new Booking();
+
+            newBooking.setStart_datetime(selected_startTime);
+            newBooking.setEnd_datetime(selected_endTime);
+            newBooking.setLast_update(LocalDateTime.now()); // Date when booking was completed
+            newBooking.setStatus(BookingStatusEnum.UPCOMING); // Completed
+            newBooking.setType(BookingTypeEnum.valueOf(activity_type)); // Randomly set
+
+            // Randomly set beforehand
+
+            newBooking.setActivity_name(selected_activity);
+
+
+            // Below will be randomly set based on init data
+
+            if (Objects.equals(activity_type, "ATTRACTION")) {
+                newBooking.setAttraction(bookingToCheckout.getAttraction());
+
+            } else if (Objects.equals(activity_type, "TELECOM")) {
+                newBooking.setTelecom(bookingToCheckout.getTelecom());
+            } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
+                newBooking.setRoom(bookingToCheckout.getRoom());
+            }   else if (Objects.equals(activity_type, "TOUR")) {
+                newBooking.setTour(bookingToCheckout.getTour());
+            }
+
+            newBooking.setBooking_item_list(bookingItems);
+            newBooking.setQr_code_list(new ArrayList<>());
+
+            // Randomly assigned, obtained by randomly selecting a user based on their id
+            if (user instanceof Local) {
+                Local local = (Local) user;
+                newBooking.setLocal_user(local);
+            } else if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                newBooking.setTourist_user(tourist);
+            } else {
+                throw new IllegalArgumentException("Invalid user type");
+            }
+
+            // Save the new booking
+            bookingRepository.save(newBooking);
+
+            Payment bookingPayment = new Payment();
+            BigDecimal totalAmountPayable = 0; // Quantity times price
+            bookingPayment.setPayment_amount(totalAmountPayable);
+
+            // Assuming a 10% commission for the example
+            BigDecimal commission = BigDecimal.valueOf(0.10);
+            bookingPayment.setComission_percentage(commission);
+            bookingPayment.setIs_paid(true);
+
+
+
+            BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
+
+
+            Vendor vendor = null;
+            Local local = null;
+
+            if (Objects.equals(activity_type, "TOUR")) {
+                local = localRepository.findLocalByTour(newBooking.getTour());
+                if (local != null) {
+                    local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
+
+
+
+                } else {
+                    throw new NotFoundException("No locals found associated with tour");
+                }
+
+            } else {
+                if (Objects.equals(activity_type, "ATTRACTION")) {
+                    vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
+
+                } else if (Objects.equals(activity_type, "TELECOM")) {
+                    vendor = vendorRepository.findVendorByTelecomName(newBooking.getTelecom().getName());
+
+                } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
+                    vendor = vendorRepository.findVendorByAccommodationName(newBooking.getActivity_name());
+                }
+
+                if (!(vendor == null)) {
+                    vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+                }
+            }
+
+            bookingPayment.setPayment_id("sda"); // Randomly generated string
+
+
+            paymentRepository.save(bookingPayment);
+
+            newBooking.setPayment(bookingPayment);
+            bookingPayment.setBooking(newBooking);
+            bookingRepository.save(newBooking);
+            paymentRepository.save(bookingPayment);
+
+
+        }
+
+
+
+
+
+
     }
 
 
