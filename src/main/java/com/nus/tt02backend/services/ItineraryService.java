@@ -4,6 +4,7 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.InternalRoleEnum;
+import com.nus.tt02backend.models.enums.NumberOfValidDaysEnum;
 import com.nus.tt02backend.models.enums.SupportTicketTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
@@ -11,10 +12,12 @@ import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ItineraryService {
@@ -28,6 +31,8 @@ public class ItineraryService {
     ItineraryRepository itineraryRepository;
     @Autowired
     DIYEventRepository diyEventRepository;
+    @Autowired
+    TelecomRepository telecomRepository;
 
     public Itinerary getItineraryByUser(Long userId) throws BadRequestException {
         Optional<User> userOptional = userRepository.findById(userId);
@@ -122,4 +127,27 @@ public class ItineraryService {
         itineraryRepository.delete(itinerary);
     }
 
+    public List<Telecom> getTelecomRecommendations(Long itineraryId) throws BadRequestException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new BadRequestException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<Telecom> telecomRecommendations = new ArrayList<>();
+        Integer numberOfDays = Math.round(Duration.between(itinerary.getStart_date(), itinerary.getEnd_date()).toDays());
+        if (numberOfDays <= 1) {
+            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.ONE_DAY));
+        } else if (numberOfDays <= 3) {
+            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.THREE_DAY));
+        } else if (numberOfDays <= 7) {
+            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.SEVEN_DAY));
+        } else if (numberOfDays <= 14) {
+            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.FOURTEEN_DAY));
+        } else {
+            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.MORE_THAN_FOURTEEN_DAYS));
+        }
+
+        return telecomRecommendations;
+    }
 }
