@@ -116,6 +116,7 @@ public class SecurityConfig {
               "/diyEvent/**", // to remove
               "/comment/**", // to remove
               "/post/**", // to remove
+              "/recommendation/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()
