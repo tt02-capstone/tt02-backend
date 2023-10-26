@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Attraction;
 import com.nus.tt02backend.models.Itinerary;
 import com.nus.tt02backend.models.Telecom;
 import com.nus.tt02backend.services.DIYEventService;
@@ -47,5 +48,11 @@ public class ItineraryController {
     public ResponseEntity<List<Telecom>> getTelecomRecommendations(@PathVariable Long itineraryId) throws BadRequestException {
         List<Telecom> telecomRecommendations = itineraryService.getTelecomRecommendations(itineraryId);
         return ResponseEntity.ok(telecomRecommendations);
+    }
+
+    @GetMapping("/getAttractionRecommendations/{itineraryId}")
+    public ResponseEntity<List<Attraction>> getAttractionRecommendations(@PathVariable Long itineraryId) throws BadRequestException {
+        List<Attraction> attractionRecommendations = itineraryService.getAttractionRecommendations(itineraryId);
+        return ResponseEntity.ok(attractionRecommendations);
     }
 }
