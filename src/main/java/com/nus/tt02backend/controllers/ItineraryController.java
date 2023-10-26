@@ -3,11 +3,14 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Itinerary;
+import com.nus.tt02backend.models.Telecom;
 import com.nus.tt02backend.services.DIYEventService;
 import com.nus.tt02backend.services.ItineraryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -38,5 +41,11 @@ public class ItineraryController {
     public ResponseEntity<Void> deleteItinerary(@PathVariable Long userId, @PathVariable Long itineraryId) throws NotFoundException, BadRequestException {
         itineraryService.deleteItinerary(userId, itineraryId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/getTelecomRecommendations/{itineraryId}")
+    public ResponseEntity<List<Telecom>> getTelecomRecommendations(@PathVariable Long itineraryId) throws BadRequestException {
+        List<Telecom> telecomRecommendations = itineraryService.getTelecomRecommendations(itineraryId);
+        return ResponseEntity.ok(telecomRecommendations);
     }
 }
