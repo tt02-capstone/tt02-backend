@@ -28,7 +28,7 @@ public class TelecomService {
     @Autowired
     LocalRepository localRepository;
 
-    private String generateImageURL(NumberOfValidDaysEnum e) throws NotFoundException {
+    public String generateImageURL(NumberOfValidDaysEnum e) throws NotFoundException {
         if (e == NumberOfValidDaysEnum.ONE_DAY) {
             return "http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_1_day.JPG";
         } else if (e == NumberOfValidDaysEnum.THREE_DAY) {
@@ -44,7 +44,7 @@ public class TelecomService {
         }
     }
 
-    private GBLimitEnum generateGBLimitEnum(int data) {
+    public GBLimitEnum generateGBLimitEnum(int data) {
         if (data <= 10) {
             return GBLimitEnum.VALUE_10;
         } else if (data <= 30) {
@@ -58,7 +58,7 @@ public class TelecomService {
         }
     }
 
-    private NumberOfValidDaysEnum generateNumValidDays(int num) {
+    public NumberOfValidDaysEnum generateNumValidDays(int num) {
         if (num <= 1) {
             return NumberOfValidDaysEnum.ONE_DAY;
         } else if (num <= 3) {
@@ -72,7 +72,7 @@ public class TelecomService {
         }
     }
 
-    private PriceTierEnum generatePriceTier(BigDecimal price) {
+    public PriceTierEnum generatePriceTier(BigDecimal price) {
         if (price.compareTo(new BigDecimal("20")) == -1 || price.compareTo(new BigDecimal("20")) == 0) {
             return PriceTierEnum.TIER_1;
         } else if (price.compareTo(new BigDecimal("40")) == -1 || price.compareTo(new BigDecimal("40")) == 0) {

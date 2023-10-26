@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VendorRepository extends JpaRepository<Vendor, Long> {
     @Query("SELECT v FROM Vendor v WHERE v.application_status=?1")
@@ -25,6 +26,8 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
     @Query("SELECT v FROM Vendor v JOIN v.telecom_list a WHERE a.name = :telecomName")
     Vendor findVendorByTelecomName(@Param("telecomName") String telecomName);
 
+    @Query("SELECT v FROM Vendor v JOIN v.telecom_list a WHERE a.name = :telecomName")
+    Optional<Vendor> findVendorOptionalByTelecomName(@Param("telecomName") String telecomName);
     @Query("SELECT v FROM Vendor v JOIN v.telecom_list a WHERE a.telecom_id = :telecomId")
     Vendor findVendorByTelecomId(@Param("telecomId") Long telecomId);
 

@@ -11,6 +11,12 @@ public interface TelecomRepository extends JpaRepository<Telecom, Long>{
 
     @Query("SELECT t FROM Telecom t WHERE t.is_published = true")
     List<Telecom> getPublishedTelecomList();
+
+    @Query("SELECT t.name FROM Telecom t")
+    List<String> getTelecomNameList();
+
+    @Query("SELECT t FROM Telecom t where t.name=?1")
+    List<Telecom> getTelecomListbyName(String name);
 }
 
 
