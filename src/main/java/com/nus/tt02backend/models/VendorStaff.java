@@ -36,4 +36,7 @@ public class VendorStaff extends User {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendor_staff_user")
     private List<Post> post_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Badge> badge_list;
 }

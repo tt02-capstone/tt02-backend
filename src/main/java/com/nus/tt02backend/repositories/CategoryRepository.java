@@ -10,6 +10,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query("SELECT c FROM Category c WHERE c.is_published = true ")
     List<Category> getAllPublishedCategory();
+
+    @Query("SELECT c FROM Category c JOIN c.category_item_list ci WHERE ci.category_item_id = ?1")
+    Category getCategoryContainingCategoryItem(Long categoryItemId);
 }
 
 
