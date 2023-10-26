@@ -93,6 +93,7 @@ public class CommentService {
             comment.getTourist_user().setBooking_list(null);
             comment.getTourist_user().setCart_list(null);
             comment.getTourist_user().setComment_list(null);
+            comment.getTourist_user().setSupport_ticket_list(null);
 
         } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
             Local local = (Local) user;
@@ -107,6 +108,7 @@ public class CommentService {
             comment.getLocal_user().setBooking_list(null);
             comment.getLocal_user().setCart_list(null);
             comment.getLocal_user().setComment_list(null);
+            comment.getLocal_user().setSupport_ticket_list(null);
 
         } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
             VendorStaff vendorStaff = (VendorStaff) user;
@@ -120,6 +122,8 @@ public class CommentService {
             comment.getVendor_staff_user().setComment_list(null);
             comment.getVendor_staff_user().getVendor().setVendor_staff_list(null);
             comment.getVendor_staff_user().setComment_list(null);
+            comment.getVendor_staff_user().setIncoming_support_ticket_list(null);
+            comment.getVendor_staff_user().setOutgoing_support_ticket_list(null);
 
         } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
             InternalStaff internalStaff = (InternalStaff) user;
@@ -132,6 +136,7 @@ public class CommentService {
             comment.getInternal_staff_user().setPost_list(null);
             comment.getInternal_staff_user().setComment_list(null);
             comment.getInternal_staff_user().setComment_list(null);
+            comment.getInternal_staff_user().setSupport_ticket_list(null);
         }
 
 //        comment.getPost().setComment_list(null);
@@ -406,6 +411,7 @@ public class CommentService {
             comment.getLocal_user().setPost_list(null);
             comment.getLocal_user().setComment_list(null);
             comment.getLocal_user().setCart_list(null);
+            comment.getLocal_user().setTour_type_list(null);
             comment.getLocal_user().setBooking_list(null);
             comment.getLocal_user().setSupport_ticket_list(null);
         }
@@ -413,16 +419,18 @@ public class CommentService {
             comment.getTourist_user().setPost_list(null);
             comment.getTourist_user().setComment_list(null);
             comment.getTourist_user().setCart_list(null);
+            comment.getTourist_user().setTour_type_list(null);
             comment.getTourist_user().setBooking_list(null);
             comment.getTourist_user().setSupport_ticket_list(null);
         }
 
         if (comment.getVendor_staff_user() != null) {
             comment.getVendor_staff_user().setPost_list(null);
+            comment.getVendor_staff_user().setVendor(null);
+            comment.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+            comment.getVendor_staff_user().setIncoming_support_ticket_list(null);
             comment.getVendor_staff_user().setComment_list(null);
             comment.getVendor_staff_user().getVendor().setVendor_staff_list(null);
-            comment.getVendor_staff_user().setIncoming_support_ticket_list(null);
-            comment.getVendor_staff_user().setOutgoing_support_ticket_list(null);
         }
 
         if (comment.getInternal_staff_user() != null) {
