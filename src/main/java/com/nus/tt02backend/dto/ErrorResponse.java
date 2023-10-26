@@ -1,4 +1,4 @@
-package com.nus.tt02backend.models;
+package com.nus.tt02backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
