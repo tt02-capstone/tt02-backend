@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -50,9 +52,18 @@ public class ItineraryController {
         return ResponseEntity.ok(telecomRecommendations);
     }
 
-    @GetMapping("/getAttractionRecommendations/{itineraryId}")
-    public ResponseEntity<List<Attraction>> getAttractionRecommendations(@PathVariable Long itineraryId) throws BadRequestException {
-        List<Attraction> attractionRecommendations = itineraryService.getAttractionRecommendations(itineraryId);
+    // Recommendations for Attraction (based on a specific date)
+    @GetMapping("/getAttractionRecommendationsByDate/{itineraryId}/{dateTime}")
+    public ResponseEntity<List<Attraction>> getAttractionRecommendationsByDate(@PathVariable Long itineraryId,
+                                                                               @PathVariable LocalDate dateTime) throws BadRequestException {
+        List<Attraction> attractionRecommendations = itineraryService.getAttractionRecommendationsByDate(itineraryId, dateTime);
+        return ResponseEntity.ok(attractionRecommendations);
+    }
+
+    // Recommendations for Attraction (based on the entire itinerary duration)
+    @GetMapping("/getAttractionRecommendationsForItinerary/{itineraryId}")
+    public ResponseEntity<List<Attraction>> getAttractionRecommendationsForItinerary(@PathVariable Long itineraryId) throws BadRequestException {
+        List<Attraction> attractionRecommendations = itineraryService.getAttractionRecommendationsForItinerary(itineraryId);
         return ResponseEntity.ok(attractionRecommendations);
     }
 }

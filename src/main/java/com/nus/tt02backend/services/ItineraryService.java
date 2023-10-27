@@ -186,8 +186,28 @@ public class ItineraryService {
         return telecomRecommendations;
     }
 
-    // Recommendations for Attraction
-    public List<Attraction> getAttractionRecommendations(Long itineraryId) throws BadRequestException {
+    public List<Attraction> getAttractionRecommendationsByDate(Long itineraryId, LocalDate dateTime) throws BadRequestException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new BadRequestException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<DIYEvent> events = itinerary.getDiy_event_list();
+        List<DIYEvent> eventsOnCurrentDate = getEventsOnDate(events, dateTime);
+        List<Attraction> attractionRecommendations = new ArrayList<>();
+        if (!events.isEmpty() && !eventsOnCurrentDate.isEmpty()) {
+            processEventsForAttractions(eventsOnCurrentDate, attractionRecommendations);
+
+            return removeDuplicates(attractionRecommendations);
+        } else {
+            attractionRecommendations.addAll(attractionRepository.findAll());
+        }
+
+        return attractionRecommendations;
+    }
+
+    public List<Attraction> getAttractionRecommendationsForItinerary(Long itineraryId) throws BadRequestException {
         Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
         if (itineraryOptional.isEmpty()) {
             throw new BadRequestException("Itinerary does not exist!");
@@ -207,6 +227,8 @@ public class ItineraryService {
             }
 
             return removeDuplicates(attractionRecommendations);
+        } else {
+            attractionRecommendations.addAll(attractionRepository.findAll());
         }
 
         return attractionRecommendations;
