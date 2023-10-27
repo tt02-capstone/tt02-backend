@@ -87,16 +87,44 @@ public class SecurityConfig {
               "/vendor/createVendor",
               "/vendorStaff/createVendorStaff",
               "/notification/**", // to remove
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
+              "/supportTicket/**", // to remove
+              "/booking/**", // to remove
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
+              "/comment/**", // to remove
+              "/post/**", // to remove
+              "/user/**").permitAll()
+        .requestMatchers(HttpMethod.GET,
+              "/vendorStaff/verifyEmail/**",
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
+              "/comment/**", // to remove
+              "/post/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
+              "/comment/**", // to remove
+              "/post/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.DELETE,
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
+              "/comment/**", // to remove
+              "/post/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
+              "/comment/**", // to remove
+              "/post/**", // to remove
+              "/recommendation/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()

@@ -1,5 +1,6 @@
 package com.nus.tt02backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class DIYEvent {
 
     @Id
@@ -49,6 +50,6 @@ public class DIYEvent {
     @ManyToOne(fetch = FetchType.LAZY)
     private Restaurant restaurant;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Booking booking;
 }

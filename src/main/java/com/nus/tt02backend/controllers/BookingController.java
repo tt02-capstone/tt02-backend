@@ -85,7 +85,6 @@ public class BookingController {
         return ResponseEntity.ok(bookingList);
     }
 
-
     @GetMapping("/getTourImageByTourId/{tourId}")
     public ResponseEntity<String> getTourImageByTourId(@PathVariable Long tourId) throws BadRequestException {
         String imageLink = bookingService.getTourImageByTourId(tourId);
