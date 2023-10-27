@@ -1,6 +1,6 @@
 package com.nus.tt02backend.exceptions;
 
-import com.nus.tt02backend.models.ErrorResponse;
+import com.nus.tt02backend.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
