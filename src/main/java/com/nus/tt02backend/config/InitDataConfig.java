@@ -567,6 +567,8 @@ public class InitDataConfig implements CommandLineRunner {
         tourTypeRepository.save(tourType);
 
         createSecondTourType(local);
+        createThirdTourType(local);
+        createFourthTourType(local);
     }
     @Transactional
     public void secondRestaurant(Vendor vendor) {
@@ -687,7 +689,7 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     @Transactional
-    public void createSecondAttraction(List<Attraction> currentList, Vendor vendor1) {
+    public List<Attraction> createSecondAttraction(List<Attraction> currentList, Vendor vendor1, String date) {
         Attraction attraction = new Attraction();
         attraction.setName("Universal Studios Singapore");
         attraction.setDescription("Universal Studios Singapore is a theme park located within the Resorts World Sentosa " +
@@ -725,25 +727,25 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
         TicketPerDay t1 = new TicketPerDay();
-        t1.setTicket_date(LocalDate.parse("2023-10-27"));
+        t1.setTicket_date(LocalDate.parse(date));
         t1.setTicket_count(5);
         t1.setTicket_type(TicketEnum.ADULT);
         t1 = ticketPerDayRepository.save(t1);
 
         TicketPerDay t2 = new TicketPerDay();
-        t2.setTicket_date(LocalDate.parse("2023-10-27"));
+        t2.setTicket_date(LocalDate.parse(date));
         t2.setTicket_count(5);
         t2.setTicket_type(TicketEnum.CHILD);
         t2 = ticketPerDayRepository.save(t2);
 
         TicketPerDay t3 = new TicketPerDay();
-        t3.setTicket_date(LocalDate.parse("2023-10-27"));
+        t3.setTicket_date(LocalDate.parse(date));
         t3.setTicket_count(5);
         t3.setTicket_type(TicketEnum.ADULT);
         t3 = ticketPerDayRepository.save(t3);
 
         TicketPerDay t4 = new TicketPerDay();
-        t4.setTicket_date(LocalDate.parse("2023-10-27"));
+        t4.setTicket_date(LocalDate.parse(date));
         t4.setTicket_count(5);
         t4.setTicket_type(TicketEnum.CHILD);
         t4 = ticketPerDayRepository.save(t4);
@@ -761,8 +763,240 @@ public class InitDataConfig implements CommandLineRunner {
         currentList.add(attraction); // add on to the previous list
         vendor1.setAttraction_list(currentList);
         vendorRepository.save(vendor1);
+        return currentList;
     }
 
+
+    @Transactional
+    public List<Attraction> createThirdAttraction(List<Attraction> currentList, Vendor vendor1, String date) {
+        Attraction attraction = new Attraction();
+        attraction.setName("Gardens By the Bay");
+        attraction.setDescription("The Gardens by the Bay is a nature park spanning 101 hectares in the Central Region of Singapore, " +
+                "adjacent to the Marina Reservoir. The park consists of three waterfront gardens: Bay South Garden, Bay East Garden and Bay " +
+                "Central Garden.");
+        attraction.setAddress("18 Marina Gardens Dr, Singapore 018953");
+        attraction.setOpening_hours("11am - 2am");
+        attraction.setAge_group("Suitable for all ages");
+        attraction.setContact_num("8474334");
+        attraction.setIs_published(true);
+        attraction.setSuggested_duration(6);
+        attraction.setAvg_rating_tier(0.0);
+        attraction.setAttraction_category(AttractionCategoryEnum.NATURE);
+        attraction.setGeneric_location(GenericLocationEnum.MARINA_BAY);
+        attraction.setAttraction_image_list(new ArrayList<>());
+        attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/static/attraction/gardensbb1.jpeg");
+
+        Price childPrice = new Price();
+        childPrice.setLocal_amount(new BigDecimal(20));
+        childPrice.setTourist_amount(new BigDecimal(30));
+        childPrice.setTicket_type(TicketEnum.CHILD);
+
+        Price adultPrice = new Price();
+        adultPrice.setLocal_amount(new BigDecimal(30));
+        adultPrice.setTourist_amount(new BigDecimal(40));
+        adultPrice.setTicket_type(TicketEnum.ADULT);
+
+        List<Price> priceList = new ArrayList<>();
+        priceList.add(childPrice);
+        priceList.add(adultPrice);
+        PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
+
+        attraction.setPrice_list(priceList);
+        attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
+
+        TicketPerDay t1 = new TicketPerDay();
+        t1.setTicket_date(LocalDate.parse(date));
+        t1.setTicket_count(5);
+        t1.setTicket_type(TicketEnum.ADULT);
+        t1 = ticketPerDayRepository.save(t1);
+
+        TicketPerDay t2 = new TicketPerDay();
+        t2.setTicket_date(LocalDate.parse(date));
+        t2.setTicket_count(5);
+        t2.setTicket_type(TicketEnum.CHILD);
+        t2 = ticketPerDayRepository.save(t2);
+
+        TicketPerDay t3 = new TicketPerDay();
+        t3.setTicket_date(LocalDate.parse(date));
+        t3.setTicket_count(5);
+        t3.setTicket_type(TicketEnum.ADULT);
+        t3 = ticketPerDayRepository.save(t3);
+
+        TicketPerDay t4 = new TicketPerDay();
+        t4.setTicket_date(LocalDate.parse(date));
+        t4.setTicket_count(5);
+        t4.setTicket_type(TicketEnum.CHILD);
+        t4 = ticketPerDayRepository.save(t4);
+
+        attraction.setTicket_per_day_list(new ArrayList<>());
+        attraction.getTicket_per_day_list().add(t1);
+        attraction.getTicket_per_day_list().add(t2);
+        attraction.getTicket_per_day_list().add(t3);
+        attraction.getTicket_per_day_list().add(t4);
+
+        attraction.setListing_type(ListingTypeEnum.ATTRACTION);
+
+        attractionRepository.save(attraction);
+//        Vendor vendor = vendorRepository.findById(1L).get();
+        currentList.add(attraction); // add on to the previous list
+        vendor1.setAttraction_list(currentList);
+        vendorRepository.save(vendor1);
+        return currentList;
+    }
+
+    @Transactional
+    public List<Attraction> createFourthAttraction(List<Attraction> currentList, Vendor vendor1, String date) {
+        Attraction attraction = new Attraction();
+        attraction.setName("Singapore Flyer");
+        attraction.setDescription("The Singapore Flyer is an observation wheel at the Downtown Core district of Singapore. " +
+                "Officially opened on 15 April 2008, it has 28 air-conditioned capsules, each able to accommodate 28 passengers, " +
+                "and incorporates a three-story terminal building.");
+        attraction.setAddress("30 Raffles Ave., Singapore 039803");
+        attraction.setOpening_hours("10am - 10pm");
+        attraction.setAge_group("Suitable for all ages above 7");
+        attraction.setContact_num("86748377");
+        attraction.setIs_published(true);
+        attraction.setSuggested_duration(2);
+        attraction.setAvg_rating_tier(0.0);
+        attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
+        attraction.setGeneric_location(GenericLocationEnum.RAFFLES_PLACE);
+        attraction.setAttraction_image_list(new ArrayList<>());
+        attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/static/attraction/singapore_flyer1.jpeg");
+        attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/static/attraction/singapore_flyer2.jpeg");
+
+        Price childPrice = new Price();
+        childPrice.setLocal_amount(new BigDecimal(25));
+        childPrice.setTourist_amount(new BigDecimal(35));
+        childPrice.setTicket_type(TicketEnum.CHILD);
+
+        Price adultPrice = new Price();
+        adultPrice.setLocal_amount(new BigDecimal(45));
+        adultPrice.setTourist_amount(new BigDecimal(55));
+        adultPrice.setTicket_type(TicketEnum.ADULT);
+
+        List<Price> priceList = new ArrayList<>();
+        priceList.add(childPrice);
+        priceList.add(adultPrice);
+        PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
+
+        attraction.setPrice_list(priceList);
+        attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
+
+        TicketPerDay t1 = new TicketPerDay();
+        t1.setTicket_date(LocalDate.parse(date));
+        t1.setTicket_count(5);
+        t1.setTicket_type(TicketEnum.ADULT);
+        t1 = ticketPerDayRepository.save(t1);
+
+        TicketPerDay t2 = new TicketPerDay();
+        t2.setTicket_date(LocalDate.parse(date));
+        t2.setTicket_count(5);
+        t2.setTicket_type(TicketEnum.CHILD);
+        t2 = ticketPerDayRepository.save(t2);
+
+        TicketPerDay t3 = new TicketPerDay();
+        t3.setTicket_date(LocalDate.parse(date));
+        t3.setTicket_count(5);
+        t3.setTicket_type(TicketEnum.ADULT);
+        t3 = ticketPerDayRepository.save(t3);
+
+        TicketPerDay t4 = new TicketPerDay();
+        t4.setTicket_date(LocalDate.parse(date));
+        t4.setTicket_count(5);
+        t4.setTicket_type(TicketEnum.CHILD);
+        t4 = ticketPerDayRepository.save(t4);
+
+        attraction.setTicket_per_day_list(new ArrayList<>());
+        attraction.getTicket_per_day_list().add(t1);
+        attraction.getTicket_per_day_list().add(t2);
+        attraction.getTicket_per_day_list().add(t3);
+        attraction.getTicket_per_day_list().add(t4);
+
+        attraction.setListing_type(ListingTypeEnum.ATTRACTION);
+
+        attractionRepository.save(attraction);
+//        Vendor vendor = vendorRepository.findById(1L).get();
+        currentList.add(attraction); // add on to the previous list
+        vendor1.setAttraction_list(currentList);
+        vendorRepository.save(vendor1);
+        return currentList;
+    }
+
+    @Transactional
+    public List<Attraction> createFifthAttraction(List<Attraction> currentList, Vendor vendor1, String date) {
+        Attraction attraction = new Attraction();
+        attraction.setName("National Gallery Singapore");
+        attraction.setDescription("The National Gallery Singapore, often known exonymously as the National Gallery, " +
+                "is a public institution and national museum dedicated to art and culture located in the Civic District of Singapore.");
+        attraction.setAddress("Singapore 178957");
+        attraction.setOpening_hours("10am - 7pm");
+        attraction.setAge_group("Suitable for all ages above 7");
+        attraction.setContact_num("89999999");
+        attraction.setIs_published(true);
+        attraction.setSuggested_duration(5);
+        attraction.setAvg_rating_tier(0.0);
+        attraction.setAttraction_category(AttractionCategoryEnum.CULTURAL);
+        attraction.setGeneric_location(GenericLocationEnum.RAFFLES_PLACE);
+        attraction.setAttraction_image_list(new ArrayList<>());
+        attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/static/attraction/singapore_gallery1.jpeg");
+
+        Price childPrice = new Price();
+        childPrice.setLocal_amount(new BigDecimal(10));
+        childPrice.setTourist_amount(new BigDecimal(20));
+        childPrice.setTicket_type(TicketEnum.CHILD);
+
+        Price adultPrice = new Price();
+        adultPrice.setLocal_amount(new BigDecimal(30));
+        adultPrice.setTourist_amount(new BigDecimal(40));
+        adultPrice.setTicket_type(TicketEnum.ADULT);
+
+        List<Price> priceList = new ArrayList<>();
+        priceList.add(childPrice);
+        priceList.add(adultPrice);
+        PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
+
+        attraction.setPrice_list(priceList);
+        attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
+
+        TicketPerDay t1 = new TicketPerDay();
+        t1.setTicket_date(LocalDate.parse(date));
+        t1.setTicket_count(5);
+        t1.setTicket_type(TicketEnum.ADULT);
+        t1 = ticketPerDayRepository.save(t1);
+
+        TicketPerDay t2 = new TicketPerDay();
+        t2.setTicket_date(LocalDate.parse(date));
+        t2.setTicket_count(5);
+        t2.setTicket_type(TicketEnum.CHILD);
+        t2 = ticketPerDayRepository.save(t2);
+
+        TicketPerDay t3 = new TicketPerDay();
+        t3.setTicket_date(LocalDate.parse(date));
+        t3.setTicket_count(5);
+        t3.setTicket_type(TicketEnum.ADULT);
+        t3 = ticketPerDayRepository.save(t3);
+
+        TicketPerDay t4 = new TicketPerDay();
+        t4.setTicket_date(LocalDate.parse(date));
+        t4.setTicket_count(5);
+        t4.setTicket_type(TicketEnum.CHILD);
+        t4 = ticketPerDayRepository.save(t4);
+
+        attraction.setTicket_per_day_list(new ArrayList<>());
+        attraction.getTicket_per_day_list().add(t1);
+        attraction.getTicket_per_day_list().add(t2);
+        attraction.getTicket_per_day_list().add(t3);
+        attraction.getTicket_per_day_list().add(t4);
+
+        attraction.setListing_type(ListingTypeEnum.ATTRACTION);
+
+        attractionRepository.save(attraction);
+//        Vendor vendor = vendorRepository.findById(1L).get();
+        currentList.add(attraction); // add on to the previous list
+        vendor1.setAttraction_list(currentList);
+        vendorRepository.save(vendor1);
+        return currentList;
+    }
 
     @Transactional
     public void createSecondTourType(Local local) {
@@ -815,6 +1049,111 @@ public class InitDataConfig implements CommandLineRunner {
         }
         tourTypeRepository.save(secondTourType);
     }
+
+    @Transactional
+    public void createThirdTourType(Local local) {
+        TourType secondTourType = new TourType();
+        secondTourType.setName("Gardens By the Bay Exploration Tour");
+        List<String> secondImageList = new ArrayList<>();
+        secondImageList.add("http://tt02.s3-ap-southeast-1.amazonaws.com/static/attraction/gardensbb1.jpeg");
+        secondTourType.setTour_image_list(secondImageList);
+        secondTourType.setDescription("Join me on the exploration tour to discover the best spots at Gardens By the Bay");
+        secondTourType.setPrice(new BigDecimal(20));
+        secondTourType.setRecommended_pax(12);
+        secondTourType.setEstimated_duration(2);
+        secondTourType.setSpecial_note("Bring water along! It can get very hot");
+        secondTourType.setIs_published(true);
+        secondTourType.setTour_list(new ArrayList<>());
+        secondTourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        secondTourType = tourTypeRepository.save(secondTourType);
+
+        local.getTour_type_list().add(secondTourType);
+        localRepository.save(local);
+
+        Attraction secondAttraction = attractionRepository.findById(3L).get();
+        List<TourType> secondTourTypes = new ArrayList<>();
+        secondTourTypes.add(secondTourType);
+        secondAttraction.setTour_type_list(secondTourTypes);
+        attractionRepository.save(secondAttraction);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = LocalDate.of(2023, 11, 20);
+        while (!currentDate.isAfter(endDate)) {
+            Tour tour1 = new Tour();
+            Tour tour2 = new Tour();
+            tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour1.setStart_time(currentDate.atTime(10, 0));
+            tour1.setEnd_time(currentDate.atTime(12, 0));
+            tour1.setRemaining_slot(10);
+
+            tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour2.setStart_time(currentDate.atTime(13, 0));
+            tour2.setEnd_time(currentDate.atTime(15, 0));
+            tour2.setRemaining_slot(10);
+
+            tour1 = tourRepository.save(tour1);
+            tour2 = tourRepository.save(tour2);
+
+            secondTourType.getTour_list().add(tour1);
+            secondTourType.getTour_list().add(tour2);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        tourTypeRepository.save(secondTourType);
+    }
+
+    @Transactional
+    public void createFourthTourType(Local local) {
+        TourType secondTourType = new TourType();
+        secondTourType.setName("Singapore Museum Deep Dive");
+        List<String> secondImageList = new ArrayList<>();
+        secondImageList.add("http://tt02.s3-ap-southeast-1.amazonaws.com/static/attraction/singapore_gallery1.jpeg");
+        secondTourType.setTour_image_list(secondImageList);
+        secondTourType.setDescription("Discover the best of Museum with me in just an hour! ps: I have a phd in Singapore History");
+        secondTourType.setPrice(new BigDecimal(25));
+        secondTourType.setRecommended_pax(10);
+        secondTourType.setEstimated_duration(1);
+        secondTourType.setSpecial_note("Wear comfortable shoes!");
+        secondTourType.setIs_published(true);
+        secondTourType.setTour_list(new ArrayList<>());
+        secondTourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        secondTourType = tourTypeRepository.save(secondTourType);
+
+        local.getTour_type_list().add(secondTourType);
+        localRepository.save(local);
+
+        Attraction secondAttraction = attractionRepository.findById(5L).get();
+        List<TourType> secondTourTypes = new ArrayList<>();
+        secondTourTypes.add(secondTourType);
+        secondAttraction.setTour_type_list(secondTourTypes);
+        attractionRepository.save(secondAttraction);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = LocalDate.of(2023, 11, 20);
+        while (!currentDate.isAfter(endDate)) {
+            Tour tour1 = new Tour();
+            Tour tour2 = new Tour();
+            tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour1.setStart_time(currentDate.atTime(10, 0));
+            tour1.setEnd_time(currentDate.atTime(12, 0));
+            tour1.setRemaining_slot(10);
+
+            tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour2.setStart_time(currentDate.atTime(13, 0));
+            tour2.setEnd_time(currentDate.atTime(15, 0));
+            tour2.setRemaining_slot(10);
+
+            tour1 = tourRepository.save(tour1);
+            tour2 = tourRepository.save(tour2);
+
+            secondTourType.getTour_list().add(tour1);
+            secondTourType.getTour_list().add(tour2);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        tourTypeRepository.save(secondTourType);
+    }
+
 
     @Transactional
     Vendor setUpVendor1(Vendor vendor1) {
@@ -1432,26 +1771,28 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setPrice_list(priceList);
         attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
+        String date = "2023-10-30";
+
         TicketPerDay t1 = new TicketPerDay();
-        t1.setTicket_date(LocalDate.parse("2023-10-27"));
+        t1.setTicket_date(LocalDate.parse(date));
         t1.setTicket_count(5);
         t1.setTicket_type(TicketEnum.ADULT);
         t1 = ticketPerDayRepository.save(t1);
 
         TicketPerDay t2 = new TicketPerDay();
-        t2.setTicket_date(LocalDate.parse("2023-10-27"));
+        t2.setTicket_date(LocalDate.parse(date));
         t2.setTicket_count(5);
         t2.setTicket_type(TicketEnum.CHILD);
         t2 = ticketPerDayRepository.save(t2);
 
         TicketPerDay t3 = new TicketPerDay();
-        t3.setTicket_date(LocalDate.parse("2023-10-27"));
+        t3.setTicket_date(LocalDate.parse(date));
         t3.setTicket_count(5);
         t3.setTicket_type(TicketEnum.ADULT);
         t3 = ticketPerDayRepository.save(t3);
 
         TicketPerDay t4 = new TicketPerDay();
-        t4.setTicket_date(LocalDate.parse("2023-10-27"));
+        t4.setTicket_date(LocalDate.parse(date));
         t4.setTicket_count(5);
         t4.setTicket_type(TicketEnum.CHILD);
         t4 = ticketPerDayRepository.save(t4);
@@ -1472,7 +1813,9 @@ public class InitDataConfig implements CommandLineRunner {
 
         vendor1.setAttraction_list(currentList);
         vendorRepository.save(vendor1);
-
-        createSecondAttraction(currentList, vendor1);
+        currentList = createSecondAttraction(currentList, vendor1, date);
+        currentList = createThirdAttraction(currentList, vendor1, date);
+        currentList = createFourthAttraction(currentList, vendor1, date);
+        currentList = createFifthAttraction(currentList, vendor1, date);
     }
 }
