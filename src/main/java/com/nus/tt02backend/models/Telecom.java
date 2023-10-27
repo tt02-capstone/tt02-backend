@@ -4,6 +4,7 @@ import com.nus.tt02backend.models.enums.GBLimitEnum;
 import com.nus.tt02backend.models.enums.NumberOfValidDaysEnum;
 import com.nus.tt02backend.models.enums.PriceTierEnum;
 import com.nus.tt02backend.models.enums.TelecomTypeEnum;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Telecom {
 
     @Id

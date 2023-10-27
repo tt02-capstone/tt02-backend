@@ -1,6 +1,7 @@
 package com.nus.tt02backend.models;
 
 import com.nus.tt02backend.models.enums.ListingTypeEnum;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Accommodation {
 
     @Id

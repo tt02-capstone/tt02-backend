@@ -50,9 +50,25 @@ public class ItineraryService {
         if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
             Tourist tourist = (Tourist) user;
             itineraryToReturn = tourist.getItinerary();
+
+            for (DIYEvent d : itineraryToReturn.getDiy_event_list()) {
+                if (d.getBooking() != null) {
+                    d.getBooking().setPayment(null);
+                    d.getBooking().setTourist_user(null);
+                    d.getBooking().setLocal_user(null);
+                }
+            }
         } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
             Local local = (Local) user;
             itineraryToReturn = local.getItinerary();
+
+            for (DIYEvent d : itineraryToReturn.getDiy_event_list()) {
+                if (d.getBooking() != null) {
+                    d.getBooking().setPayment(null);
+                    d.getBooking().setTourist_user(null);
+                    d.getBooking().setLocal_user(null);
+                }
+            }
         }
         return itineraryToReturn;
     }
