@@ -49,6 +49,6 @@ public class DIYEvent {
     @ManyToOne(fetch = FetchType.LAZY)
     private Restaurant restaurant;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Booking booking;
 }

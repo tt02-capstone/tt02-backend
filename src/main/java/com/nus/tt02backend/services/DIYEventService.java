@@ -117,6 +117,7 @@ public class DIYEventService {
         }
         Itinerary itinerary = itineraryOptional.get();
 
+        Boolean hasBooking = false;
         if (!type.equalsIgnoreCase("none") && !typeId.equals(0L)) {
             if (type.equalsIgnoreCase("attraction")) {
                 Optional<Attraction> attractionOptional = attractionRepository.findById(typeId);
@@ -153,6 +154,7 @@ public class DIYEventService {
                 }
 
                 diyEventToCreate.setBooking(bookingOptional.get());
+                hasBooking = true;
             } else {
                 throw new BadRequestException("Invalid type!");
             }
@@ -161,6 +163,26 @@ public class DIYEventService {
         DIYEvent diyEvent = diyEventRepository.save(diyEventToCreate);
         itinerary.getDiy_event_list().add(diyEvent);
         itineraryRepository.save(itinerary);
+
+        if (hasBooking) {
+            if (diyEvent.getBooking().getLocal_user() != null) {
+                Local local = diyEvent.getBooking().getLocal_user();
+                local.setPost_list(null);
+                local.setComment_list(null);
+                local.setCart_list(null);
+                local.setBooking_list(null);
+                local.setTour_type_list(null);
+                local.setSupport_ticket_list(null);
+            } else if (diyEvent.getBooking().getTourist_user() != null) {
+                Tourist tourist = diyEvent.getBooking().getTourist_user();
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                tourist.setCart_list(null);
+                tourist.setBooking_list(null);
+                tourist.setTour_type_list(null);
+                tourist.setSupport_ticket_list(null);
+            }
+        }
 
         return diyEvent;
     }

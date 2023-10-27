@@ -395,10 +395,10 @@ public class SupportTicketService {
                     }
                 }
             }
+
             if (s.getBooking() != null) {
-//                s.getBooking().setPayment(null);
                 s.getBooking().setLocal_user(null);
-//                s.getBooking().setTourist_user(null);
+                s.getBooking().setTourist_user(null);
                 s.getBooking().setPayment(null);
             }
         }

@@ -115,7 +115,7 @@ public class InitDataConfig implements CommandLineRunner {
 
         if (touristRepository.count() == 0) {
             Tourist tourist = new Tourist();
-            tourist.setEmail("darrylgoh51@gmail.com");
+            tourist.setEmail("tourist@gmail.com");
             tourist.setName("Rowoon");
             tourist.setPassword(passwordEncoder.encode("password1!"));
             tourist.setUser_type(UserTypeEnum.TOURIST);
@@ -129,7 +129,7 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setBadge_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
-            customer_parameters.put("email", "darrylgoh51@gmail.com");
+            customer_parameters.put("email", "tourist@gmail.com");
             customer_parameters.put("name", "Rowoon");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             tourist.setStripe_account_id(stripe_account_id);
@@ -146,7 +146,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             PaymentMethod paymentMethod = PaymentMethod.create(params);
 
-            paymentService.addPaymentMethod("TOURIST", "darrylgoh51@gmail.com", paymentMethod.getId());
+            paymentService.addPaymentMethod("TOURIST", "tourist@gmail.com", paymentMethod.getId());
         }
 
         Vendor vendor1 = new Vendor();
@@ -993,7 +993,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendor.setService_description("We are Mangrove Singapore. A global hotel service provider!");
 
         Map<String, Object> customer_parameters = new HashMap<>();
-        customer_parameters.put("email", "darrylgoh52@gmail.com");
+        customer_parameters.put("email", "accommodation@gmail.com");
         customer_parameters.put("name", "Mangrove Singapore");
         String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
         vendor.setStripe_account_id(stripe_account_id);
@@ -1001,7 +1001,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendor = vendorRepository.save(vendor);
 
         VendorStaff vendorStaff = new VendorStaff();
-        vendorStaff.setEmail("darrylgoh52@gmail.com");
+        vendorStaff.setEmail("accommodation@gmail.com");
         vendorStaff.setEmail_verified(true);
         vendorStaff.setName("Angelene Chan");
         vendorStaff.setPassword(passwordEncoder.encode("password1!"));
