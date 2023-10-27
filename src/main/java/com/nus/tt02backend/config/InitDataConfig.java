@@ -88,7 +88,7 @@ public class InitDataConfig implements CommandLineRunner {
             local.setCountry_code("+65");
             local.setEmail_verified(true);
             local.setMobile_num("98989898");
-            local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/local.png");
             local.setTour_type_list(new ArrayList<>());
             local.setBadge_list(new ArrayList<>());
 
@@ -125,7 +125,7 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setCountry_code("+82");
             tourist.setEmail_verified(true);
             tourist.setMobile_num("01037596775");
-            tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/tourist.png.jpg");
             tourist.setBadge_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
@@ -1045,7 +1045,7 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaff.setIs_blocked(false);
         vendorStaff.setPosition("Manager");
         vendorStaff.setIs_master_account(true);
-        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/restaurant.png");
         vendorStaff.setVendor(vendor);
         vendorStaff.setBadge_list(new ArrayList<>());
         vendorStaffRepository.save(vendorStaff);
