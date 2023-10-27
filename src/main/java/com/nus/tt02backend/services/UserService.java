@@ -53,6 +53,7 @@ public class UserService {
                 tourist.setComment_list(null);
                 tourist.setCart_list(null);
                 tourist.setSupport_ticket_list(null);
+                tourist.setItinerary(null);
 
 //                List<SupportTicket> supportTicketList = tourist.getSupport_ticket_list();
 //                for (SupportTicket s : supportTicketList) {
@@ -83,6 +84,7 @@ public class UserService {
                 local.setComment_list(null);
                 local.setCart_list(null);
                 local.setSupport_ticket_list(null);
+                local.setItinerary(null);
 
 //                List<SupportTicket> supportTicketList = local.getSupport_ticket_list();
 //                for (SupportTicket s : supportTicketList) {
@@ -175,6 +177,7 @@ public class UserService {
                 local.setTelecom_list(null);
                 local.setDeals_list(null);
                 local.setSupport_ticket_list(null);
+                local.setItinerary(null);
 
                 return local;
             }

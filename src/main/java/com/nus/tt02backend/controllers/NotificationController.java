@@ -4,6 +4,7 @@ import com.nus.tt02backend.dto.NotificationRequest;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Deal;
+import com.nus.tt02backend.models.Notification;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.services.DealService;
 import com.nus.tt02backend.services.NotificationService;
@@ -23,8 +24,19 @@ public class NotificationController {
     @Autowired
     NotificationService notificationService;
 
-    @PostMapping("/sendNotification")
-    public void sendNotification(@RequestBody NotificationRequest notificationRequest) {
-        notificationService.sendManualNotification(notificationRequest);
+    @PostMapping("/sendNotification/{userId}")
+    public void sendNotification(@RequestBody NotificationRequest notificationRequest, @PathVariable Long userId) throws NotFoundException, BadRequestException {
+        notificationService.sendManualNotification(notificationRequest, userId);
+    }
+
+    @GetMapping("/getUserNotification/{userId}")
+    public ResponseEntity<List<Notification>> getUserNotification(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        List<Notification> list = notificationService.getUserNotification(userId);
+        return ResponseEntity.ok(list);
+    }
+
+    @PutMapping("/updateNotification/{notificationId}")
+    public void updateNotification(@PathVariable Long notificationId) throws NotFoundException {
+        notificationService.updateNotification(notificationId);
     }
 }
