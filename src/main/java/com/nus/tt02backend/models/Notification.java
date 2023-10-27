@@ -29,7 +29,7 @@ public class Notification {
     private String body;
 
     @Column(nullable = false)
-    private Boolean isRead;
+    private Boolean is_read;
 
     @Column(nullable = false)
     private LocalDateTime created_datetime;

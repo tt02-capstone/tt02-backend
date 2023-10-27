@@ -5,6 +5,7 @@ import com.nus.tt02backend.models.enums.GenericLocationEnum;
 import com.nus.tt02backend.models.enums.ListingTypeEnum;
 import com.nus.tt02backend.models.enums.PriceTierEnum;
 import com.nus.tt02backend.models.enums.RestaurantEnum;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Restaurant {
 
     @Id

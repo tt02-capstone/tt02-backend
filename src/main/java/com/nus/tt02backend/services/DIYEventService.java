@@ -93,7 +93,12 @@ public class DIYEventService {
         LocalDate actualDay = itinerary.getStart_date().toLocalDate().plusDays(dayNumber - 1);
 
         for (DIYEvent diyEvent : allDiyEvents) {
-            if (diyEvent.getStart_datetime().toLocalDate().equals(actualDay)) {
+            LocalDate eventStartDate = diyEvent.getStart_datetime().toLocalDate();
+            LocalDate eventEndDate = diyEvent.getEnd_datetime().toLocalDate();
+
+            // Check if the event falls within the range of the actual day
+            if ((eventStartDate.isEqual(actualDay) || eventStartDate.isBefore(actualDay)) &&
+                    (eventEndDate.isEqual(actualDay) || eventEndDate.isAfter(actualDay))) {
                 diyEventsToReturn.add(diyEvent);
             }
 
