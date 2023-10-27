@@ -56,9 +56,12 @@ public class CartService {
     RoomRepository roomRepository;
     @Autowired
     TourRepository tourRepository;
-
     @Autowired
     TourTypeRepository tourTypeRepository;
+    @Autowired
+    DIYEventService diyEventService;
+    @Autowired
+    ItineraryService itineraryService;
 
     public Long addCartItems(String user_type, String tourist_email, String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
@@ -913,15 +916,18 @@ public class CartService {
     }
 
     private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id)
-            throws StripeException, NotFoundException {
+            throws StripeException, NotFoundException, BadRequestException {
 
         List<BookingItem> bookingItems = createBookingItems(bookingToCheckout);
         Booking newBooking = createBooking(user, bookingToCheckout, bookingItems);
         Payment newPayment = createPayment(newBooking, totalAmountPayable, payment_method_id);
         newBooking.setPayment(newPayment);
         newPayment.setBooking(newBooking);
-        bookingRepository.save(newBooking);
+        Booking savedBooking = bookingRepository.save(newBooking);
         paymentRepository.save(newPayment);
+
+        // create a diy booking event
+        this.createBookingDIYEvent((User) user, savedBooking);
 
         return newBooking;
     }
@@ -944,7 +950,7 @@ public class CartService {
         return bookingItems;
     }
 
-    private <T> Booking createBooking(T user, CartBooking bookingToCheckout, List<BookingItem> bookingItems) {
+    private <T> Booking createBooking(T user, CartBooking bookingToCheckout, List<BookingItem> bookingItems) throws BadRequestException {
         Booking newBooking = new Booking();
 
         // Populate booking fields that are common for both Local and Tourist
@@ -985,7 +991,6 @@ public class CartService {
 
         // Save the new booking
         bookingRepository.save(newBooking);
-
         return newBooking;
     }
 
@@ -1123,5 +1128,29 @@ public class CartService {
 
         // Assuming touristRepository is accessible here
         touristRepository.save(currentTourist);
+    }
+
+    // create a new itinerary event for the booking
+    private void createBookingDIYEvent(User user, Booking booking) throws BadRequestException {
+        Itinerary itinerary = itineraryService.getItineraryByUser(((User) user).getUser_id());
+        if (itinerary != null && withinItineraryDates(itinerary, booking)) {
+            Long itineraryId = itinerary.getItinerary_id();
+            DIYEvent diyEvent = new DIYEvent();
+            diyEvent.setName(booking.getActivity_name());
+            diyEvent.setStart_datetime(booking.getStart_datetime());
+            diyEvent.setEnd_datetime(booking.getEnd_datetime());
+            diyEvent.setLocation("");
+            diyEvent.setRemarks("");
+            diyEventService.createDiyEvent(itineraryId, booking.getBooking_id(), "booking", diyEvent);
+        }
+    }
+
+    public boolean withinItineraryDates(Itinerary itinerary, Booking booking) {
+        if (booking.getTelecom() != null || booking.getRoom() != null) {
+            return booking.getStart_datetime().isAfter(itinerary.getStart_date()) && booking.getStart_datetime().isBefore(itinerary.getEnd_date());
+        } else { // attraction
+            return booking.getStart_datetime().isAfter(itinerary.getStart_date()) && booking.getStart_datetime().isBefore(itinerary.getEnd_date()) &&
+                   booking.getEnd_datetime().isAfter(itinerary.getStart_date()) && booking.getEnd_datetime().isBefore(itinerary.getEnd_date());
+        }
     }
 }

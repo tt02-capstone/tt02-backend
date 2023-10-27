@@ -196,6 +196,7 @@ public class BookingService {
                 local.setBooking_list(null);
                 local.setTour_type_list(null);
                 local.setSupport_ticket_list(null);
+                local.setItinerary(null);
 
             } else if (b.getTourist_user() != null) {
                 Tourist tourist = b.getTourist_user();
@@ -205,6 +206,7 @@ public class BookingService {
                 tourist.setBooking_list(null);
                 tourist.setTour_type_list(null);
                 tourist.setSupport_ticket_list(null);
+                tourist.setItinerary(null);
             }
 
             listToReturn.add(b);
@@ -258,6 +260,7 @@ public class BookingService {
                     local.setBooking_list(null);
                     local.setTour_type_list(null);
                     local.setSupport_ticket_list(null);
+                    local.setItinerary(null);
 
                 } else if (booking.getTourist_user() != null) {
                     Tourist tourist = booking.getTourist_user();
@@ -267,6 +270,7 @@ public class BookingService {
                     tourist.setBooking_list(null);
                     tourist.setTour_type_list(null);
                     tourist.setSupport_ticket_list(null);
+                    tourist.setItinerary(null);
                 }
 
                 return booking;
@@ -457,6 +461,8 @@ public class BookingService {
                 local.setComment_list(null);
                 local.setCart_list(null);
                 local.setTour_type_list(null);
+                local.setItinerary(null);
+
             } else if (b.getTourist_user() != null) {
                 Tourist tourist = b.getTourist_user();
                 tourist.setSupport_ticket_list(null);
@@ -465,6 +471,7 @@ public class BookingService {
                 tourist.setComment_list(null);
                 tourist.setCart_list(null);
                 tourist.setTour_type_list(null);
+                tourist.setItinerary(null);
             }
             b.getPayment().setBooking(null);
         }
