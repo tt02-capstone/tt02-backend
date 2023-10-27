@@ -2,10 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.models.Accommodation;
-import com.nus.tt02backend.models.Attraction;
-import com.nus.tt02backend.models.Itinerary;
-import com.nus.tt02backend.models.Telecom;
+import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.services.DIYEventService;
 import com.nus.tt02backend.services.ItineraryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,5 +71,14 @@ public class ItineraryController {
     public ResponseEntity<List<Accommodation>> getAccommodationRecommendationsForItinerary(@PathVariable Long itineraryId) throws BadRequestException {
         List<Accommodation> accommodationRecommendations = itineraryService.getAccommodationRecommendationsForItinerary(itineraryId);
         return ResponseEntity.ok(accommodationRecommendations);
+    }
+
+    // Recommendations for Restaurants (based on a specific date)
+    // Sample GET request for Postman: http://localhost:8080/itinerary/getRestaurantRecommendationsForItinerary/1/2023-10-25
+    @GetMapping("/getRestaurantRecommendationsForItinerary/{itineraryId}/{dateTime}")
+    public ResponseEntity<List<Restaurant>> getRestaurantRecommendationsForItinerary(@PathVariable Long itineraryId,
+                                                                                     @PathVariable LocalDate dateTime) throws BadRequestException {
+        List<Restaurant> restaurantRecommendations = itineraryService.getRestaurantRecommendationsForItinerary(itineraryId, dateTime);
+        return ResponseEntity.ok(restaurantRecommendations);
     }
 }

@@ -35,6 +35,8 @@ public class ItineraryService {
     AccommodationRepository accommodationRepository;
     @Autowired
     AccommodationService accommodationService;
+    @Autowired
+    RestaurantRepository restaurantRepository;
 
     public Itinerary getItineraryByUser(Long userId) throws BadRequestException {
         Optional<User> userOptional = userRepository.findById(userId);
@@ -193,7 +195,8 @@ public class ItineraryService {
 
             // Return any 3 telecom
             if (!telecomRecommendations.isEmpty()) {
-                telecomRecommendations.addAll(telecomRepository.findAll().subList(0, Math.min(3, telecomRepository.findAll().size())));
+                List<Telecom> allTelecoms = telecomRepository.findAll();
+                telecomRecommendations.addAll(allTelecoms.subList(0, Math.min(3, allTelecoms.size())));
             }
         }
 
@@ -223,7 +226,8 @@ public class ItineraryService {
         }
 
         // Return any 3 attractions
-        attractionRecommendations.addAll(attractionRepository.findAll().subList(0, Math.min(3, attractionRepository.findAll().size())));
+        List<Attraction> allAttractions = attractionRepository.findAll();
+        attractionRecommendations.addAll(allAttractions.subList(0, Math.min(3, allAttractions.size())));
 
         return attractionRecommendations;
     }
@@ -383,5 +387,64 @@ public class ItineraryService {
 
                     filteredAccommodations.clear();
                 });
+    }
+
+    // Restaurant Recommendations
+    /*
+        - Logic
+        1) Recommend restaurants that are near/at the same location as DIYEvent
+        2) If no common location, return any 3 restaurant
+     */
+    public List<Restaurant> getRestaurantRecommendationsForItinerary(Long itineraryId, LocalDate dateTime) throws BadRequestException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new BadRequestException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<DIYEvent> events = itinerary.getDiy_event_list();
+        List<DIYEvent> eventsOnCurrentDate = getEventsOnDate(events, dateTime);
+        List<Restaurant> restaurantRecommendations = new ArrayList<>();
+        if (!events.isEmpty() && !eventsOnCurrentDate.isEmpty()) {
+            // Format the generic locations
+            Map<String, Integer> genericLocationsCount = new HashMap<>();
+            Map<String, GenericLocationEnum> originalGenericLocations = new HashMap<>();
+            for (GenericLocationEnum location : GenericLocationEnum.values()) {
+                String formattedLocation = location.toString().toLowerCase().replace("_", " ");
+                genericLocationsCount.put(formattedLocation, 0);
+
+                originalGenericLocations.put(formattedLocation, location);
+            }
+
+            // Based on user's events list, find the locations that are most common (so can recommend restaurants near there)
+            for (String key : genericLocationsCount.keySet()) {
+                List<DIYEvent> filteredDiyEvents = events.stream()
+                        .filter(event -> event.getLocation().toLowerCase().contains(key))
+                        .toList();
+
+                genericLocationsCount.put(key, filteredDiyEvents.size());
+            }
+
+            Map<String, Integer> sortedGenericLocationsCount = genericLocationsCount.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+            sortedGenericLocationsCount.entrySet().stream()
+                    .filter(entry -> entry.getValue() > 0)
+                    .forEach(entry -> {
+                        GenericLocationEnum currentLocation = originalGenericLocations.get(entry.getKey());
+                        restaurantRecommendations.addAll(restaurantRepository.getRestaurantByGenericLocation(currentLocation));
+                    });
+
+            if (!restaurantRecommendations.isEmpty()) {
+                return removeDuplicates(restaurantRecommendations);
+            }
+        }
+
+        // Return any 3 restaurants
+        List<Restaurant> allRestaurants = restaurantRepository.findAll();
+        restaurantRecommendations.addAll(allRestaurants.subList(0, Math.min(3, allRestaurants.size())));
+
+        return restaurantRecommendations;
     }
 }
