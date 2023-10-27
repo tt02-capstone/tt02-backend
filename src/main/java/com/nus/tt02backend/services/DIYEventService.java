@@ -1,6 +1,7 @@
 package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BadgeTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
@@ -8,6 +9,7 @@ import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -36,6 +38,74 @@ public class DIYEventService {
     RestaurantRepository restaurantRepository;
     @Autowired
     BookingRepository bookingRepository;
+
+    public List<DIYEvent> getAllDiyEvents(Long itineraryId) throws NotFoundException, BadRequestException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new BadRequestException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<DIYEvent> diyEvents = itinerary.getDiy_event_list();
+
+        for (DIYEvent d : diyEvents) {
+            if (d.getBooking() != null) {
+                d.getBooking().setPayment(null);
+                d.getBooking().setLocal_user(null);
+                d.getBooking().setTourist_user(null);
+            }
+        }
+
+        return diyEvents;
+    }
+
+    public DIYEvent getDiyEvent(Long diyEventId) throws NotFoundException {
+        try {
+            Optional<DIYEvent> diyEventOptional = diyEventRepository.findById(diyEventId);
+            if (diyEventOptional.isPresent()) {
+                DIYEvent diyEvent = diyEventOptional.get();
+
+                if (diyEvent.getBooking() != null) {
+                    diyEvent.getBooking().getPayment().setBooking(null);
+                    diyEvent.getBooking().setTourist_user(null);
+                    diyEvent.getBooking().setLocal_user(null);
+                }
+
+                return diyEvent;
+            } else {
+                throw new NotFoundException("DIY Event not found!");
+            }
+        } catch (Exception ex) {
+            throw new NotFoundException((ex.getMessage()));
+        }
+    }
+
+    public List<DIYEvent> getAllDiyEventsByDay(Long itineraryId, Long dayNumber) throws NotFoundException, BadRequestException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new BadRequestException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<DIYEvent> allDiyEvents = itinerary.getDiy_event_list();
+        List<DIYEvent> diyEventsToReturn = new ArrayList<>();
+
+        LocalDate actualDay = itinerary.getStart_date().toLocalDate().plusDays(dayNumber - 1);
+
+        for (DIYEvent diyEvent : allDiyEvents) {
+            if (diyEvent.getStart_datetime().toLocalDate().equals(actualDay)) {
+                diyEventsToReturn.add(diyEvent);
+            }
+
+            if (diyEvent.getBooking() != null) {
+                diyEvent.getBooking().setPayment(null);
+                diyEvent.getBooking().setLocal_user(null);
+                diyEvent.getBooking().setTourist_user(null);
+            }
+        }
+
+        return diyEventsToReturn;
+    }
 
     // General method for create to make it recyclable
     // Type refers to accommodation, telecom etc., pass in "none" if it's not tied to anything

@@ -87,6 +87,13 @@ public class SecurityConfig {
               "/vendor/createVendor",
               "/vendorStaff/createVendorStaff",
               "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+              "/user/**").permitAll()
+        .requestMatchers(HttpMethod.GET,
+              "/vendorStaff/verifyEmail/**",
+              "/supportTicket/**", // to remove
+                "/booking/**", // to remove
+                "/itinerary/**", // to remove
               "/diyEvent/**", // to remove
               "/comment/**", // to remove
               "/post/**", // to remove
