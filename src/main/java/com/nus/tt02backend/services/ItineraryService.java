@@ -137,16 +137,50 @@ public class ItineraryService {
 
         List<Telecom> telecomRecommendations = new ArrayList<>();
         Integer numberOfDays = Math.round(Duration.between(itinerary.getStart_date(), itinerary.getEnd_date()).toDays());
+        List<Telecom> telecomListForOneDay = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.ONE_DAY));
+        List<Telecom> telecomListForThreeDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.THREE_DAY));
+        List<Telecom> telecomListForSevenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.SEVEN_DAY));
+        List<Telecom> telecomListForFourteenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.FOURTEEN_DAY));
+        List<Telecom> telecomListForOverFourteenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.MORE_THAN_FOURTEEN_DAYS));
+
         if (numberOfDays <= 1) {
-            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.ONE_DAY));
+            if (!telecomListForOneDay.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForOneDay);
+            } else if (!telecomListForThreeDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForThreeDays);
+            } else if (!telecomListForSevenDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForSevenDays);
+            } else if (!telecomListForFourteenDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForFourteenDays);
+            } else {
+                telecomRecommendations.addAll(telecomListForOverFourteenDays);
+            }
         } else if (numberOfDays <= 3) {
-            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.THREE_DAY));
+            if (!telecomListForThreeDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForThreeDays);
+            } else if (!telecomListForSevenDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForSevenDays);
+            } else if (!telecomListForFourteenDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForFourteenDays);
+            } else {
+                telecomRecommendations.addAll(telecomListForOverFourteenDays);
+            }
         } else if (numberOfDays <= 7) {
-            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.SEVEN_DAY));
+            if (!telecomListForSevenDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForSevenDays);
+            } else if (!telecomListForFourteenDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForFourteenDays);
+            } else {
+                telecomRecommendations.addAll(telecomListForOverFourteenDays);
+            }
         } else if (numberOfDays <= 14) {
-            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.FOURTEEN_DAY));
+            if (!telecomListForFourteenDays.isEmpty()) {
+                telecomRecommendations.addAll(telecomListForFourteenDays);
+            } else {
+                telecomRecommendations.addAll(telecomListForOverFourteenDays);
+            }
         } else {
-            telecomRecommendations.addAll(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.MORE_THAN_FOURTEEN_DAYS));
+            telecomRecommendations.addAll(telecomListForOverFourteenDays);
         }
 
         return telecomRecommendations;
