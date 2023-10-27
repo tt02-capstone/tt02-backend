@@ -59,6 +59,8 @@ public class CommentService {
         } else {
             commentToCreate.setParent_comment(null);
         }
+
+        commentToCreate.setIs_published(true);
         commentToCreate.setPost(post);
         commentToCreate.setPublish_time(LocalDateTime.now());
         commentToCreate.setUpdated_time(LocalDateTime.now());
@@ -430,7 +432,7 @@ public class CommentService {
             comment.getVendor_staff_user().setOutgoing_support_ticket_list(null);
             comment.getVendor_staff_user().setIncoming_support_ticket_list(null);
             comment.getVendor_staff_user().setComment_list(null);
-            comment.getVendor_staff_user().getVendor().setVendor_staff_list(null);
+            // comment.getVendor_staff_user().getVendor().setVendor_staff_list(null);
         }
 
         if (comment.getInternal_staff_user() != null) {
