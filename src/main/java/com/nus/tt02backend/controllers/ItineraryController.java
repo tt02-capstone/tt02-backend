@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Accommodation;
 import com.nus.tt02backend.models.Attraction;
 import com.nus.tt02backend.models.Itinerary;
 import com.nus.tt02backend.models.Telecom;
@@ -53,6 +54,7 @@ public class ItineraryController {
     }
 
     // Recommendations for Attraction (based on a specific date)
+    // Sample GET request for Postman: http://localhost:8080/itinerary/getAttractionRecommendationsByDate/1/2023-10-25
     @GetMapping("/getAttractionRecommendationsByDate/{itineraryId}/{dateTime}")
     public ResponseEntity<List<Attraction>> getAttractionRecommendationsByDate(@PathVariable Long itineraryId,
                                                                                @PathVariable LocalDate dateTime) throws BadRequestException {
@@ -65,5 +67,12 @@ public class ItineraryController {
     public ResponseEntity<List<Attraction>> getAttractionRecommendationsForItinerary(@PathVariable Long itineraryId) throws BadRequestException {
         List<Attraction> attractionRecommendations = itineraryService.getAttractionRecommendationsForItinerary(itineraryId);
         return ResponseEntity.ok(attractionRecommendations);
+    }
+
+    // Recommendations for Accommodation (based on the entire itinerary duration)
+    @GetMapping("/getAccommodationRecommendationsForItinerary/{itineraryId}")
+    public ResponseEntity<List<Accommodation>> getAccommodationRecommendationsForItinerary(@PathVariable Long itineraryId) throws BadRequestException {
+        List<Accommodation> accommodationRecommendations = itineraryService.getAccommodationRecommendationsForItinerary(itineraryId);
+        return ResponseEntity.ok(accommodationRecommendations);
     }
 }

@@ -3,10 +3,7 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
-import com.nus.tt02backend.models.enums.InternalRoleEnum;
-import com.nus.tt02backend.models.enums.NumberOfValidDaysEnum;
-import com.nus.tt02backend.models.enums.SupportTicketTypeEnum;
-import com.nus.tt02backend.models.enums.UserTypeEnum;
+import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +31,10 @@ public class ItineraryService {
     TelecomRepository telecomRepository;
     @Autowired
     AttractionRepository attractionRepository;
+    @Autowired
+    AccommodationRepository accommodationRepository;
+    @Autowired
+    AccommodationService accommodationService;
 
     public Itinerary getItineraryByUser(Long userId) throws BadRequestException {
         Optional<User> userOptional = userRepository.findById(userId);
@@ -129,6 +130,13 @@ public class ItineraryService {
         itineraryRepository.delete(itinerary);
     }
 
+    // Telecom Recommendations
+    /*
+        - Logic
+        1) Find telecom packages where itinerary duration <= number of days valid
+        2) If none, find the next tier of number of days valid (e.g. itinerary is 1 day, if no one_day, find three_day)
+        3) If none, return any 3 telecom
+     */
     public List<Telecom> getTelecomRecommendations(Long itineraryId) throws BadRequestException {
         Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
         if (itineraryOptional.isEmpty()) {
@@ -138,11 +146,11 @@ public class ItineraryService {
 
         List<Telecom> telecomRecommendations = new ArrayList<>();
         Integer numberOfDays = Math.round(Duration.between(itinerary.getStart_date(), itinerary.getEnd_date()).toDays());
-        List<Telecom> telecomListForOneDay = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.ONE_DAY));
-        List<Telecom> telecomListForThreeDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.THREE_DAY));
-        List<Telecom> telecomListForSevenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.SEVEN_DAY));
-        List<Telecom> telecomListForFourteenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.FOURTEEN_DAY));
-        List<Telecom> telecomListForOverFourteenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.MORE_THAN_FOURTEEN_DAYS));
+        List<Telecom> telecomListForOneDay = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.ONE_DAY).subList(0, Math.min(3, telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.ONE_DAY).size())));
+        List<Telecom> telecomListForThreeDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.THREE_DAY).subList(0, Math.min(3, telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.THREE_DAY).size())));
+        List<Telecom> telecomListForSevenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.SEVEN_DAY).subList(0, Math.min(3, telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.SEVEN_DAY).size())));
+        List<Telecom> telecomListForFourteenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.FOURTEEN_DAY).subList(0, Math.min(3, telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.FOURTEEN_DAY).size())));
+        List<Telecom> telecomListForOverFourteenDays = new ArrayList<>(telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.MORE_THAN_FOURTEEN_DAYS).subList(0, Math.min(3, telecomRepository.getTelecomBasedOnDays(NumberOfValidDaysEnum.MORE_THAN_FOURTEEN_DAYS).size())));
 
         if (numberOfDays <= 1) {
             if (!telecomListForOneDay.isEmpty()) {
@@ -182,11 +190,22 @@ public class ItineraryService {
             }
         } else {
             telecomRecommendations.addAll(telecomListForOverFourteenDays);
+
+            // Return any 3 telecom
+            if (!telecomRecommendations.isEmpty()) {
+                telecomRecommendations.addAll(telecomRepository.findAll().subList(0, Math.min(3, telecomRepository.findAll().size())));
+            }
         }
 
         return telecomRecommendations;
     }
 
+    // Attraction Recommendations
+    /*
+        - Logic
+        1) Given a particular date, search for empty slots between 2 events and find attractions with suggested_duration <= empty slot duration
+        2) If none, return any 3 attractions
+     */
     public List<Attraction> getAttractionRecommendationsByDate(Long itineraryId, LocalDate dateTime) throws BadRequestException {
         Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
         if (itineraryOptional.isEmpty()) {
@@ -201,9 +220,10 @@ public class ItineraryService {
             processEventsForAttractions(eventsOnCurrentDate, attractionRecommendations);
 
             return removeDuplicates(attractionRecommendations);
-        } else {
-            attractionRecommendations.addAll(attractionRepository.findAll());
         }
+
+        // Return any 3 attractions
+        attractionRecommendations.addAll(attractionRepository.findAll().subList(0, Math.min(3, attractionRepository.findAll().size())));
 
         return attractionRecommendations;
     }
@@ -266,5 +286,102 @@ public class ItineraryService {
     private <T> List<T> removeDuplicates(List<T> items) {
         Set<T> uniqueItems = new HashSet<>(items);
         return new ArrayList<>(uniqueItems);
+    }
+
+    // Accommodation Recommendations
+    /*
+        - Logic
+        1) Recommend accommodations that are near/at the same location as DIYEvent and available for booking
+        2) If no common location, recommend accommodations that are available for booking
+        3) If none, return any 3 accommodation
+     */
+    public List<Accommodation> getAccommodationRecommendationsForItinerary(Long itineraryId) throws BadRequestException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new BadRequestException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+
+        // Format the generic locations
+        Map<String, Integer> genericLocationsCount = new HashMap<>();
+        Map<String, GenericLocationEnum> originalGenericLocations = new HashMap<>();
+        for (GenericLocationEnum location : GenericLocationEnum.values()) {
+            String formattedLocation = location.toString().toLowerCase().replace("_", " ");
+            genericLocationsCount.put(formattedLocation, 0);
+
+            originalGenericLocations.put(formattedLocation, location);
+        }
+
+        List<DIYEvent> events = itinerary.getDiy_event_list();
+        List<Accommodation> accommodations = accommodationRepository.findAll();
+        List<Accommodation> accommodationRecommendations = new ArrayList<>();
+
+        // Based on user's events list, find the locations that are most common (so can recommend accoms near there)
+        for (String key : genericLocationsCount.keySet()) {
+            List<DIYEvent> filteredDiyEvents = events.stream()
+                    .filter(event -> event.getLocation().toLowerCase().contains(key))
+                    .toList();
+
+            genericLocationsCount.put(key, filteredDiyEvents.size());
+        }
+
+        Map<String, Integer> sortedGenericLocationsCount = genericLocationsCount.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+        List<Accommodation> filteredAccommodations = new ArrayList<>();
+        // Check accoms availability for those locations where the count isn't 0
+        checkAccommodationsForLocation(accommodationRecommendations, filteredAccommodations, sortedGenericLocationsCount, originalGenericLocations, itinerary);
+
+        if (!accommodationRecommendations.isEmpty()) {
+            return removeDuplicates(accommodationRecommendations);
+        } else {
+            // Accoms with common location are not available, just find any 3 accoms that are available for booking
+            List<RoomTypeEnum> roomTypes = List.of(RoomTypeEnum.values());
+            for (Accommodation accommodation : accommodations) {
+                for (RoomTypeEnum roomType : roomTypes) {
+                    try {
+                        if (accommodationService.isRoomAvailableOnDateRange(accommodation.getAccommodation_id(), roomType, itinerary.getStart_date(), itinerary.getEnd_date())) {
+                            accommodationRecommendations.add(accommodation);
+                            break;
+                        }
+                    } catch (NotFoundException | BadRequestException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+
+            if (!accommodationRecommendations.isEmpty()) {
+                return removeDuplicates(accommodationRecommendations.subList(0, Math.min(3, accommodationRecommendations.size())));
+            } else {
+                // All accoms are unavailable, just return any 3 accoms
+                return accommodations.subList(0, Math.min(3, accommodations.size()));
+            }
+        }
+    }
+
+    private void checkAccommodationsForLocation(List<Accommodation> accommodationRecommendations, List<Accommodation> filteredAccommodations, Map<String, Integer> sortedGenericLocationsCount, Map<String, GenericLocationEnum> originalGenericLocations, Itinerary itinerary) {
+        sortedGenericLocationsCount.entrySet().stream()
+                .filter(entry -> entry.getValue() > 0)
+                .forEach(entry -> {
+                    GenericLocationEnum currentLocation = originalGenericLocations.get(entry.getKey());
+                    filteredAccommodations.addAll(accommodationRepository.getAccommodationByGenericLocation(currentLocation));
+
+                    List<RoomTypeEnum> roomTypes = List.of(RoomTypeEnum.values());
+                    for (Accommodation accommodation : filteredAccommodations) {
+                        for (RoomTypeEnum roomType : roomTypes) {
+                            try {
+                                if (accommodationService.isRoomAvailableOnDateRange(accommodation.getAccommodation_id(), roomType, itinerary.getStart_date(), itinerary.getEnd_date())) {
+                                    accommodationRecommendations.add(accommodation);
+                                    break;
+                                }
+                            } catch (NotFoundException | BadRequestException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+
+                    filteredAccommodations.clear();
+                });
     }
 }
