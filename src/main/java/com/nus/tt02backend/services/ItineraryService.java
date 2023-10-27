@@ -115,6 +115,7 @@ public class ItineraryService {
         }
 
         List<DIYEvent> diyEventList = itinerary.getDiy_event_list();
+        itinerary.setDiy_event_list(null);
         for (DIYEvent diyEvent : diyEventList) {
             diyEventRepository.delete(diyEvent);
         }

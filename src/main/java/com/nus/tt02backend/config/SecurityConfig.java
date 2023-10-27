@@ -86,15 +86,20 @@ public class SecurityConfig {
               "/admin/passwordResetStageThree/**",
               "/vendor/createVendor",
               "/vendorStaff/createVendorStaff",
+              "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
               "/supportTicket/**", // to remove
                 "/booking/**", // to remove
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.DELETE,
+              "/itinerary/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
