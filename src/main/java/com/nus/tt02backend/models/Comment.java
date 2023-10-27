@@ -23,6 +23,9 @@ public class Comment {
     @Column(nullable = false)
     private String content;
 
+    @Column(nullable = false)
+    private Boolean is_published;
+
     @ElementCollection
     @CollectionTable(name="comment_upvoted_user_id_list")
     private List<Long> upvoted_user_id_list;

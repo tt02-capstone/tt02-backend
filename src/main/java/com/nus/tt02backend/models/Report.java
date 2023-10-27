@@ -36,4 +36,7 @@ public class Report {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Post reported_post;
+
+    @Column(nullable = false)
+    private Boolean is_resolved;
 }
