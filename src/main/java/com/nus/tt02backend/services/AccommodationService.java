@@ -149,17 +149,7 @@ public class AccommodationService {
             throw new BadRequestException("There is an accommodation listing with the same name, please choose another name!");
         }
 
-        List<Room> room_list = accommodationToCreate.getRoom_list(); // get the room list and process them as room obj
-        if (room_list != null) {
-            List<Room> persisted_room_list = createRoomList(room_list);
-            PriceTierEnum priceTier = priceTierEstimation(persisted_room_list);
-
-            accommodationToCreate.setRoom_list(persisted_room_list);
-            accommodationToCreate.setEstimated_price_tier(priceTier);
-        } else {
-            accommodationToCreate.setEstimated_price_tier(PriceTierEnum.TIER_0);
-        }
-
+        accommodationToCreate.setEstimated_price_tier(PriceTierEnum.TIER_0);
         Accommodation newAccommodation = accommodationRepository.save(accommodationToCreate);
 
         Vendor vendor = vendorStaff.getVendor();
