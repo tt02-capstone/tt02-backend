@@ -141,7 +141,9 @@ public class AccommodationService {
         return update_room_list;
     }
 
-    public Accommodation createAccommodation(VendorStaff vendorStaff, Accommodation accommodationToCreate) throws BadRequestException {
+    public Accommodation createAccommodation(Long vendorStaffId, Accommodation accommodationToCreate) throws BadRequestException, NotFoundException {
+
+        VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
 
         Accommodation accommodation = accommodationRepository.getAccommodationByName((accommodationToCreate.getName()));
 
