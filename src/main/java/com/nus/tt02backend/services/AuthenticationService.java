@@ -12,7 +12,6 @@ import com.nus.tt02backend.repositories.VendorStaffRepository;
 import io.jsonwebtoken.impl.DefaultClaims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,14 +19,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final UserDetailsImpl userDetailsImpl;
+    private final JwtUserService userDetailsImpl;
     private final UserService userService;
     private final VendorStaffService vendorStaffService;
     private final VendorStaffRepository vendorStaffRepository;
