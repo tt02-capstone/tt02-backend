@@ -1,4 +1,4 @@
-package com.nus.tt02backend;
+package com.nus.tt02backend.config;
 
 import com.stripe.Stripe;
 
