@@ -166,6 +166,7 @@ public class CommentService {
         Comment comment = commentOptional.get();
         comment.setContent(commentToUpdate.getContent());
         comment.setUpdated_time(LocalDateTime.now());
+        comment.setIs_published(commentToUpdate.getIs_published());
         commentRepository.save(comment);
 
         if (comment.getTourist_user() != null) {

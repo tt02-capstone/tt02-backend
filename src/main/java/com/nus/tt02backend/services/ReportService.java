@@ -95,6 +95,40 @@ public class ReportService {
         }
     }
 
+    public Comment autoApproveCommentReport(Long commentId) throws NotFoundException {
+        Optional<Comment> commentOptional = commentRepository.findById(commentId);
+
+        if (commentOptional.isEmpty()) {
+            throw new NotFoundException("Comment not found!");
+        }
+
+        Comment comment = commentOptional.get();
+        comment.setContent("[comment removed by admin]");
+        comment.setIs_published(false); // to show that this is reported
+        commentRepository.save(comment);
+
+        recursiveCheckComment(comment);
+
+        return comment;
+    }
+
+    public Post autoApprovePostReport(Long postId) throws NotFoundException {
+        Optional<Post> postOptional = postRepository.findById(postId);
+
+        if (postOptional.isEmpty()) {
+            throw new NotFoundException("Post not found!");
+        }
+
+        Post post = postOptional.get();
+        post.setIs_published(false); // unpublished the listing
+        postRepository.save(post);
+
+        recursiveCheckPost(post);
+
+        return post;
+    }
+
+
     public Report approveCommentReport(Long reportId, Long commentId) throws NotFoundException {
         Optional<Report> reportOptional = reportRepository.findById(reportId);
 

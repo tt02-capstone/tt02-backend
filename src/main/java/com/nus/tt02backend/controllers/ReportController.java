@@ -58,4 +58,15 @@ public class ReportController {
         return  ResponseEntity.ok(r);
     }
 
+    @PutMapping("/autoApproveCommentReport/{commentId}")
+    public ResponseEntity<Comment> autoApproveCommentReport(@PathVariable Long commentId ) throws NotFoundException {
+        Comment c = reportService.autoApproveCommentReport(commentId);
+        return  ResponseEntity.ok(c);
+    }
+
+    @PutMapping("/autoApprovePostReport/{postId}")
+    public ResponseEntity<Post> autoApprovePostReport(@PathVariable Long postId ) throws NotFoundException {
+        Post p = reportService.autoApprovePostReport(postId);
+        return  ResponseEntity.ok(p);
+    }
 }
