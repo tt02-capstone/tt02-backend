@@ -39,7 +39,7 @@ public class VendorService {
     PaymentService paymentService;
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public Long createVendor(VendorStaff vendorStaffToCreate) throws BadRequestException, StripeException {
+    public Long createVendor(VendorStaff vendorStaffToCreate) throws BadRequestException {
         VendorStaff vendorStaff = vendorStaffRepository.retrieveVendorStaffByEmail(vendorStaffToCreate.getEmail());
 
         if (vendorStaff != null) {
