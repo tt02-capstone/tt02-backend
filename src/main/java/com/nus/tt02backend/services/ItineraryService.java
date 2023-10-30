@@ -238,7 +238,9 @@ public class ItineraryService {
         if (!events.isEmpty() && !eventsOnCurrentDate.isEmpty()) {
             processEventsForAttractions(eventsOnCurrentDate, attractionRecommendations);
 
-            return removeDuplicates(attractionRecommendations);
+            if (!attractionRecommendations.isEmpty()) {
+                return removeDuplicates(attractionRecommendations);
+            }
         }
 
         // Return any 3 attractions
