@@ -28,6 +28,9 @@ public class Post {
     @Column(nullable = false)
     private String content;
 
+    @Column(nullable = false)
+    private Boolean is_published;
+
     @ElementCollection
     @CollectionTable(name="post_image_list")
     private List<String> post_image_list;

@@ -31,9 +31,12 @@ public class Report {
     @Column(nullable = false)
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Comment reported_comment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Post reported_post;
+
+    @Column(nullable = false)
+    private Boolean is_resolved;
 }
