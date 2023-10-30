@@ -1,5 +1,7 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.RecommendationResponse;
+import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
 import com.nus.tt02backend.models.enums.ListingTypeEnum;
@@ -22,5 +24,11 @@ public class RecommendationController {
     public ResponseEntity<List<Object>> getRecommendation(@PathVariable GenericLocationEnum location, @PathVariable ListingTypeEnum listingType, @PathVariable Long typeId) throws NotFoundException {System.out.println("in controller");
         List<Object> rList = recommendationService.getRecommendation(location,listingType,typeId);
         return ResponseEntity.ok(rList);
+    }
+
+    @GetMapping("/getRecommendationFromBookings/{userId}")
+    public RecommendationResponse getRecommendationFromBookings(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        RecommendationResponse recommendation= recommendationService.getRecommendationFromBookings(userId);
+        return recommendation;
     }
 }

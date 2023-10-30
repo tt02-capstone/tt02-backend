@@ -226,4 +226,48 @@ public class TelecomService {
             throw new NotFoundException("User not found!");
         }
     }
+
+
+    public List<Telecom> getSimilarTierTelecom(PriceTierEnum priceTierEnum) throws NotFoundException {
+        List<Telecom> telecomList = getPublishedTelecomList();
+        List<Telecom> filteredList = new ArrayList<>();
+
+        if (telecomList.isEmpty()) {
+            throw new NotFoundException("No telecoms are created!");
+        } else {
+            for (Telecom telecom : telecomList) {
+                if (telecom.getEstimated_price_tier() == priceTierEnum) {
+                    filteredList.add(telecom);
+                }
+            }
+        }
+
+        if (filteredList.isEmpty()) {
+            return new ArrayList<>(); // no attraction nearby within the same location
+        } else {
+            return filteredList;
+        }
+    }
+
+    public List<Telecom> getSimilarDurationTelecom(NumberOfValidDaysEnum numberOfValidDaysEnum) throws NotFoundException {
+        List<Telecom> telecomList = getPublishedTelecomList();
+        List<Telecom> filteredList = new ArrayList<>();
+
+        if (telecomList.isEmpty()) {
+            throw new NotFoundException("No telecoms are created!");
+        } else {
+            for (Telecom telecom : telecomList) {
+                if (telecom.getPlan_duration_category() == numberOfValidDaysEnum) {
+                    filteredList.add(telecom);
+                }
+            }
+        }
+
+        if (filteredList.isEmpty()) {
+            return new ArrayList<>(); // no attraction nearby within the same location
+        } else {
+            return filteredList;
+        }
+    }
+
 }
