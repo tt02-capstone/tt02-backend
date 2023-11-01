@@ -3,18 +3,13 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
-import com.nus.tt02backend.models.enums.BadgeTypeEnum;
-import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.time.*;
+
 
 @Service
 public class DIYEventService {
@@ -222,5 +217,66 @@ public class DIYEventService {
 
         diyEventRepository.delete(diyEvent);
         return "Event successfully deleted";
+    }
+
+    public String diyEventOverlap(Long itineraryId) throws NotFoundException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new NotFoundException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+        List<DIYEvent> diyEventList = itinerary.getDiy_event_list();
+
+        for (DIYEvent d : diyEventList) {
+            for (DIYEvent e : diyEventList) {
+                if (d.getAttraction() != null && e.getAttraction() != null
+                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // attraction overlap
+                    return "There is an attraction overlap in your itinerary!";
+
+                } else if (d.getAccommodation() != null && e.getAccommodation() != null
+                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // accommodation overlap
+                    return "There is an accommodation overlap in your itinerary!";
+
+                } else if (d.getTelecom() != null && e.getTelecom() != null
+                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // telecom overlap
+                    return "There is a telecom overlap in your itinerary!";
+
+                } else if (d.getRestaurant() != null && e.getRestaurant() != null
+                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // restaurant overlap
+                    return "There is a restaurant overlap in your itinerary!";
+
+                } else if (d.getBooking() == null && d.getAttraction() == null && d.getTelecom() == null && d.getRestaurant() != null
+                        && (e.getAttraction() != null || e.getRestaurant() != null)
+                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // diy overlap with either attraction, telecom or rest
+                    return "There is a DIY event overlap in your itinerary!";
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public String diyEventBookingOverlap(Long itineraryId) throws NotFoundException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new NotFoundException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+        List<DIYEvent> diyEventList = itinerary.getDiy_event_list();
+
+        Set<List<LocalDateTime>> set = new HashSet<>();
+        for (DIYEvent d : diyEventList) { // non-booking diy event
+            for (DIYEvent e : diyEventList) { // booking diy event
+                if (d.getBooking() == null && e.getBooking() != null && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) {
+                    return "One of your event overlaps with " + e.getName() + "!";
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean notOverlap(DIYEvent d1, DIYEvent d2) {
+        return d1.getStart_datetime().isAfter(d2.getEnd_datetime()) || d1.getEnd_datetime().isBefore(d2.getStart_datetime());
     }
 }

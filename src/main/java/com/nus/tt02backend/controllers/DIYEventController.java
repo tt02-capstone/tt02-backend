@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Booking;
 import com.nus.tt02backend.models.DIYEvent;
 import com.nus.tt02backend.services.DIYEventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,5 +56,17 @@ public class DIYEventController {
     public ResponseEntity<String> deleteDiyEvent(@PathVariable Long diyEventIdToDelete) throws BadRequestException {
         String responseMessage = diyEventService.deleteDiyEvent(diyEventIdToDelete);
         return ResponseEntity.ok(responseMessage);
+    }
+
+    @GetMapping("/diyEventOverlap/{itineraryId}")
+    public ResponseEntity<String> diyEventOverlap(@PathVariable Long itineraryId) throws NotFoundException {
+        String overlap = diyEventService.diyEventOverlap(itineraryId);
+        return ResponseEntity.ok(overlap);
+    }
+
+    @GetMapping("/diyEventBookingOverlap/{itineraryId}")
+    public ResponseEntity<String> diyEventBookingOverlap(@PathVariable Long itineraryId) throws NotFoundException {
+        String overlap = diyEventService.diyEventBookingOverlap(itineraryId);
+        return ResponseEntity.ok(overlap);
     }
 }
