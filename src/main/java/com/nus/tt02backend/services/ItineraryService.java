@@ -84,17 +84,31 @@ public class ItineraryService {
 
         Itinerary itinerary = itineraryRepository.save(itineraryToCreate);
 
-        if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
+        if (user instanceof Tourist) {
             Tourist tourist = (Tourist) user;
-            tourist.setItinerary(itinerary);
+            tourist.setItinerary(itineraryToCreate);
             touristRepository.save(tourist);
+            System.out.println("here4" + tourist.getItinerary().getItinerary_id());
 
-        } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
+        } else if (user instanceof Local) {
             Local local = (Local) user;
-            local.setItinerary(itinerary);
+            local.setItinerary(itineraryToCreate);
             localRepository.save(local);
-
         }
+
+        // add diy events for bookings made before itinerary was created
+        if (user instanceof Tourist) {
+            Tourist tourist = (Tourist) user;
+            List<DIYEvent> diyEventList = diyEventRepository.getDiyEventByTouristIdAndDate(tourist.getUser_id(), itineraryToCreate.getStart_date(), itineraryToCreate.getEnd_date());
+            itinerary.setDiy_event_list(diyEventList);
+            itineraryRepository.save(itinerary);
+        } else {
+            Local local = (Local) user;
+            List<DIYEvent> diyEventList = diyEventRepository.getDiyEventByLocalIdAndDate(local.getUser_id(), itineraryToCreate.getStart_date(), itineraryToCreate.getEnd_date());
+            itinerary.setDiy_event_list(diyEventList);
+            itineraryRepository.save(itinerary);
+        }
+
         return itinerary;
     }
 
@@ -142,7 +156,10 @@ public class ItineraryService {
         List<DIYEvent> diyEventList = itinerary.getDiy_event_list();
         itinerary.setDiy_event_list(null);
         for (DIYEvent diyEvent : diyEventList) {
-            diyEventRepository.delete(diyEvent);
+            if (diyEvent.getBooking() == null) {
+                System.out.println("deleted: " + diyEvent.getDiy_event_id());
+                diyEventRepository.delete(diyEvent);
+            }
         }
 
         itineraryRepository.delete(itinerary);

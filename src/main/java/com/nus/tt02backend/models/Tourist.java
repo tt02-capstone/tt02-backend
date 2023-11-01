@@ -76,4 +76,7 @@ public class Tourist extends User {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Notification> notification_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<DIYEvent> unused_diy_event_list;
 }

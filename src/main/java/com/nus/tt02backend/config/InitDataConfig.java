@@ -511,7 +511,7 @@ public class InitDataConfig implements CommandLineRunner {
             t2.setEstimated_price_tier(PriceTierEnum.TIER_3);
             t2.setNum_of_days_valid(14);
             t2.setData_limit(80);
-            t1.setPlan_duration_category(NumberOfValidDaysEnum.FOURTEEN_DAY);
+            t2.setPlan_duration_category(NumberOfValidDaysEnum.FOURTEEN_DAY);
             t2.setData_limit_category(GBLimitEnum.VALUE_100);
             t2.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_14_day.JPG");
 

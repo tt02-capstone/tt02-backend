@@ -62,6 +62,12 @@ public class CartService {
     DIYEventService diyEventService;
     @Autowired
     ItineraryService itineraryService;
+    @Autowired
+    AccommodationRepository accommodationRepository;
+    @Autowired
+    DIYEventRepository diyEventRepository;
+    @Autowired
+    ItineraryRepository itineraryRepository;
 
     public Long addCartItems(String user_type, String tourist_email, String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
@@ -1132,25 +1138,49 @@ public class CartService {
 
     // create a new itinerary event for the booking
     private void createBookingDIYEvent(User user, Booking booking) throws BadRequestException {
-        Itinerary itinerary = itineraryService.getItineraryByUser(((User) user).getUser_id());
-        if (itinerary != null && withinItineraryDates(itinerary, booking)) {
-            Long itineraryId = itinerary.getItinerary_id();
-            DIYEvent diyEvent = new DIYEvent();
-            diyEvent.setName(booking.getActivity_name());
-            diyEvent.setStart_datetime(booking.getStart_datetime());
-            diyEvent.setEnd_datetime(booking.getEnd_datetime());
-            diyEvent.setLocation("");
-            diyEvent.setRemarks("");
-            diyEventService.createDiyEvent(itineraryId, booking.getBooking_id(), "booking", diyEvent);
+        DIYEvent event = createUnusedEvent(user, booking); // in the event user delete itinerary, and remake, we want to add the booking in as well
+
+        Itinerary itinerary = itineraryService.getItineraryByUser(user.getUser_id());
+        if (itinerary != null && !notWithinItineraryDates(itinerary, event)) { // booking falls within itinerary
+            if (itinerary.getDiy_event_list() == null) itinerary.setDiy_event_list(new ArrayList<>());
+            itinerary.getDiy_event_list().add(event);
+            itineraryRepository.save(itinerary);
         }
     }
 
-    public boolean withinItineraryDates(Itinerary itinerary, Booking booking) {
-        if (booking.getTelecom() != null || booking.getRoom() != null) {
-            return booking.getStart_datetime().isAfter(itinerary.getStart_date()) && booking.getStart_datetime().isBefore(itinerary.getEnd_date());
-        } else { // attraction
-            return booking.getStart_datetime().isAfter(itinerary.getStart_date()) && booking.getStart_datetime().isBefore(itinerary.getEnd_date()) &&
-                   booking.getEnd_datetime().isAfter(itinerary.getStart_date()) && booking.getEnd_datetime().isBefore(itinerary.getEnd_date());
+    public boolean notWithinItineraryDates(Itinerary itinerary, DIYEvent event) {
+        return event.getEnd_datetime().isBefore(itinerary.getStart_date()) || event.getStart_datetime().isAfter(itinerary.getEnd_date());
+    }
+
+    private DIYEvent createUnusedEvent(User user, Booking booking) {
+        DIYEvent diyEvent = new DIYEvent();
+        diyEvent.setName(booking.getActivity_name());
+        diyEvent.setStart_datetime(booking.getStart_datetime());
+        diyEvent.setEnd_datetime(booking.getEnd_datetime());
+        if (booking.getAttraction() != null) {
+            diyEvent.setLocation(booking.getAttraction().getAddress());
+        } else if (booking.getRoom() != null) {
+            diyEvent.setLocation(accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id()));
+        } else if (booking.getTour() != null) {
+            diyEvent.setLocation(attractionRepository.getAttractionByTourId(booking.getTour().getTour_id()));
+        } else {
+            diyEvent.setLocation("");
         }
+        diyEvent.setRemarks("");
+        diyEvent.setBooking(booking);
+
+        if (user instanceof Tourist) {
+            Tourist tourist = (Tourist) user;
+            if (tourist.getUnused_diy_event_list() == null) tourist.setUnused_diy_event_list(new ArrayList<>());
+            tourist.getUnused_diy_event_list().add(diyEvent);
+            diyEventRepository.save(diyEvent);
+        } else if (user instanceof Local) {
+            Local local = (Local) user;
+            if (local.getUnused_diy_event_list() == null) local.setUnused_diy_event_list(new ArrayList<>());
+            local.getUnused_diy_event_list().add(diyEvent);
+            diyEventRepository.save(diyEvent);
+        }
+
+        return diyEvent;
     }
 }
