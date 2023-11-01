@@ -61,8 +61,13 @@ public class InitDataConfig implements CommandLineRunner {
 
     List<Accommodation> accommodations = new ArrayList<>();
 
+    List<Telecom> telecoms = new ArrayList<>();
+
+    List<Attraction> attractions = new ArrayList<>();
+
     List<User> users = new ArrayList<>();
 
+    @Transactional
     @Override
     public void run(String... args) throws Exception {
 
@@ -284,6 +289,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             List<Attraction> currentList = new ArrayList<>();
             currentList.add(attraction);
+            attractions.add(attraction);
             vendor1.setAttraction_list(currentList);
             vendorRepository.save(vendor1);
 
@@ -512,6 +518,7 @@ public class InitDataConfig implements CommandLineRunner {
             t1.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_7_day.JPG");
 
             t1 = telecomRepository.save(t1);
+            telecoms.add(t1);
             List<Telecom> tList = new ArrayList<>();
             tList.add(t1);
             vendor2.setTelecom_list(tList);
@@ -531,6 +538,7 @@ public class InitDataConfig implements CommandLineRunner {
             t2.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_14_day.JPG");
 
             t2 = telecomRepository.save(t2);
+            telecoms.add(t2);
             List<Telecom> tList2 = new ArrayList<>();
             tList2.add(t2);
             vendor6.setTelecom_list(tList2);
@@ -716,7 +724,7 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         if (bookingRepository.count() == 0) {
-            createBookingsAndPayments(100);
+            createBookingsAndPayments(1000);
         }
     }
 
@@ -907,6 +915,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
         attractionRepository.save(attraction);
+        attractions.add(attraction);
         Vendor vendor = vendorRepository.findById(1L).get();
         currentList.add(attraction); // add on to the previous list
         vendor.setAttraction_list(currentList);
@@ -1193,7 +1202,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             Random rand = new Random();
 
-            String[] activityTypes = {"ACCOMMODATION"}; //, "TELECOM", "ATTRACTION"};
+            String[] activityTypes = {"ACCOMMODATION", "TELECOM", "ATTRACTION"};
             String activity_type = activityTypes[rand.nextInt(activityTypes.length)];
 
             Long selected_id = null;
@@ -1222,9 +1231,15 @@ public class InitDataConfig implements CommandLineRunner {
 
             Telecom selected_telecom = null;
 
+            String selected_ticket = null;
+
+            Price selected_ticket_price = null;
+
             Tourist selected_user = touristRepository.getTouristByUserId((long) (rand.nextInt(97) + 4));
 
             User user = selected_user;
+
+            BigDecimal totalAmountPayable = BigDecimal.valueOf(0); // Quantity times price
 
             if (activity_type.equals("ACCOMMODATION")) {
                 Long[] accom_ids = {1L, 2L};
@@ -1235,7 +1250,7 @@ public class InitDataConfig implements CommandLineRunner {
                     List<Room> rooms = accommodation.getRoom_list();
 
                     selected_room = rooms.get(rand.nextInt(rooms.size()));
-                    selected_activity = String.valueOf(selected_room.getRoom_type());
+                    selected_activity = accommodation.getName();
                     selected_quantity = 1;
 
                     int randomBookingPeriod = 2 + rand.nextInt(4);
@@ -1279,13 +1294,77 @@ public class InitDataConfig implements CommandLineRunner {
             } else if (activity_type.equals("TELECOM")) {
                 Long[] telecom_ids = {1L, 2L};
                 selected_id = telecom_ids[rand.nextInt(telecom_ids.length)];
-                Optional<Telecom> telecom_optional = telecomRepository.findById(selected_id);
-                if (telecom_optional.isPresent()) {
+                Telecom telecom = telecoms.get((int) (selected_id - 1));
+                selected_telecom = telecom;
 
-                }
+                selected_activity = String.valueOf(telecom.getName());
+                selected_quantity = 1;
+
+                LocalDate nov14 = LocalDate.of(LocalDate.now().getYear(), 11, 14);
+
+                // Calculate the date 6 months before November 14
+                LocalDate sixMonthsBefore = nov14.minusMonths(6);
+
+
+
+                // Calculate the number of days between the two dates
+                int daysBetween = 180;
+
+                // Generate a random number between 0 and daysBetween
+                int randomDays = rand.nextInt((int) daysBetween + 1);
+
+                selected_start = sixMonthsBefore.plusDays(randomDays);
+
+                selected_end = sixMonthsBefore.plusDays(randomDays); // To update to add based on days valid
+
+                selected_startTime = selected_start.atStartOfDay();
+
+                selected_endTime = selected_end.atStartOfDay();
+
+                lastUpdate = selected_endTime;
+
+                bookingStatus = String.valueOf(BookingStatusEnum.COMPLETED);
+
             } else if (activity_type.equals("ATTRACTION")) {
                 Long[] attraction_ids = {1L, 2L};
                 selected_id = attraction_ids[rand.nextInt(attraction_ids.length)];
+
+                selected_attraction = attractions.get((int) (selected_id - 1));
+
+                List<Price> priceList = selected_attraction.getPrice_list();
+
+                selected_ticket_price = priceList.get(rand.nextInt(priceList.size()));
+
+                selected_ticket = String.valueOf(selected_ticket_price.getTicket_type());
+
+                selected_activity = selected_ticket;
+
+                //selected
+
+                selected_quantity = 1;
+
+                LocalDate nov14 = LocalDate.of(LocalDate.now().getYear(), 11, 14);
+
+                // Calculate the date 6 months before November 14
+                LocalDate sixMonthsBefore = nov14.minusMonths(6);
+
+                // Calculate the number of days between the two dates
+                int daysBetween = 180;
+
+                // Generate a random number between 0 and daysBetween
+                int randomDays = rand.nextInt((int) daysBetween + 1);
+
+                selected_start = sixMonthsBefore.plusDays(randomDays);
+
+                selected_end = sixMonthsBefore.plusDays(randomDays); // To update
+
+                selected_startTime = selected_start.atStartOfDay();
+
+                selected_endTime = selected_end.atStartOfDay();
+
+                lastUpdate = selected_endTime;
+
+                bookingStatus = String.valueOf(BookingStatusEnum.COMPLETED);
             }
 
             int numberOfBookingItems = 1;
@@ -1307,7 +1386,75 @@ public class InitDataConfig implements CommandLineRunner {
                 newBookingItem.setActivity_selection(selected_activity);
                 bookingItemRepository.save(newBookingItem);
                 bookingItems.add(newBookingItem);
+
+                BigDecimal activityPrice = null;
+
+                if (activity_type.equals("ACCOMMODATION")) {
+                    activityPrice = selected_room.getPrice();
+                } else if (activity_type.equals("TELECOM")) {
+                    activityPrice = selected_telecom.getPrice();
+                } else if (activity_type.equals("ATTRACTION")) {
+                    if (user instanceof Local) {
+                        activityPrice = selected_ticket_price.getLocal_amount();
+                    } else if (user instanceof Tourist) {
+                        activityPrice = selected_ticket_price.getTourist_amount();
+
+                    }
+
+
+                }
+
+
+
+                BigDecimal itemPrice = activityPrice.multiply(BigDecimal.valueOf(selected_quantity));
+                totalAmountPayable = totalAmountPayable.add(itemPrice);
             }
+
+            Payment bookingPayment = new Payment();
+
+            bookingPayment.setPayment_amount(totalAmountPayable);
+
+            // Assuming a 10% commission for the example
+            BigDecimal commission = BigDecimal.valueOf(0.10);
+            bookingPayment.setComission_percentage(commission);
+            bookingPayment.setIs_paid(true);
+
+
+
+            BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
+
+
+            Vendor vendor = null;
+            Local local = null;
+
+            if (Objects.equals(activity_type, "TOUR")) {
+                local = localRepository.findLocalByTour(selected_tour);
+                if (local != null) {
+                    local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
+
+                }
+
+            } else {
+                if (Objects.equals(activity_type, "ATTRACTION")) {
+                    vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
+
+                } else if (Objects.equals(activity_type, "TELECOM")) {
+                    vendor = vendorRepository.findVendorByTelecomName(selected_telecom.getName());
+
+                } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
+                    vendor = vendorRepository.findVendorByAccommodationName(selected_activity);
+                }
+
+                if (!(vendor == null)) {
+                    vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+                }
+            }
+
+            UUID uuid = UUID.randomUUID();
+            bookingPayment.setPayment_id(uuid.toString()); // Randomly generated string
+
+
+            paymentRepository.save(bookingPayment);
 
             Booking newBooking = new Booking();
 
@@ -1340,76 +1487,26 @@ public class InitDataConfig implements CommandLineRunner {
 
             // Randomly assigned, obtained by randomly selecting a user based on their id
             if (user instanceof Local) {
-                Local local = (Local) user;
-                if (localRepository.existsById(local.getUser_id())) {
-                    newBooking.setLocal_user(local);
-                }
+                Local local_user = (Local) user;
+                newBooking.setLocal_user(local_user);
             } else if (user instanceof Tourist) {
                 Tourist tourist = (Tourist) user;
-                if (touristRepository.existsById(tourist.getUser_id())) {
-                    newBooking.setTourist_user(tourist);
-                }
+                newBooking.setTourist_user(tourist);
 
             } else {
                 throw new IllegalArgumentException("Invalid user type");
             }
 
+
             // Save the new booking
+
+            newBooking.setPayment(bookingPayment);
+
             bookingRepository.save(newBooking);
 
-//            Payment bookingPayment = new Payment();
-//            BigDecimal totalAmountPayable = 0; // Quantity times price
-//            bookingPayment.setPayment_amount(totalAmountPayable);
-//
-//            // Assuming a 10% commission for the example
-//            BigDecimal commission = BigDecimal.valueOf(0.10);
-//            bookingPayment.setComission_percentage(commission);
-//            bookingPayment.setIs_paid(true);
-//
-//
-//
-//            BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
-//
-//
-//            Vendor vendor = null;
-//            Local local = null;
-//
-//            if (Objects.equals(activity_type, "TOUR")) {
-//                local = localRepository.findLocalByTour(newBooking.getTour());
-//                if (local != null) {
-//                    local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
-//
-//
-//
-//                } else {
-//                    throw new NotFoundException("No locals found associated with tour");
-//                }
-//
-//            } else {
-//                if (Objects.equals(activity_type, "ATTRACTION")) {
-//                    vendor = vendorRepository.findVendorByAttractionName(newBooking.getAttraction().getName());
-//
-//                } else if (Objects.equals(activity_type, "TELECOM")) {
-//                    vendor = vendorRepository.findVendorByTelecomName(newBooking.getTelecom().getName());
-//
-//                } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
-//                    vendor = vendorRepository.findVendorByAccommodationName(newBooking.getActivity_name());
-//                }
-//
-//                if (!(vendor == null)) {
-//                    vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
-//                }
-//            }
-//
-//            bookingPayment.setPayment_id("sda"); // Randomly generated string
-//
-//
-//            paymentRepository.save(bookingPayment);
-//
-//            newBooking.setPayment(bookingPayment);
-//            bookingPayment.setBooking(newBooking);
-//            bookingRepository.save(newBooking);
-//            paymentRepository.save(bookingPayment);
+            bookingPayment.setBooking(newBooking);
+
+            paymentRepository.save(bookingPayment);
 
 
         }
