@@ -1771,7 +1771,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setPrice_list(priceList);
         attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
-        String date = "2023-10-30";
+        String date = "2023-11-14";
 
         TicketPerDay t1 = new TicketPerDay();
         t1.setTicket_date(LocalDate.parse(date));

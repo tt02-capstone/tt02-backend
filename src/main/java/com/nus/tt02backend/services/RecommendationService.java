@@ -7,6 +7,7 @@ import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
 import com.nus.tt02backend.models.enums.ListingTypeEnum;
+import com.nus.tt02backend.repositories.TourTypeRepository;
 import com.nus.tt02backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,9 @@ public class RecommendationService {
 
     @Autowired
     BookingService bookingService;
+
+    @Autowired
+    TourTypeRepository tourTypeRepository;
 
     @Autowired
     TourService tourService;
@@ -137,15 +141,21 @@ public class RecommendationService {
         Set<Attraction> attractionList = new HashSet<>();
         Set<Accommodation> accommodationList =  new HashSet<>();
         Set<Restaurant> restaurantList = new HashSet<>();
-        Set<Tour> tourList =  new HashSet<>();
+        Set<TourType> tourTypeList =  new HashSet<>();
+
+        Set<Telecom> telecomListOld = new HashSet<>();
+        Set<Attraction> attractionListOld = new HashSet<>();
+        Set<Accommodation> accommodationListOld =  new HashSet<>();
+        Set<Restaurant> restaurantListOld = new HashSet<>();
+        Set<TourType> tourTypeListOld =  new HashSet<>();
 
         for (Booking booking: bookingList) {
 
             if(booking.getType().equals(BookingTypeEnum.TELECOM)) {
                 Telecom telecom = booking.getTelecom();
+                telecomListOld.add(telecom);
                 List<Telecom>  pList = telecomService.getSimilarTierTelecom(telecom.getEstimated_price_tier());
                 List<Telecom>  dList = telecomService.getSimilarDurationTelecom(telecom.getPlan_duration_category());
-
 
                 if (!pList.isEmpty() || !dList.isEmpty()) {
                     telecomList.addAll(pList);
@@ -155,6 +165,7 @@ public class RecommendationService {
             } else if (booking.getType().equals(BookingTypeEnum.ACCOMMODATION)) {
                 Room room = booking.getRoom();
                 Accommodation accommodation = accommodationService.retrieveAccommodationByRoom(room.getRoom_id());
+                accommodationListOld.add(accommodation);
                 List<Accommodation> pList = accommodationService.similarPriceAccommRecommendation(accommodation.getEstimated_price_tier(), accommodation.getAccommodation_id());
                 List<Accommodation> dList = accommodationService.nearbyAccommRecommendation(accommodation.getGeneric_location(), accommodation.getAccommodation_id());
 
@@ -165,7 +176,8 @@ public class RecommendationService {
 
             } else if (booking.getType().equals(BookingTypeEnum.ATTRACTION)) {
                 Attraction attraction = booking.getAttraction();
-                attraction.getEstimated_price_tier();
+                attractionListOld.add(attraction);
+//                attraction.getEstimated_price_tier();
                 List<Attraction> aList = attractionService.nearbyAttrRecommendation(attraction.getGeneric_location(), attraction.getAttraction_id());
                 List<Restaurant> rList = restaurantService.nearbyRestaurantRecommendation(attraction.getGeneric_location());
 
@@ -178,17 +190,28 @@ public class RecommendationService {
 
                 }
             } else if (booking.getType().equals(BookingTypeEnum.TOUR)) {
+                Tour tour = booking.getTour();
+                TourType tourType = tourTypeRepository.getTourTypeTiedToTour(tour.getTour_id());
+                tourTypeListOld.add(tourType);
+                Attraction attraction = tourService.getAttractionForTourTypeId(tourType.getTour_type_id());
+
+                List<TourType> tourTypeL = attraction.getTour_type_list();
+                tourTypeList.addAll(tourTypeL);
 
             }
-
         }
+
+        attractionList.removeAll(attractionListOld);
+        telecomList.removeAll(telecomListOld);
+        accommodationList.removeAll(accommodationListOld);
+        tourTypeList.removeAll(tourTypeListOld);
 
         return new RecommendationResponse(
                 attractionList.stream().toList(),
                 telecomList.stream().toList(),
                 accommodationList.stream().toList(),
                 restaurantList.stream().toList(),
-                tourList.stream().toList()
+                tourTypeList.stream().toList()
         );
     }
 

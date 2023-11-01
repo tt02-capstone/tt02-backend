@@ -22,6 +22,6 @@ public class RecommendationResponse {
 
   private List<Restaurant> restaurantList;
 
-  private List<Tour> tourList;
+  private List<TourType> tourTypeList;
 
 }
