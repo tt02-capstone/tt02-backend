@@ -155,13 +155,7 @@ public class AccommodationService {
         Accommodation newAccommodation = accommodationRepository.save(accommodationToCreate);
 
         Vendor vendor = vendorStaff.getVendor();
-        List<Accommodation> currentList = vendor.getAccommodation_list();
-        currentList.add(newAccommodation);
-        vendor.setAccommodation_list(currentList); // set new accommodation for the vendor
-
-        vendorRepository.save(vendor);
-
-        vendorStaff.setVendor(vendor);
+        vendor.getAccommodation_list().add(newAccommodation);
 
         vendorStaffRepository.save(vendorStaff); // update the vendor staff db
 

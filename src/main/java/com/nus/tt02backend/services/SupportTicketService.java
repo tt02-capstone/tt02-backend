@@ -72,6 +72,9 @@ public class SupportTicketService {
     @Autowired
     JavaMailSender javaMailSender;
 
+    @Autowired
+    RoomRepository roomRepository;
+
     public User findUser(Long userId) throws NotFoundException {
         try {
             Optional<User> userOptional = userRepository.findById(userId);
@@ -821,6 +824,30 @@ public class SupportTicketService {
         return bookingsToReturn;
     }
 
+    public Accommodation retrieveAccommodationByRoom (Long room_id) throws NotFoundException {
+        Room room = roomRepository.findById(room_id)
+                .orElseThrow(() -> new NotFoundException("Room not found!"));
+
+        List<Accommodation> allAccommodations = accommodationRepository.findAll();
+
+        if (allAccommodations.isEmpty()) {
+            throw new NotFoundException("There are no accommodations!");
+        }
+
+        for (Accommodation accomm : allAccommodations) {
+            List<Room> accommodationRoomList = accomm.getRoom_list();
+
+            if (!accommodationRoomList.isEmpty()) {
+                for (Room r : accommodationRoomList) {
+                    if (r.getRoom_id().equals(room_id)) {
+                        return accomm;
+                    }
+                }
+            }
+        }
+        throw new NotFoundException("Accommodation not found!");
+    }
+
     public SupportTicket createSupportTicketForBooking(Long userId, Long bookingId, SupportTicket supportTicketToCreate) throws BadRequestException, NotFoundException {
 
         User user = findUser(userId);
@@ -844,35 +871,28 @@ public class SupportTicketService {
         List<VendorStaff> vendorStaffList = new ArrayList<>();
         String activityName = null;
         if (booking.getAttraction() != null) {
-            Attraction attraction = booking.getAttraction();
-            vendorStaffList = getVendorByAttraction(attraction.getAttraction_id());
-            activityName = " with Attraction: " + attraction.getName();
+            vendorStaffList = getVendorByAttraction(booking.getAttraction().getAttraction_id());
+            activityName = " with Attraction: " + booking.getAttraction().getName();
         } else if (booking.getRoom() != null) {
-            Room room = booking.getRoom();
-            Accommodation accommodation = accommodationService.retrieveAccommodationByRoom(room.getRoom_id());
+            Accommodation accommodation = retrieveAccommodationByRoom(booking.getRoom().getRoom_id());
             vendorStaffList = getVendorByAccommodation(accommodation.getAccommodation_id());
             activityName = " with Accommodation: " + accommodation.getName();
         } else if (booking.getTelecom() != null) {
-            Telecom telecom = booking.getTelecom();
-            vendorStaffList = getVendorByTelecom(telecom.getTelecom_id());
-            activityName = " with Telecom: " + telecom.getName();
+            vendorStaffList = getVendorByTelecom(booking.getTelecom().getTelecom_id());
+            activityName = " with Telecom: " + booking.getTelecom().getName();
         }
 
         if (supportTicket.getTicket_type().equals(SupportTicketTypeEnum.ADMIN)) {
             List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
             for (InternalStaff i : internalStaffList) {
                 if (i.getRole().equals(InternalRoleEnum.ADMIN) || i.getRole().equals(InternalRoleEnum.SUPPORT)) {
-                    List<SupportTicket> supportTicketList = i.getSupport_ticket_list();
-                    supportTicketList.add(supportTicket);
-                    i.setSupport_ticket_list(supportTicketList);
+                    i.getSupport_ticket_list().add(supportTicket);
                     internalStaffRepository.save(i);
                 }
             }
         } else if (supportTicket.getTicket_type().equals(SupportTicketTypeEnum.VENDOR)) {
             for (VendorStaff v : vendorStaffList) {
-                List<SupportTicket> supportTicketList = v.getIncoming_support_ticket_list();
-                supportTicketList.add(supportTicket);
-                v.setIncoming_support_ticket_list(supportTicketList);
+                v.getIncoming_support_ticket_list().add(supportTicket);
                 vendorStaffRepository.save(v);
             }
         }
