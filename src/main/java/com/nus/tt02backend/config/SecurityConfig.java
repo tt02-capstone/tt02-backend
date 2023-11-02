@@ -90,6 +90,7 @@ public class SecurityConfig {
               "/diyEvent/**", // to remove
               "/comment/**", // to remove
               "/post/**", // to remove
+                "attraction/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",

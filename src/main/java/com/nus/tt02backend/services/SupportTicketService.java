@@ -856,12 +856,7 @@ public class SupportTicketService {
             Telecom telecom = booking.getTelecom();
             vendorStaffList = getVendorByTelecom(telecom.getTelecom_id());
             activityName = " with Telecom: " + telecom.getName();
-        } else if (booking.getDeal() != null) {
-            Deal deal = booking.getDeal();
-            vendorStaffList = getVendorByDeal(deal.getDeal_id());
-            activityName = " with Deal: " + deal.getPromo_code();
         }
-        // tour if adding
 
         if (supportTicket.getTicket_type().equals(SupportTicketTypeEnum.ADMIN)) {
             List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
