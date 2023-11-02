@@ -26,7 +26,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT COALESCE(SUM(p.payment_amount),0) FROM Payment p WHERE p.is_paid = true  AND p.booking.type = 'TOUR'")
     Double retrieveTourEarningsByLocalId(Long localId);
 
-    @Query("SELECT b.start_datetime, SUM((p.payment_amount - p.comission_percentage) * p.payment_amount) " +
+    @Query("SELECT DATE(b.start_datetime) AS bookingDate, SUM((p.payment_amount - p.comission_percentage) * p.payment_amount) " +
             "FROM Payment p " +
             "INNER JOIN p.booking b " +
             "WHERE b.start_datetime >= :startDate " +
@@ -35,8 +35,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             "      (b.attraction.attraction_id = :entityId AND :entityType = 'ATTRACTION') OR " +
             "      (b.room.room_id = :entityId AND :entityType = 'ACCOMMODATION') OR " +
             "      (b.telecom.telecom_id = :entityId AND :entityType = 'TELECOM')) " +
-            "GROUP BY DATE_TRUNC('day', b.start_datetime) " +
-            "ORDER BY DATE_TRUNC('day', b.start_datetime)")
+            "GROUP BY DATE(b.start_datetime)"+
+            "ORDER BY DATE(b.start_datetime)")
     List<Object[]> getVendorRevenueOverTime(@Param("startDate") LocalDateTime startDate,
                                                            @Param("endDate") LocalDateTime endDate,
                                                            @Param("entityId") Long entityId,
