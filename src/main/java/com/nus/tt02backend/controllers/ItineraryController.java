@@ -1,5 +1,6 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.SuggestedEventsResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -80,5 +82,12 @@ public class ItineraryController {
                                                                                      @PathVariable LocalDate dateTime) throws BadRequestException {
         List<Restaurant> restaurantRecommendations = itineraryService.getRestaurantRecommendationsForItinerary(itineraryId, dateTime);
         return ResponseEntity.ok(restaurantRecommendations);
+    }
+
+    @GetMapping("/getSuggestedEventsBasedOnTimeslot/{startTime}/{endTime}")
+    public ResponseEntity<SuggestedEventsResponse> getSuggestedEventsBasedOnTimeslot(@PathVariable LocalTime startTime,
+                                                                                     @PathVariable LocalTime endTime) throws BadRequestException {
+        SuggestedEventsResponse suggestedEvents = itineraryService.getSuggestedEventsBasedOnTimeslot(startTime, endTime);
+        return ResponseEntity.ok(suggestedEvents);
     }
 }

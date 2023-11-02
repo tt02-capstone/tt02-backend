@@ -17,4 +17,7 @@ public interface RestaurantRepository  extends JpaRepository<Restaurant, Long> {
 
     @Query("SELECT r FROM Restaurant r WHERE r.generic_location=?1")
     List<Restaurant> getRestaurantByGenericLocation(GenericLocationEnum genericLocation);
+
+    @Query("SELECT r FROM Restaurant r WHERE r.suggested_duration<=?1")
+    List<Restaurant> getRestaurantsByDuration(Integer duration);
 }

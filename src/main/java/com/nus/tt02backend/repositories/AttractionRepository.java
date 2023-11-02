@@ -1,6 +1,7 @@
 package com.nus.tt02backend.repositories;
 
 import com.nus.tt02backend.models.Attraction;
+import com.nus.tt02backend.models.Restaurant;
 import com.nus.tt02backend.models.Tour;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +23,9 @@ public interface AttractionRepository extends JpaRepository<Attraction, Long>{
 
     @Query("SELECT a.address FROM Attraction a JOIN a.tour_type_list t JOIN t.tour_list l WHERE l.tour_id = ?1")
     String getAttractionByTourId(Long tourId);
+
+    @Query("SELECT a FROM Attraction a WHERE a.suggested_duration<=?1")
+    List<Attraction> getAttractionsByDuration(Integer duration);
 }
 
 
