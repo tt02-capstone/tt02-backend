@@ -29,4 +29,16 @@ public class BadgeController {
         List<Badge> badges = badgeService.retrieveBadgesByUserId(userId);
         return ResponseEntity.ok(badges);
     }
+
+    @PutMapping("/markBadgeAsPrimary/{badgeId}/{userId}")
+    public ResponseEntity<Badge> markBadgeAsPrimary(@PathVariable Long badgeId, @PathVariable Long userId) throws BadRequestException {
+        Badge b = badgeService.markBadgeAsPrimary(badgeId,userId);
+        return ResponseEntity.ok(b);
+    }
+
+    @GetMapping("/getPrimaryBadge/{userId}")
+    public ResponseEntity<Badge> getPrimaryBadge(@PathVariable Long userId) throws BadRequestException {
+        Badge b = badgeService.getPrimaryBadge(userId);
+        return ResponseEntity.ok(b);
+    }
 }
