@@ -1,5 +1,6 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.dto.SuggestedEventsResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -295,6 +297,10 @@ public class ItineraryService {
     }
 
     private void processEventsForAttractions(List<DIYEvent> events, List<Attraction> attractionRecommendations) {
+        // Remove accommodation and telecom from list as it's a full-day thing
+        events.removeIf(event -> event.getAccommodation() != null);
+        events.removeIf(event -> event.getTelecom() != null);
+
         for (int j = 0; j < events.size() - 1; j++) {
             DIYEvent currentEvent = events.get(j);
             DIYEvent nextEvent = events.get(j + 1);
@@ -481,5 +487,22 @@ public class ItineraryService {
         restaurantRecommendations.addAll(allRestaurants.subList(0, Math.min(3, allRestaurants.size())));
 
         return restaurantRecommendations;
+    }
+
+    public SuggestedEventsResponse getSuggestedEventsBasedOnTimeslot(LocalTime startTime, LocalTime endTime) throws BadRequestException {
+        Integer durationInHours = (int) Duration.between(startTime, endTime).toHours();
+
+        SuggestedEventsResponse suggestedEvents = new SuggestedEventsResponse();
+        suggestedEvents.setRestaurants(new ArrayList<>());
+        suggestedEvents.setAttractions(new ArrayList<>());
+        
+        suggestedEvents.getRestaurants().addAll(restaurantRepository.getRestaurantsByDuration(durationInHours));
+        suggestedEvents.getAttractions().addAll(attractionRepository.getAttractionsByDuration(durationInHours));
+
+        if (suggestedEvents.getRestaurants().isEmpty() && suggestedEvents.getAttractions().isEmpty()) {
+            throw new BadRequestException("There are no events available between the specified start and end times");
+        }
+
+        return suggestedEvents;
     }
 }
