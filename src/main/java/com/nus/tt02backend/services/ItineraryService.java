@@ -295,6 +295,10 @@ public class ItineraryService {
     }
 
     private void processEventsForAttractions(List<DIYEvent> events, List<Attraction> attractionRecommendations) {
+        // Remove accommodation and telecom from list as it's a full-day thing
+        events.removeIf(event -> event.getAccommodation() != null);
+        events.removeIf(event -> event.getTelecom() != null);
+
         for (int j = 0; j < events.size() - 1; j++) {
             DIYEvent currentEvent = events.get(j);
             DIYEvent nextEvent = events.get(j + 1);
