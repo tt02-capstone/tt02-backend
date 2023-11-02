@@ -29,4 +29,7 @@ public class Badge {
     @Column(nullable = false)
     private LocalDateTime creation_date;
 
+    @Column(nullable = false)
+    private Boolean is_primary;
+
 }

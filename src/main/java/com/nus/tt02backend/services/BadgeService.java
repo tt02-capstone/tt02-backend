@@ -64,6 +64,7 @@ public class BadgeService {
                 categoryBadge.setBadge_type(badgeType);
                 categoryBadge.setBadge_icon(getBadgeIcon(badgeType));
                 categoryBadge.setCreation_date(LocalDateTime.now());
+                categoryBadge.setIs_primary(false);
                 categoryBadge = badgeRepository.save(categoryBadge);
 
                 tourist.getBadge_list().add(categoryBadge);
@@ -76,6 +77,7 @@ public class BadgeService {
                 topContributorBadge.setBadge_type(BadgeTypeEnum.TOP_CONTRIBUTOR);
                 topContributorBadge.setBadge_icon("https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/TOP_CONTRIBUTOR.png");
                 topContributorBadge.setCreation_date(LocalDateTime.now());
+                topContributorBadge.setIs_primary(false);
                 topContributorBadge = badgeRepository.save(topContributorBadge);
 
                 tourist.getBadge_list().add(topContributorBadge);
@@ -95,6 +97,7 @@ public class BadgeService {
                 categoryBadge.setBadge_type(badgeType);
                 categoryBadge.setBadge_icon(getBadgeIcon(badgeType));
                 categoryBadge.setCreation_date(LocalDateTime.now());
+                categoryBadge.setIs_primary(false);
                 categoryBadge = badgeRepository.save(categoryBadge);
 
                 local.getBadge_list().add(categoryBadge);
@@ -107,6 +110,7 @@ public class BadgeService {
                 topContributorBadge.setBadge_type(BadgeTypeEnum.TOP_CONTRIBUTOR);
                 topContributorBadge.setBadge_icon("https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/TOP_CONTRIBUTOR.png");
                 topContributorBadge.setCreation_date(LocalDateTime.now());
+                topContributorBadge.setIs_primary(false);
                 topContributorBadge = badgeRepository.save(topContributorBadge);
 
                 local.getBadge_list().add(topContributorBadge);
@@ -126,6 +130,7 @@ public class BadgeService {
                 categoryBadge.setBadge_type(badgeType);
                 categoryBadge.setBadge_icon(getBadgeIcon(badgeType));
                 categoryBadge.setCreation_date(LocalDateTime.now());
+                categoryBadge.setIs_primary(false);
                 categoryBadge = badgeRepository.save(categoryBadge);
 
                 vendorStaff.getBadge_list().add(categoryBadge);
@@ -138,6 +143,7 @@ public class BadgeService {
                 topContributorBadge.setBadge_type(BadgeTypeEnum.TOP_CONTRIBUTOR);
                 topContributorBadge.setBadge_icon("https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/TOP_CONTRIBUTOR.png");
                 topContributorBadge.setCreation_date(LocalDateTime.now());
+                topContributorBadge.setIs_primary(false);
                 topContributorBadge = badgeRepository.save(topContributorBadge);
 
                 vendorStaff.getBadge_list().add(topContributorBadge);
@@ -146,38 +152,7 @@ public class BadgeService {
             if (eligibleForBadge || eligibleForTopContributor) {
                 vendorStaffRepository.save(vendorStaff);
             }
-        } /* else {
-            InternalStaff internalStaff = (InternalStaff) user;
-            postList = internalStaff.getPost_list();
-
-            eligibleForBadge = validateBadgeForInternalStaff(category, internalStaff);
-            if (eligibleForBadge && internalStaff.getBadge_list().stream().noneMatch(badge ->
-                    badge.getBadge_type().equals(badgeType))) {
-                Badge categoryBadge = new Badge();
-                categoryBadge.setBadge_type(badgeType);
-                categoryBadge.setBadge_icon(getBadgeIcon(badgeType));
-                categoryBadge.setCreation_date(LocalDateTime.now());
-                categoryBadge = badgeRepository.save(categoryBadge);
-
-                internalStaff.getBadge_list().add(categoryBadge);
-            }
-
-            eligibleForTopContributor = validateTopContributor(postList);
-            if (eligibleForTopContributor && internalStaff.getBadge_list().stream().noneMatch(badge ->
-                    badge.getBadge_type().equals(BadgeTypeEnum.TOP_CONTRIBUTOR))) {
-                Badge topContributorBadge = new Badge();
-                topContributorBadge.setBadge_type(BadgeTypeEnum.TOP_CONTRIBUTOR);
-                topContributorBadge.setBadge_icon("https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/TOP_CONTRIBUTOR.png");
-                topContributorBadge.setCreation_date(LocalDateTime.now());
-                topContributorBadge = badgeRepository.save(topContributorBadge);
-
-                internalStaff.getBadge_list().add(topContributorBadge);
-            }
-
-            if (eligibleForBadge || eligibleForTopContributor) {
-                internalStaffRepository.save(internalStaff);
-            }
-        } */
+        }
     }
 
     public Boolean validateTopContributor(List<Post> postList) {
@@ -227,25 +202,6 @@ public class BadgeService {
         }
     }
 
-    public Boolean validateBadgeForInternalStaff(Category category, InternalStaff internalStaff) {
-        List<Post> categoryItemPostList = new ArrayList<>();
-
-        for (CategoryItem categoryItem : category.getCategory_item_list()) {
-            categoryItemPostList.addAll(categoryItem.getPost_list());
-        }
-
-        Integer numberOfPosts = Math.toIntExact(categoryItemPostList.stream()
-                .filter(post -> post.getInternal_staff_user() != null &&
-                        post.getInternal_staff_user().getUser_id().equals(internalStaff.getUser_id())).count());
-
-        // For demo purposes
-        if (numberOfPosts >= 2) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public Boolean validateBadgeForVendorStaff(Category category, VendorStaff vendorStaff) {
         List<Post> categoryItemPostList = new ArrayList<>();
 
@@ -267,15 +223,15 @@ public class BadgeService {
 
     public String getBadgeIcon(BadgeTypeEnum badgeType) {
         if (badgeType.equals(BadgeTypeEnum.ATTRACTION_EXPERT)) {
-            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/ATTRACTION_EXPERT.png";
+            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badges/ATTRACTION_EXPERT.png";
         } else if (badgeType.equals(BadgeTypeEnum.ACCOMMODATION_EXPERT)) {
-            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/ACCOMMODATION_EXPERT.png";
+            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badges/ACCOMMODATION_EXPERT.png";
         } else if (badgeType.equals(BadgeTypeEnum.TELECOM_EXPERT)) {
-            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/TELECOM_EXPERT.png";
+            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badges/TELECOM_EXPERT.png";
         } else if (badgeType.equals(BadgeTypeEnum.TOUR_EXPERT)) {
-            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/TOUR_EXPERT.png";
+            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badges/TOUR_EXPERT.png";
         } else {
-            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badge/FOODIE_EXPERT.png";
+            return "https://tt02.s3.ap-southeast-1.amazonaws.com/static/badges/FOODIE.png";
         }
     }
 
@@ -296,10 +252,7 @@ public class BadgeService {
         } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
             VendorStaff vendorStaff = (VendorStaff) user;
             badgeList = vendorStaff.getBadge_list();
-        } /* else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
-            InternalStaff internalStaff = (InternalStaff) user;
-            badgeList = internalStaff.getBadge_list();
-        } */
+        }
 
         LocalDateTime currentDateTime = LocalDateTime.now();
         LocalDateTime twentySecondsBefore = currentDateTime.minus(20, ChronoUnit.SECONDS);
@@ -330,11 +283,41 @@ public class BadgeService {
         } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
             VendorStaff vendorStaff = (VendorStaff) user;
             badgeList = vendorStaff.getBadge_list();
-        } /* else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
-            InternalStaff internalStaff = (InternalStaff) user;
-            badgeList = internalStaff.getBadge_list();
-        } */
+        }
 
         return badgeList;
+    }
+
+    public Badge markBadgeAsPrimary(Long badgeId, Long userId) throws BadRequestException {
+        Optional<Badge> badgeOptional = badgeRepository.findById(badgeId);
+        if (badgeOptional.isEmpty()) {
+            throw new BadRequestException("Badge does not exist!");
+        }
+
+        List<Badge> b_list = retrieveBadgesByUserId(userId);
+        for (Badge b : b_list) {
+            if (b.getIs_primary() == Boolean.TRUE) {
+                b.setIs_primary(false);
+                badgeRepository.save(b);
+            }
+        }
+
+        Badge b = badgeOptional.get();
+        b.setIs_primary(true);
+        badgeRepository.save(b);
+
+        return b;
+    }
+
+    public Badge getPrimaryBadge(Long userId) throws BadRequestException {
+        List<Badge> b_list = retrieveBadgesByUserId(userId);
+        Badge ans = null;
+        for (Badge b : b_list) {
+            if (b.getIs_primary() == Boolean.TRUE) {
+                ans = b;
+                break;
+            }
+        }
+        return ans;
     }
 }
