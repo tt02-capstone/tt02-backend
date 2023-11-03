@@ -65,6 +65,10 @@ public class Booking {
     @JoinColumn(name = "attraction_id")
     private Attraction attraction;
 
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private Item item;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "tourist_id")
     private Tourist tourist_user;

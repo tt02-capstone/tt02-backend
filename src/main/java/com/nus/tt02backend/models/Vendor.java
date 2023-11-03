@@ -78,4 +78,7 @@ public class Vendor {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Deal> deals_list;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Item> item_list;
 }
