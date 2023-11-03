@@ -508,9 +508,23 @@ public class ItineraryService {
 
                 for (Attraction attraction : suggestedEvents.getAttractions()) {
                     String[] times = attraction.getOpening_hours().split(" - ");
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h.mma");
-                    LocalTime openTime = LocalTime.parse(times[0], formatter);
-                    LocalTime closeTime = LocalTime.parse(times[1], formatter);
+
+                    LocalTime openTime;
+                    LocalTime closeTime;
+                    DateTimeFormatter formatterWithDot = DateTimeFormatter.ofPattern("h.mma");
+                    DateTimeFormatter formatterWithoutDot = DateTimeFormatter.ofPattern("ha");
+
+                    if (times[0].trim().contains(".")) {
+                        openTime = LocalTime.parse(times[0].trim(), formatterWithDot);
+                    } else {
+                        openTime = LocalTime.parse(times[0].trim(), formatterWithoutDot);
+                    }
+
+                    if (times[1].trim().contains(".")) {
+                        closeTime = LocalTime.parse(times[1].trim(), formatterWithDot);
+                    } else {
+                        closeTime = LocalTime.parse(times[1].trim(), formatterWithoutDot);
+                    }
 
                     if ((startTime.isAfter(openTime) || startTime.equals(openTime))
                             && (endTime.isBefore(closeTime) || endTime.equals(closeTime))) {
@@ -529,9 +543,23 @@ public class ItineraryService {
 
                 for (Restaurant restaurant : suggestedEvents.getRestaurants()) {
                     String[] times = restaurant.getOpening_hours().split(" - ");
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h.mma");
-                    LocalTime openTime = LocalTime.parse(times[0], formatter);
-                    LocalTime closeTime = LocalTime.parse(times[1], formatter);
+
+                    LocalTime openTime;
+                    LocalTime closeTime;
+                    DateTimeFormatter formatterWithDot = DateTimeFormatter.ofPattern("h.mma");
+                    DateTimeFormatter formatterWithoutDot = DateTimeFormatter.ofPattern("ha");
+
+                    if (times[0].trim().contains(".")) {
+                        openTime = LocalTime.parse(times[0].trim(), formatterWithDot);
+                    } else {
+                        openTime = LocalTime.parse(times[0].trim(), formatterWithoutDot);
+                    }
+
+                    if (times[1].trim().contains(".")) {
+                        closeTime = LocalTime.parse(times[1].trim(), formatterWithDot);
+                    } else {
+                        closeTime = LocalTime.parse(times[1].trim(), formatterWithoutDot);
+                    }
 
                     if ((startTime.isAfter(openTime) || startTime.equals(openTime))
                             && (endTime.isBefore(closeTime) || endTime.equals(closeTime))) {
@@ -544,6 +572,10 @@ public class ItineraryService {
                     suggestedEvents.getRestaurants().addAll(filteredRestaurants);
                 }
             }
+        }
+
+        if (suggestedEvents.getRestaurants().isEmpty() && suggestedEvents.getAttractions().isEmpty()) {
+            throw new BadRequestException("There are no events available between the specified start and end times");
         }
 
         return suggestedEvents;
