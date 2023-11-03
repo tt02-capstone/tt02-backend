@@ -604,4 +604,25 @@ public class AccommodationService {
             return filterList;
         }
     }
+
+    public List<Accommodation> similarPriceAccommRecommendation (PriceTierEnum priceTierEnum, Long accommId) throws NotFoundException {
+        List<Accommodation> aList = retrieveAllPublishedAccommodation();
+        List<Accommodation> filterList = new ArrayList<>();
+
+        if (aList.isEmpty()) {
+            throw new NotFoundException("No accommodations are created!");
+        } else {
+            for (Accommodation a : aList) {
+                if (a.getEstimated_price_tier() == priceTierEnum && !a.getAccommodation_id().equals(accommId)) {
+                    filterList.add(a);
+                }
+            }
+        }
+
+        if (filterList.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            return filterList;
+        }
+    }
 }
