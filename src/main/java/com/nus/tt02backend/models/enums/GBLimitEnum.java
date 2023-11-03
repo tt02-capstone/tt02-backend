@@ -13,8 +13,20 @@ public enum GBLimitEnum {
         this.value = value;
     }
 
-    public Integer getValue() {
-        return value;
-    }
-}
+    public String getValue() {
+        switch (this) {
+            case VALUE_10:
+                return "10";
+            case VALUE_30:
+                return "30";
+            case VALUE_50:
+                return "50";
+            case VALUE_100:
+                return "100";
+            case UNLIMITED:
+                return "UNLIMITED";
+            default:
+                return String.valueOf(value);
+        }
+    }}
 
