@@ -128,6 +128,8 @@ public class DataDashboardService {
 
         List<Object> items = new ArrayList<>();
 
+        Calendar calendar = new GregorianCalendar();
+
         Map<String, Object> subscription_params = new HashMap<>();
         Map<String, Object> transaction_params = new HashMap<>();
         subscription_params.put("customer", stripe_account_id);
@@ -143,7 +145,9 @@ public class DataDashboardService {
                     "price_1O1Pf2JuLboRjh4qv1wswh2w"
             );
 
-            //subscription_params.put("cancel_at", )
+            calendar.add(Calendar.MONTH, 1);
+            long newCancelAt = calendar.getTimeInMillis() / 1000L;
+            subscription_params.put("cancel_at", newCancelAt);
 
         } else if (Objects.equals(subscription_type, "YEARLY")) {
 
@@ -152,6 +156,9 @@ public class DataDashboardService {
                     "price_1O1PfLJuLboRjh4qj2lYrFHi"
             );
 
+            calendar.add(Calendar.YEAR, 1);
+            long newCancelAt = calendar.getTimeInMillis() / 1000L;
+            subscription_params.put("cancel_at", newCancelAt);
 
 
         }
@@ -180,12 +187,16 @@ public class DataDashboardService {
         return subscription.getId();
     }
 
-    public String updateSubscription(String subscription_type, Boolean auto_renew, String subscription_id) throws StripeException {
+    public String updateSubscription(String subscription_id, String subscription_type, Boolean auto_renew) throws StripeException {
 
         Subscription subscription =
                 Subscription.retrieve(
                         subscription_id
                 );
+
+        Calendar calendar = new GregorianCalendar();
+        //calendar.setTimeInMillis(currentCancelAt * 1000L);
+        Map<String, Object> params = new HashMap<>();
         Map<String, String> subscription_price = new HashMap<>();
         if (Objects.equals(subscription_type, "MONTHLY")) {
 
@@ -194,6 +205,10 @@ public class DataDashboardService {
                     "price_1O1Pf2JuLboRjh4qv1wswh2w"
             );
 
+            calendar.add(Calendar.MONTH, 1);
+            long newCancelAt = calendar.getTimeInMillis() / 1000L;
+            params.put("cancel_at", newCancelAt);
+
         } else if (Objects.equals(subscription_type, "YEARLY")) {
 
             subscription_price.put(
@@ -201,12 +216,16 @@ public class DataDashboardService {
                     "price_1O1PfLJuLboRjh4qj2lYrFHi"
             );
 
+            calendar.add(Calendar.YEAR, 1);
+            long newCancelAt = calendar.getTimeInMillis() / 1000L;
+            params.put("cancel_at", newCancelAt);
+
         }
 
 
         List<Object> items = new ArrayList<>();
 
-        Map<String, Object> params = new HashMap<>();
+
         if (!auto_renew) {
             params.put("cancel_at_period_end", true);
         }
@@ -219,6 +238,8 @@ public class DataDashboardService {
 
         return updatedSubscription.getId();
     }
+
+    // Might need to change
 
     public String renewSubscription(String subscription_id) throws StripeException, BadRequestException {
 
@@ -277,6 +298,20 @@ public class DataDashboardService {
 
     }
 
+    public String getSubscriptionStatus(String user_id, String user_type) throws NotFoundException, StripeException {
+        String stripe_account_id = getStripe_Id(user_id, user_type);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("customer", stripe_account_id);
+
+        SubscriptionCollection subscriptions =
+                Subscription.list(params);
+
+        Subscription current_subscription = subscriptions.getData().get(0);
+
+        return current_subscription.getStatus();
+    }
+
     public Map<String,Object> getSubscription(String user_id, String user_type) throws NotFoundException, StripeException {
 
         String stripe_account_id = getStripe_Id(user_id, user_type);
@@ -312,7 +347,10 @@ public class DataDashboardService {
         // Get status
         String status = current_subscription.getStatus();
 
+        String subscription_id = current_subscription.getId();
+
         // Add to the Map
+        extractedFields.put("subscription_id",  subscription_id);
         extractedFields.put("current_period_end", currentPeriodEnd);
         extractedFields.put("current_period_start", currentPeriodStart);
         //extractedFields.put("recurring_interval", recurringInterval);
