@@ -19,6 +19,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class SupportTicketService {
 
@@ -70,6 +72,9 @@ public class SupportTicketService {
     @Autowired
     JavaMailSender javaMailSender;
 
+    @Autowired
+    RoomRepository roomRepository;
+
     public User findUser(Long userId) throws NotFoundException {
         try {
             Optional<User> userOptional = userRepository.findById(userId);
@@ -118,10 +123,31 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
@@ -144,10 +170,31 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
@@ -168,10 +215,31 @@ public class SupportTicketService {
                 if (!supportTicket.getReply_list().isEmpty()) {
                     List<Reply> replyList = supportTicket.getReply_list();
                     for (Reply r : replyList) {
-                        r.setVendor_staff_user(null);
-                        r.setInternal_staff_user(null);
-                        r.setTourist_user(null);
-                        r.setLocal_user(null);
+                        if (r.getVendor_staff_user() != null) {
+                            r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                            r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                            r.getVendor_staff_user().setVendor(null);
+                            r.getVendor_staff_user().setPost_list(null);
+                            r.getVendor_staff_user().setComment_list(null);
+                        } else if (r.getInternal_staff_user() != null) {
+                            r.getInternal_staff_user().setSupport_ticket_list(null);
+                            r.getInternal_staff_user().setPost_list(null);
+                            r.getInternal_staff_user().setComment_list(null);
+                        } else if (r.getTourist_user() != null) {
+                            r.getTourist_user().setSupport_ticket_list(null);
+                            r.getTourist_user().setBooking_list(null);
+                            r.getTourist_user().setPost_list(null);
+                            r.getTourist_user().setComment_list(null);
+                            r.getTourist_user().setCart_list(null);
+                            r.getTourist_user().setTour_type_list(null);
+                        } else if (r.getLocal_user() != null) {
+                            r.getLocal_user().setSupport_ticket_list(null);
+                            r.getLocal_user().setBooking_list(null);
+                            r.getLocal_user().setPost_list(null);
+                            r.getLocal_user().setComment_list(null);
+                            r.getLocal_user().setCart_list(null);
+                            r.getLocal_user().setTour_type_list(null);
+                        }
                     }
                 }
 
@@ -211,10 +279,31 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
@@ -237,10 +326,31 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
             if (s.getBooking() != null) {
@@ -261,16 +371,38 @@ public class SupportTicketService {
             if (!s.getReply_list().isEmpty()) {
                 List<Reply> replyList = s.getReply_list();
                 for (Reply r : replyList) {
-                    r.setVendor_staff_user(null);
-                    r.setInternal_staff_user(null);
-                    r.setTourist_user(null);
-                    r.setLocal_user(null);
+                    if (r.getVendor_staff_user() != null) {
+                        r.getVendor_staff_user().setIncoming_support_ticket_list(null);
+                        r.getVendor_staff_user().setOutgoing_support_ticket_list(null);
+                        r.getVendor_staff_user().setVendor(null);
+                        r.getVendor_staff_user().setPost_list(null);
+                        r.getVendor_staff_user().setComment_list(null);
+                    } else if (r.getInternal_staff_user() != null) {
+                        r.getInternal_staff_user().setSupport_ticket_list(null);
+                        r.getInternal_staff_user().setPost_list(null);
+                        r.getInternal_staff_user().setComment_list(null);
+                    } else if (r.getTourist_user() != null) {
+                        r.getTourist_user().setSupport_ticket_list(null);
+                        r.getTourist_user().setBooking_list(null);
+                        r.getTourist_user().setPost_list(null);
+                        r.getTourist_user().setComment_list(null);
+                        r.getTourist_user().setCart_list(null);
+                        r.getTourist_user().setTour_type_list(null);
+                    } else if (r.getLocal_user() != null) {
+                        r.getLocal_user().setSupport_ticket_list(null);
+                        r.getLocal_user().setBooking_list(null);
+                        r.getLocal_user().setPost_list(null);
+                        r.getLocal_user().setComment_list(null);
+                        r.getLocal_user().setCart_list(null);
+                        r.getLocal_user().setTour_type_list(null);
+                    }
                 }
             }
+
             if (s.getBooking() != null) {
-                s.getBooking().setPayment(null);
                 s.getBooking().setLocal_user(null);
                 s.getBooking().setTourist_user(null);
+                s.getBooking().setPayment(null);
             }
         }
 
@@ -692,6 +824,30 @@ public class SupportTicketService {
         return bookingsToReturn;
     }
 
+    public Accommodation retrieveAccommodationByRoom (Long room_id) throws NotFoundException {
+        Room room = roomRepository.findById(room_id)
+                .orElseThrow(() -> new NotFoundException("Room not found!"));
+
+        List<Accommodation> allAccommodations = accommodationRepository.findAll();
+
+        if (allAccommodations.isEmpty()) {
+            throw new NotFoundException("There are no accommodations!");
+        }
+
+        for (Accommodation accomm : allAccommodations) {
+            List<Room> accommodationRoomList = accomm.getRoom_list();
+
+            if (!accommodationRoomList.isEmpty()) {
+                for (Room r : accommodationRoomList) {
+                    if (r.getRoom_id().equals(room_id)) {
+                        return accomm;
+                    }
+                }
+            }
+        }
+        throw new NotFoundException("Accommodation not found!");
+    }
+
     public SupportTicket createSupportTicketForBooking(Long userId, Long bookingId, SupportTicket supportTicketToCreate) throws BadRequestException, NotFoundException {
 
         User user = findUser(userId);
@@ -715,40 +871,28 @@ public class SupportTicketService {
         List<VendorStaff> vendorStaffList = new ArrayList<>();
         String activityName = null;
         if (booking.getAttraction() != null) {
-            Attraction attraction = booking.getAttraction();
-            vendorStaffList = getVendorByAttraction(attraction.getAttraction_id());
-            activityName = " with Attraction: " + attraction.getName();
+            vendorStaffList = getVendorByAttraction(booking.getAttraction().getAttraction_id());
+            activityName = " with Attraction: " + booking.getAttraction().getName();
         } else if (booking.getRoom() != null) {
-            Room room = booking.getRoom();
-            Accommodation accommodation = accommodationService.retrieveAccommodationByRoom(room.getRoom_id());
+            Accommodation accommodation = retrieveAccommodationByRoom(booking.getRoom().getRoom_id());
             vendorStaffList = getVendorByAccommodation(accommodation.getAccommodation_id());
             activityName = " with Accommodation: " + accommodation.getName();
         } else if (booking.getTelecom() != null) {
-            Telecom telecom = booking.getTelecom();
-            vendorStaffList = getVendorByTelecom(telecom.getTelecom_id());
-            activityName = " with Telecom: " + telecom.getName();
-        } else if (booking.getDeal() != null) {
-            Deal deal = booking.getDeal();
-            vendorStaffList = getVendorByDeal(deal.getDeal_id());
-            activityName = " with Deal: " + deal.getPromo_code();
+            vendorStaffList = getVendorByTelecom(booking.getTelecom().getTelecom_id());
+            activityName = " with Telecom: " + booking.getTelecom().getName();
         }
-        // tour if adding
 
         if (supportTicket.getTicket_type().equals(SupportTicketTypeEnum.ADMIN)) {
             List<InternalStaff> internalStaffList = internalStaffRepository.findAll();
             for (InternalStaff i : internalStaffList) {
                 if (i.getRole().equals(InternalRoleEnum.ADMIN) || i.getRole().equals(InternalRoleEnum.SUPPORT)) {
-                    List<SupportTicket> supportTicketList = i.getSupport_ticket_list();
-                    supportTicketList.add(supportTicket);
-                    i.setSupport_ticket_list(supportTicketList);
+                    i.getSupport_ticket_list().add(supportTicket);
                     internalStaffRepository.save(i);
                 }
             }
         } else if (supportTicket.getTicket_type().equals(SupportTicketTypeEnum.VENDOR)) {
             for (VendorStaff v : vendorStaffList) {
-                List<SupportTicket> supportTicketList = v.getIncoming_support_ticket_list();
-                supportTicketList.add(supportTicket);
-                v.setIncoming_support_ticket_list(supportTicketList);
+                v.getIncoming_support_ticket_list().add(supportTicket);
                 vendorStaffRepository.save(v);
             }
         }
@@ -769,12 +913,15 @@ public class SupportTicketService {
         supportTicket.getBooking().setLocal_user(null);
         supportTicket.getBooking().setTourist_user(null);
 
+        String datePart = booking.getStart_datetime().format(DateTimeFormatter.ofPattern("ddMyyyy"));
+        String bookingNumber = "" + booking.getBooking_id() + datePart;
+
         try {
             String subject = "[WithinSG] Support Ticket To " +  convertToTitleCase(supportTicket.getTicket_type().toString()) + " Created";
             String content = "<html><body style='font-family: Arial, sans-serif;'>"
                     + "<p style='color: #333; font-size: 16px;'>Dear " + user.getName() + ",</p>"
                     + "<p style='color: #333; font-size: 16px;'>You have submitted a support ticket to " + convertToTitleCase(supportTicket.getTicket_type().toString()) +
-                    " regarding your Booking #" + supportTicket.getBooking().getBooking_id() + activityName + "</p>"
+                    " regarding your Booking #" + bookingNumber + activityName + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Ticket Id:</strong> " + supportTicket.getSupport_ticket_id().toString() + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Ticket Category:</strong> " + convertToTitleCase(supportTicket.getTicket_category().toString()) + "</p>"
                     + "<p style='color: #333; font-size: 16px;'><strong>Message Contents:</strong> <em>" + supportTicket.getDescription() + "</em></p>"
@@ -798,7 +945,12 @@ public class SupportTicketService {
             Boolean currentStatus = supportTicket.getIs_resolved();
             supportTicket.setIs_resolved(!currentStatus);
             supportTicketRepository.save(supportTicket);
-
+            supportTicket.setAccommodation(null);
+            supportTicket.setReply_list(null);
+            supportTicket.setBooking(null);
+            supportTicket.setAttraction(null);
+            supportTicket.setDeal(null);
+            supportTicket.setTelecom(null);
             return supportTicket;
 
         } else {
@@ -824,6 +976,12 @@ public class SupportTicketService {
 
         supportTicketRepository.save(supportTicket);
 
+        if (supportTicket.getBooking() != null) {
+            supportTicket.getBooking().setPayment(null);
+            supportTicket.getBooking().setLocal_user(null);
+            supportTicket.getBooking().setTourist_user(null);
+        }
+
         return supportTicket;
     }
 
@@ -835,7 +993,6 @@ public class SupportTicketService {
         }
 
         SupportTicket supportTicket = supportTicketOptional.get();
-        List<SupportTicket> supportTicketList = getAllSupportTickets();
 
         if (!supportTicket.getReply_list().isEmpty()) {
             throw new BadRequestException("Unable to delete support ticket as there are existing replies.");

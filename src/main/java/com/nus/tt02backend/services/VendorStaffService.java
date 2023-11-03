@@ -118,7 +118,11 @@ public class VendorStaffService {
         List<VendorStaff> vendorStaffs = vendorStaffRepository.getAllAssociatedVendorStaff(vendorId);
 
         for (VendorStaff vs : vendorStaffs) {
+            vs.setPost_list(null);
+            vs.setComment_list(null);
             vs.getVendor().setVendor_staff_list(null);
+            vs.setIncoming_support_ticket_list(null);
+            vs.setOutgoing_support_ticket_list(null);
         }
 
         return vendorStaffs;
@@ -284,7 +288,11 @@ public class VendorStaffService {
 
         for (VendorStaff i : vendorStaffList) {
             i.setPassword(null);
+            i.setPost_list(null);
+            i.setComment_list(null);
             i.getVendor().setVendor_staff_list(null);
+            i.setIncoming_support_ticket_list(null);
+            i.setOutgoing_support_ticket_list(null);
         }
 
         return vendorStaffList;

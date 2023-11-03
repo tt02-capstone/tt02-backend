@@ -60,8 +60,7 @@ public class AccommodationController {
     public ResponseEntity<Accommodation> createAccommodation(@PathVariable Long vendorStaffId , @RequestBody Accommodation accommodationToCreate)
             throws BadRequestException, IllegalArgumentException, NotFoundException {
 
-        VendorStaff vendorStaff = accommodationService.retrieveVendor(vendorStaffId);
-        Accommodation accommodation =  accommodationService.createAccommodation(vendorStaff,accommodationToCreate);
+        Accommodation accommodation =  accommodationService.createAccommodation(vendorStaffId,accommodationToCreate);
         return ResponseEntity.ok(accommodation);
     }
 

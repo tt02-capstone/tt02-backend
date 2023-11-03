@@ -92,7 +92,6 @@ public class PaymentService {
 
     public String addPaymentMethod(String user_type, String tourist_email,  String payment_method_id) throws StripeException, BadRequestException {
         String tourist_stripe_id = retrieveStripeId(user_type, tourist_email);
-        System.out.println("dddd: " + payment_method_id);
         PaymentMethod paymentMethod = retrievePaymentMethod(payment_method_id);
 
         PaymentMethodListParams listParams = PaymentMethodListParams.builder()
@@ -111,12 +110,9 @@ public class PaymentService {
         }
 
         Map<String, Object> params = new HashMap<>();
-
         params.put("customer", tourist_stripe_id);
 
-        PaymentMethod updatedPaymentMethod =
-                paymentMethod.attach(params);
-
+        PaymentMethod updatedPaymentMethod = paymentMethod.attach(params);
         return updatedPaymentMethod.getId();
     }
 

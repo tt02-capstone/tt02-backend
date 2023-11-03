@@ -56,9 +56,18 @@ public class CartService {
     RoomRepository roomRepository;
     @Autowired
     TourRepository tourRepository;
-
     @Autowired
     TourTypeRepository tourTypeRepository;
+    @Autowired
+    DIYEventService diyEventService;
+    @Autowired
+    ItineraryService itineraryService;
+    @Autowired
+    AccommodationRepository accommodationRepository;
+    @Autowired
+    DIYEventRepository diyEventRepository;
+    @Autowired
+    ItineraryRepository itineraryRepository;
 
     public Long addCartItems(String user_type, String tourist_email, String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
@@ -258,7 +267,7 @@ public class CartService {
         }
 
         List<CartItem> addedCartItems = new ArrayList<>();
-
+        Integer totalTickets = 0;
         for (CartItem cartItemToCreate : cartItems) {
             // [LOG1] To include code to check for existing cartItem
             CartItem newCartItem = cartItemRepository.save(cartItemToCreate);
@@ -278,9 +287,58 @@ public class CartService {
                     currentTicket.setTicket_count(currentTicket.getTicket_count() - cartItemToCreate.getQuantity());
                     ticketPerDayRepository.save(currentTicket);
                     currentTickets.set(foundTicketIndex, currentTicket);
-
+                    totalTickets += cartItemToCreate.getQuantity();
                 } else {
                     throw new NotFoundException("No tickets found for this date!");
+                }
+            } else {
+                LocalDate tour_date = cartItemToCreate.getStart_datetime();
+                String tour_details = cartItemToCreate.getActivity_selection();
+                Pattern pattern = Pattern.compile("(.+) \\((.+) - (.+)\\)");
+
+                // Create a Matcher and apply the pattern to the formatted string
+                Matcher matcher = pattern.matcher(tour_details);
+
+                if (matcher.matches()) {
+                    String selectedTourTypeName = matcher.group(1);
+                    String startTimeStr = matcher.group(2);
+                    String endTimeStr = matcher.group(3);
+                    String[] start_parts = startTimeStr.split(" ");
+                    String[] end_parts = endTimeStr.split(" ");
+                    startTimeStr = start_parts[0];
+                    endTimeStr = end_parts[0];
+
+
+                    String[] startHourMinute = startTimeStr.split(":");
+                    String[] endHourMinute = endTimeStr.split(":");
+
+                    LocalTime startTime = LocalTime.of(Integer.parseInt(startHourMinute[0]), Integer.parseInt(startHourMinute[1]));
+                    LocalTime endTime = LocalTime.of(Integer.parseInt(endHourMinute[0]), Integer.parseInt(endHourMinute[1]));
+                    if ("PM".equals(start_parts[1])) {
+                        if (startTime.getHour() != 12) {
+                            startTime = startTime.plusHours(12);
+                        }
+                    }
+
+                    if ("PM".equals(end_parts[1])) {
+                        if (endTime.getHour() != 12) {
+                            endTime = endTime.plusHours(12);
+                        }
+                    }
+
+
+                    LocalDateTime startDateTime = LocalDateTime.of(tour_date, startTime);
+                    LocalDateTime endDateTime = LocalDateTime.of(tour_date, endTime);
+                    TourType selected_tourType = tourTypeRepository.findByName(selectedTourTypeName);
+                    Tour tour = tourTypeRepository.findTourInTourType(selected_tourType, tour_date.atStartOfDay(), startDateTime, endDateTime);
+                    Integer remainder = tour.getRemaining_slot() - totalTickets;
+                    if (remainder >= 0) {
+                        tour.setRemaining_slot(remainder);
+                        tourRepository.save(tour);
+                    } else {
+                        throw new NotFoundException("Not enough slots for tour");
+                    }
+
                 }
             }
         }
@@ -702,7 +760,7 @@ public class CartService {
 
         // Should fetch via User if possible
         List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
-
+        int index = 0;
         CartBooking cartBookingToCreate = null;
         for (CartBooking booking : bookingsToCheckout) {
 
@@ -772,14 +830,53 @@ public class CartService {
                         cartBookingToCreate.setTour(tour);
                         cartBookingToCreate.setCart_item_list(cartItems);
 
+                        BigDecimal tour_rawtotal = tour_booking.getPrice().multiply(BigDecimal.valueOf(tour_booking.getQuantity()));
+
+                        BigDecimal attraction_rawtotal = BigDecimal.ZERO;
+
+                        for (CartItem item : booking.getCart_item_list()) {
+                            if (!("TOUR".equals(String.valueOf(item.getType())))) {
+                                attraction_rawtotal = attraction_rawtotal.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                            }
+
+                        }
 
 
-                        priceList.add(tour_booking.getPrice().multiply(BigDecimal.valueOf(tour_booking.getQuantity())));
+                        BigDecimal raw_total = tour_rawtotal.add(attraction_rawtotal);
+
+                        BigDecimal discounted_total = priceList.get(index);
+
+                        BigDecimal attraction_subtotal = BigDecimal.ZERO;
+
+                        BigDecimal tour_subtotal = BigDecimal.ZERO;
+
+                        if (!(raw_total.equals(discounted_total))) {
+
+                            BigDecimal difference = raw_total.subtract(discounted_total);
+
+                            BigDecimal rate = difference.divide(raw_total, 4, RoundingMode.HALF_UP);
+
+                            attraction_subtotal = attraction_rawtotal.subtract(attraction_rawtotal.multiply(rate));
+                            tour_subtotal = tour_rawtotal.subtract(tour_rawtotal.multiply(rate));
+
+
+                        } else {
+                            attraction_subtotal = attraction_rawtotal;
+                            tour_subtotal = tour_rawtotal;
+                        }
+
+
+
+                        priceList.set(index, attraction_subtotal.setScale(2, RoundingMode.HALF_UP));
+
+                        priceList.add(tour_subtotal.setScale(2, RoundingMode.HALF_UP));
 
                     }
                 }
 
             }
+
+            index++;
         }
 
 
@@ -799,7 +896,6 @@ public class CartService {
         List<Booking> createdBookings = new ArrayList<>();
         if (user_type.equals("LOCAL")) {
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
-            currentTourist.setCart_list(null);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
@@ -810,7 +906,6 @@ public class CartService {
             updateLocalUser(currentTourist, bookingsToCheckout, createdBookings);
         } else if (user_type.equals("TOURIST")) {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
-            currentTourist.setCart_list(null);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
                 Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
@@ -827,15 +922,18 @@ public class CartService {
     }
 
     private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id)
-            throws StripeException, NotFoundException {
+            throws StripeException, NotFoundException, BadRequestException {
 
         List<BookingItem> bookingItems = createBookingItems(bookingToCheckout);
         Booking newBooking = createBooking(user, bookingToCheckout, bookingItems);
         Payment newPayment = createPayment(newBooking, totalAmountPayable, payment_method_id);
         newBooking.setPayment(newPayment);
         newPayment.setBooking(newBooking);
-        bookingRepository.save(newBooking);
+        Booking savedBooking = bookingRepository.save(newBooking);
         paymentRepository.save(newPayment);
+
+        // create a diy booking event
+        this.createBookingDIYEvent((User) user, savedBooking);
 
         return newBooking;
     }
@@ -858,7 +956,7 @@ public class CartService {
         return bookingItems;
     }
 
-    private <T> Booking createBooking(T user, CartBooking bookingToCheckout, List<BookingItem> bookingItems) {
+    private <T> Booking createBooking(T user, CartBooking bookingToCheckout, List<BookingItem> bookingItems) throws BadRequestException {
         Booking newBooking = new Booking();
 
         // Populate booking fields that are common for both Local and Tourist
@@ -889,11 +987,9 @@ public class CartService {
         // Check user type and populate fields accordingly
         if (user instanceof Local) {
             Local local = (Local) user;
-            local.setCart_list(null);
             newBooking.setLocal_user(local);
         } else if (user instanceof Tourist) {
             Tourist tourist = (Tourist) user;
-            tourist.setCart_list(null);
             newBooking.setTourist_user(tourist);
         } else {
             throw new IllegalArgumentException("Invalid user type");
@@ -901,7 +997,6 @@ public class CartService {
 
         // Save the new booking
         bookingRepository.save(newBooking);
-
         return newBooking;
     }
 
@@ -1039,5 +1134,53 @@ public class CartService {
 
         // Assuming touristRepository is accessible here
         touristRepository.save(currentTourist);
+    }
+
+    // create a new itinerary event for the booking
+    private void createBookingDIYEvent(User user, Booking booking) throws BadRequestException {
+        DIYEvent event = createUnusedEvent(user, booking); // in the event user delete itinerary, and remake, we want to add the booking in as well
+
+        Itinerary itinerary = itineraryService.getItineraryByUser(user.getUser_id());
+        if (itinerary != null && !notWithinItineraryDates(itinerary, event)) { // booking falls within itinerary
+            if (itinerary.getDiy_event_list() == null) itinerary.setDiy_event_list(new ArrayList<>());
+            itinerary.getDiy_event_list().add(event);
+            itineraryRepository.save(itinerary);
+        }
+    }
+
+    public boolean notWithinItineraryDates(Itinerary itinerary, DIYEvent event) {
+        return event.getEnd_datetime().isBefore(itinerary.getStart_date()) || event.getStart_datetime().isAfter(itinerary.getEnd_date());
+    }
+
+    private DIYEvent createUnusedEvent(User user, Booking booking) {
+        DIYEvent diyEvent = new DIYEvent();
+        diyEvent.setName(booking.getActivity_name());
+        diyEvent.setStart_datetime(booking.getStart_datetime());
+        diyEvent.setEnd_datetime(booking.getEnd_datetime());
+        if (booking.getAttraction() != null) {
+            diyEvent.setLocation(booking.getAttraction().getAddress());
+        } else if (booking.getRoom() != null) {
+            diyEvent.setLocation(accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id()));
+        } else if (booking.getTour() != null) {
+            diyEvent.setLocation(attractionRepository.getAttractionByTourId(booking.getTour().getTour_id()));
+        } else {
+            diyEvent.setLocation("");
+        }
+        diyEvent.setRemarks("");
+        diyEvent.setBooking(booking);
+
+        if (user instanceof Tourist) {
+            Tourist tourist = (Tourist) user;
+            if (tourist.getUnused_diy_event_list() == null) tourist.setUnused_diy_event_list(new ArrayList<>());
+            tourist.getUnused_diy_event_list().add(diyEvent);
+            diyEventRepository.save(diyEvent);
+        } else if (user instanceof Local) {
+            Local local = (Local) user;
+            if (local.getUnused_diy_event_list() == null) local.setUnused_diy_event_list(new ArrayList<>());
+            local.getUnused_diy_event_list().add(diyEvent);
+            diyEventRepository.save(diyEvent);
+        }
+
+        return diyEvent;
     }
 }

@@ -1,6 +1,7 @@
 package com.nus.tt02backend.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Itinerary {
 
     @Id
@@ -23,10 +24,10 @@ public class Itinerary {
     private Long itinerary_id;
 
     @Column(nullable = false)
-    private Date start_date;
+    private LocalDateTime start_date;
 
     @Column(nullable = false)
-    private Date end_date;
+    private LocalDateTime end_date;
 
     private Integer number_of_pax;
 
@@ -35,8 +36,5 @@ public class Itinerary {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<DIYEvent> diy_event_list;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<Booking> booking_list;
 
 }

@@ -8,7 +8,6 @@ import com.nus.tt02backend.repositories.InternalStaffRepository;
 import com.nus.tt02backend.repositories.UserRepository;
 import com.nus.tt02backend.repositories.VendorStaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.*;
@@ -18,7 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserDetailsImpl implements UserDetailsService {
+public class JwtUserService implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;

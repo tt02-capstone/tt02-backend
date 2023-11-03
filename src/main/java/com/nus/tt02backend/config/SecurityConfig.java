@@ -1,14 +1,12 @@
 package com.nus.tt02backend.config;
 
-import com.nus.tt02backend.services.UserDetailsImpl;
-import com.nus.tt02backend.services.UserService;
+import com.nus.tt02backend.services.JwtUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,12 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.nus.tt02backend.filters.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -34,7 +26,7 @@ import java.util.List;
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
-  private final UserDetailsImpl userService;
+  private final JwtUserService userService;
   private final PasswordEncoder passwordEncoder;
 
   @Bean
@@ -86,40 +78,46 @@ public class SecurityConfig {
               "/admin/passwordResetStageThree/**",
               "/vendor/createVendor",
               "/vendorStaff/createVendorStaff",
-              "/category/**", // to remove
-              "/categoryItem/**", // to remove
-              "/post/**", // to remove
-              "/comment/**", // to remove
-              "/supportTicket/**", // to remove
-                "/reply/**", // to remove
+              "/notification/**", // to remove
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
-              "/category/**", // to remove
-              "/categoryItem/**", // to remove
-              "/post/**", // to remove
-              "/comment/**", // to remove
               "/supportTicket/**", // to remove
-                "/reply/**", // to remove
-                "/booking/**", // to remove
+              "/booking/**", // to remove
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
+              "/comment/**", // to remove
+              "/post/**", // to remove
+                "attraction/**", // to remove
+              "/user/**").permitAll()
+        .requestMatchers(HttpMethod.GET,
+              "/vendorStaff/verifyEmail/**",
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
+              "/comment/**", // to remove
+              "/post/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
-              "/category/**", // to remove
-              "/categoryItem/**", // to remove
-              "/post/**", // to remove
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
               "/comment/**", // to remove
-              "/supportTicket/**", // to remove
-                "/reply/**", // to remove
+              "/post/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.DELETE,
-                "/supportTicket/**" // to remove
-                ).permitAll()
-        .requestMatchers(HttpMethod.GET,
-              "/category/**", // to remove
-              "/categoryItem/**", // to remove
-              "/post/**", // to remove
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
               "/comment/**", // to remove
+              "/post/**", // to remove
+              "/user/**").permitAll()
+        .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
+              "/itinerary/**", // to remove
+              "/diyEvent/**", // to remove
+              "/comment/**", // to remove
+              "/post/**", // to remove
+              "/recommendation/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()

@@ -232,6 +232,7 @@ public class TourService {
             }
         }
 
+        tourToCreate.setRemaining_slot(tourType.getRecommended_pax());
         LocalDate date = tourToCreate.getDate().toLocalDate();
         tourToCreate.setDate(date.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
         Tour createdTour = tourRepository.save(tourToCreate);
@@ -376,10 +377,20 @@ public class TourService {
         for (Booking b : bookings) {
             if (b.getLocal_user() != null) {
                 Local localUser = b.getLocal_user();
+                localUser.setPost_list(null);
+                localUser.setComment_list(null);
+                localUser.setCart_list(null);
                 localUser.setBooking_list(null);
+                localUser.setSupport_ticket_list(null);
+
             } else if (b.getTourist_user() != null) {
                 Tourist touristUser = b.getTourist_user();
+                touristUser.setPost_list(null);
+                touristUser.setComment_list(null);
+                touristUser.setCart_list(null);
                 touristUser.setBooking_list(null);
+                touristUser.setTour_type_list(null);
+                touristUser.setSupport_ticket_list(null);
             }
             b.getPayment().setBooking(null);
         }
@@ -397,10 +408,20 @@ public class TourService {
         Booking booking = bookingOptional.get();
         if (booking.getLocal_user() != null) {
             Local localUser = booking.getLocal_user();
+            localUser.setPost_list(null);
+            localUser.setComment_list(null);
+            localUser.setCart_list(null);
             localUser.setBooking_list(null);
+            localUser.setSupport_ticket_list(null);
+
         } else if (booking.getTourist_user() != null) {
             Tourist touristUser = booking.getTourist_user();
+            touristUser.setPost_list(null);
+            touristUser.setComment_list(null);
+            touristUser.setCart_list(null);
             touristUser.setBooking_list(null);
+            touristUser.setTour_type_list(null);
+            touristUser.setSupport_ticket_list(null);
         }
         booking.getPayment().setBooking(null);
 

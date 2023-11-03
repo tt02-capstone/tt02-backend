@@ -123,6 +123,9 @@ public class InternalStaffService {
 
         for (InternalStaff i : internalStaffList) {
             i.setPassword(null);
+            i.setComment_list(null);
+            i.setPost_list(null);
+            i.setSupport_ticket_list(null);
         }
 
         return internalStaffList;

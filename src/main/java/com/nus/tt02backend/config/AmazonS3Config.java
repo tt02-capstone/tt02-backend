@@ -1,4 +1,4 @@
-package com.nus.tt02backend.services;
+package com.nus.tt02backend.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

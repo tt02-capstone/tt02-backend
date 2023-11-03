@@ -62,9 +62,6 @@ public class SupportTicket {
     private Telecom telecom;
 
     @ManyToOne
-    private Tour tour;
-
-    @ManyToOne
     private Restaurant restaurant;
 
 }

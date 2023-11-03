@@ -19,8 +19,14 @@ public class RecommendationController {
     RecommendationService recommendationService;
 
     @GetMapping("/getRecommendation/{location}/{listingType}/{typeId}")
-    public ResponseEntity<List<Object>> getRecommendation(@PathVariable GenericLocationEnum location, @PathVariable ListingTypeEnum listingType, @PathVariable Long typeId) throws NotFoundException {System.out.println("in controller");
-        List<Object> rList = recommendationService.getRecommendation(location,listingType,typeId);
-        return ResponseEntity.ok(rList);
+    public ResponseEntity<List<Object>> getRecommendation(@PathVariable GenericLocationEnum location, @PathVariable ListingTypeEnum listingType, @PathVariable Long typeId) throws NotFoundException {
+        List<Object> list = recommendationService.getRecommendation(location,listingType,typeId);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getPostRecommendation/{catId}")
+    public ResponseEntity<List<Object>> getPostRecommendation(@PathVariable long catId) throws NotFoundException {
+        List<Object> list = recommendationService.getPostRecommendation(catId);
+        return ResponseEntity.ok(list);
     }
 }

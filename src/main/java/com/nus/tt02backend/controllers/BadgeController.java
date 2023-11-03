@@ -1,10 +1,15 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Badge;
+import com.nus.tt02backend.models.Booking;
 import com.nus.tt02backend.services.BadgeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -13,4 +18,27 @@ public class BadgeController {
     @Autowired
     BadgeService badgeService;
 
+    @GetMapping("/awardedNewBadge/{userId}")
+    public ResponseEntity<Badge> awardedNewBadge(@PathVariable Long userId) throws BadRequestException {
+        Badge newBadge = badgeService.awardedNewBadge(userId);
+        return ResponseEntity.ok(newBadge);
+    }
+
+    @GetMapping("/retrieveBadgesByUserId/{userId}")
+    public ResponseEntity<List<Badge>> retrieveBadgesByUserId(@PathVariable Long userId) throws BadRequestException {
+        List<Badge> badges = badgeService.retrieveBadgesByUserId(userId);
+        return ResponseEntity.ok(badges);
+    }
+
+    @PutMapping("/markBadgeAsPrimary/{badgeId}/{userId}")
+    public ResponseEntity<Badge> markBadgeAsPrimary(@PathVariable Long badgeId, @PathVariable Long userId) throws BadRequestException {
+        Badge b = badgeService.markBadgeAsPrimary(badgeId,userId);
+        return ResponseEntity.ok(b);
+    }
+
+    @GetMapping("/getPrimaryBadge/{userId}")
+    public ResponseEntity<Badge> getPrimaryBadge(@PathVariable Long userId) throws BadRequestException {
+        Badge b = badgeService.getPrimaryBadge(userId);
+        return ResponseEntity.ok(b);
+    }
 }

@@ -1,5 +1,6 @@
 package com.nus.tt02backend.repositories;
 
+import com.nus.tt02backend.models.DIYEvent;
 import com.nus.tt02backend.models.Tourist;
 import com.nus.tt02backend.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;

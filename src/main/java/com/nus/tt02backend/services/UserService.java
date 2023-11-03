@@ -53,6 +53,7 @@ public class UserService {
                 tourist.setComment_list(null);
                 tourist.setCart_list(null);
                 tourist.setSupport_ticket_list(null);
+                tourist.setItinerary(null);
 
 //                List<SupportTicket> supportTicketList = tourist.getSupport_ticket_list();
 //                for (SupportTicket s : supportTicketList) {
@@ -83,6 +84,7 @@ public class UserService {
                 local.setComment_list(null);
                 local.setCart_list(null);
                 local.setSupport_ticket_list(null);
+                local.setItinerary(null);
 
 //                List<SupportTicket> supportTicketList = local.getSupport_ticket_list();
 //                for (SupportTicket s : supportTicketList) {
@@ -175,6 +177,7 @@ public class UserService {
                 local.setTelecom_list(null);
                 local.setDeals_list(null);
                 local.setSupport_ticket_list(null);
+                local.setItinerary(null);
 
                 return local;
             }
@@ -513,24 +516,114 @@ public class UserService {
             if (user instanceof VendorStaff) {
                 VendorStaff vendorStaff = (VendorStaff) user;
                 vendorStaff.getVendor().setVendor_staff_list(null);
+                vendorStaff.setIncoming_support_ticket_list(null);
+                vendorStaff.setOutgoing_support_ticket_list(null);
+
+                List<Post> postList = vendorStaff.getPost_list();
+                for (Post p : postList) {
+                    p.setLocal_user(null);
+                    p.setTourist_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                    p.setComment_list(null);
+                }
+
+                List<Comment> commentList = vendorStaff.getComment_list();
+                for (Comment c : commentList) {
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setPost(null);
+                    c.setTourist_user(null);
+                    c.setLocal_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
+
                 return vendorStaff;
 
             }  else if (user instanceof Tourist) {
                 Tourist tourist = (Tourist) user;
+                tourist.setCart_list(null);
                 tourist.setBooking_list(null);
-                tourist.setPost_list(null);
-                tourist.setComment_list(null);
+                tourist.setSupport_ticket_list(null);
+
+                List<Post> postList = tourist.getPost_list();
+                for (Post p : postList) {
+                    p.setLocal_user(null);
+                    p.setTourist_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                    p.setComment_list(null);
+                }
+
+                List<Comment> commentList = tourist.getComment_list();
+                for (Comment c : commentList) {
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setPost(null);
+                    c.setTourist_user(null);
+                    c.setLocal_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
+
                 return tourist;
 
             } else if (user instanceof Local) {
                 Local local = (Local) user;
+                local.setCart_list(null);
                 local.setBooking_list(null);
-                local.setPost_list(null);
-                local.setComment_list(null);
+                local.setSupport_ticket_list(null);
+
+                List<Post> postList = local.getPost_list();
+                for (Post p : postList) {
+                    p.setLocal_user(null);
+                    p.setTourist_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                    p.setComment_list(null);
+                }
+
+                List<Comment> commentList = local.getComment_list();
+                for (Comment c : commentList) {
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setPost(null);
+                    c.setTourist_user(null);
+                    c.setLocal_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
                 return local;
+
+            } else if (user instanceof InternalStaff) {
+                InternalStaff internalStaff = (InternalStaff) user;
+                internalStaff.setSupport_ticket_list(null);
+
+                List<Post> postList = internalStaff.getPost_list();
+                for (Post p : postList) {
+                    p.setLocal_user(null);
+                    p.setTourist_user(null);
+                    p.setVendor_staff_user(null);
+                    p.setInternal_staff_user(null);
+                    p.setComment_list(null);
+                }
+
+                List<Comment> commentList = internalStaff.getComment_list();
+                for (Comment c : commentList) {
+                    c.setParent_comment(null);
+                    c.setChild_comment_list(null);
+                    c.setPost(null);
+                    c.setTourist_user(null);
+                    c.setLocal_user(null);
+                    c.setVendor_staff_user(null);
+                    c.setInternal_staff_user(null);
+                }
+
+                return internalStaff;
             }
 
-            return user; // internal staff
+            return user; // unreachable
         } else {
             throw new NotFoundException("User not found!");
         }

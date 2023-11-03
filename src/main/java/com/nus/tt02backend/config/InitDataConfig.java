@@ -16,12 +16,14 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
 
+@Transactional
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -46,6 +48,10 @@ public class InitDataConfig implements CommandLineRunner {
     private final TelecomRepository telecomRepository;
     private final TourTypeRepository tourTypeRepository;
     private final TourRepository tourRepository;
+    private final BookingRepository bookingRepository;
+    private final BookingItemRepository bookingItemRepository;
+    private final SupportTicketRepository supportTicketRepository;
+    private final ReplyRepository replyRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -53,13 +59,22 @@ public class InitDataConfig implements CommandLineRunner {
     @Autowired
     AttractionService attractionService;
 
+    List<Accommodation> accommodations = new ArrayList<>();
+
+    List<Telecom> telecoms = new ArrayList<>();
+
+    List<Attraction> attractions = new ArrayList<>();
+
+    List<User> users = new ArrayList<>();
+
+    @Transactional
     @Override
     public void run(String... args) throws Exception {
 
         if (internalStaffRepository.count() == 0) {
             InternalStaff staff = (InternalStaff) InternalStaff.builder()
                     .email("admin@gmail.com")
-                    .name("admin")
+                    .name("Piyush Gupta")
                     .password(passwordEncoder.encode("password1!"))
                     .user_type(UserTypeEnum.INTERNAL_STAFF)
                     .is_blocked(false)
@@ -67,6 +82,7 @@ public class InitDataConfig implements CommandLineRunner {
                     .staff_num(48323233L)
                     .profile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg")
                     .build();
+            staff.setBadge_list(new ArrayList<>());
             internalStaffRepository.save(staff);
             log.debug("created ADMIN user - {}", staff);
         }
@@ -74,26 +90,29 @@ public class InitDataConfig implements CommandLineRunner {
         Local local = new Local();
         if (localRepository.count() == 0) {
             local.setEmail("local@gmail.com");
-            local.setName("Rowoon");
+            local.setName("Alice Tan");
             local.setPassword(passwordEncoder.encode("password1!"));
             local.setUser_type(UserTypeEnum.LOCAL);
             local.setIs_blocked(false);
-            local.setNric_num("S9911111A");
+            local.setNric_num("S9914132A");
             local.setDate_of_birth(new Date());
             local.setWallet_balance(new BigDecimal(0));
             local.setCountry_code("+65");
             local.setEmail_verified(true);
             local.setMobile_num("98989898");
-            local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            local.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/local.png");
             local.setTour_type_list(new ArrayList<>());
+            local.setBadge_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "local@gmail.com");
-            customer_parameters.put("name", "Rowoon");
+            customer_parameters.put("name", "Alice Tan");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             local.setStripe_account_id(stripe_account_id);
 
             local = localRepository.save(local);
+
+            users.add(local);
 
             // init the ccd card here for the local account
             Map<String, Object> card = new HashMap<>();
@@ -111,24 +130,27 @@ public class InitDataConfig implements CommandLineRunner {
         if (touristRepository.count() == 0) {
             Tourist tourist = new Tourist();
             tourist.setEmail("tourist@gmail.com");
-            tourist.setName("Cho Bo Ah");
+            tourist.setName("Rowoon");
             tourist.setPassword(passwordEncoder.encode("password1!"));
             tourist.setUser_type(UserTypeEnum.TOURIST);
             tourist.setIs_blocked(false);
-            tourist.setPassport_num("A111111");
+            tourist.setPassport_num("A152335");
             tourist.setDate_of_birth(new Date());
-            tourist.setCountry_code("+65");
+            tourist.setCountry_code("+82");
             tourist.setEmail_verified(true);
-            tourist.setMobile_num("9797979797");
-            tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            tourist.setMobile_num("01037596775");
+            tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/tourist.png.jpg");
+            tourist.setBadge_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "tourist@gmail.com");
-            customer_parameters.put("name", "Cho Bo Ah");
+            customer_parameters.put("name", "Rowoon");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             tourist.setStripe_account_id(stripe_account_id);
 
             touristRepository.save(tourist);
+
+            users.add(tourist);
 
             // init the ccd card here for the tourist account
             Map<String, Object> card = new HashMap<>();
@@ -141,33 +163,40 @@ public class InitDataConfig implements CommandLineRunner {
             PaymentMethod paymentMethod = PaymentMethod.create(params);
 
             paymentService.addPaymentMethod("TOURIST", "tourist@gmail.com", paymentMethod.getId());
+
+            createTourists(100);
         }
 
         Vendor vendor1 = new Vendor();
         Vendor vendor2 = new Vendor();
+        Vendor vendor3 = new Vendor();
+        Vendor vendor4 = new Vendor();
+        Vendor vendor5 = new Vendor();
+        Vendor vendor6 = new Vendor();
+
         if (vendorRepository.count() == 0) {
-            vendor1.setBusiness_name("Business Name");
-            vendor1.setPoc_name("Ha Joon");
+            vendor1.setBusiness_name("Sentosa Leisure Management");
+            vendor1.setPoc_name("Bob Tan Beng Hai");
             vendor1.setPoc_position("Manager");
             vendor1.setCountry_code("+65");
             vendor1.setPoc_mobile_num("96969696");
             vendor1.setWallet_balance(new BigDecimal(0));
             vendor1.setApplication_status(ApplicationStatusEnum.APPROVED);
             vendor1.setVendor_type(VendorEnum.ATTRACTION);
-            vendor1.setService_description("애정수를 믿으세요?");
+            vendor1.setService_description("Sentosa, a place where children dreams come true!");
 
             Map<String, Object> customer_parameters = new HashMap<>();
-            customer_parameters.put("email", "vendor@gmail.com");
-            customer_parameters.put("name", "Business Name");
+            customer_parameters.put("email", "attraction@gmail.com");
+            customer_parameters.put("name", "Sentosa Leisure Management");
             String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
             vendor1.setStripe_account_id(stripe_account_id);
 
             vendor1 = vendorRepository.save(vendor1);
 
             VendorStaff vendorStaff = new VendorStaff();
-            vendorStaff.setEmail("vendor@gmail.com");
+            vendorStaff.setEmail("attraction@gmail.com");
             vendorStaff.setEmail_verified(true);
-            vendorStaff.setName("Na Yeon"); //ewww
+            vendorStaff.setName("Bob Tan Beng Hai");
             vendorStaff.setPassword(passwordEncoder.encode("password1!"));
             vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
             vendorStaff.setIs_blocked(false);
@@ -175,9 +204,15 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setIs_master_account(true);
             vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
             vendorStaff.setVendor(vendor1);
+            vendorStaff.setBadge_list(new ArrayList<>());
             vendorStaffRepository.save(vendorStaff);
             log.debug("created Vendor user - {}", vendorStaff);
-            vendor2 = setUpVendor2(vendor2);
+
+            vendor2 = setUpVendor2(vendor2); // telecom - M1
+            vendor3 = setUpVendor3(vendor3); // accommodation
+            vendor4 = setUpVendor4(vendor4); // restaurant - The Kitchen Table
+            vendor5 = setUpVendor5(vendor5); // restaurant - 8 Noodles
+            vendor6 = setUpVendor6(vendor6); // telecom - Singtel
         }
 
         if (attractionRepository.count() == 0) {
@@ -219,25 +254,25 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
             TicketPerDay t1 = new TicketPerDay();
-            t1.setTicket_date(LocalDate.parse("2023-10-20"));
+            t1.setTicket_date(LocalDate.parse("2023-10-27"));
             t1.setTicket_count(5);
             t1.setTicket_type(TicketEnum.ADULT);
             t1 = ticketPerDayRepository.save(t1);
 
             TicketPerDay t2 = new TicketPerDay();
-            t2.setTicket_date(LocalDate.parse("2023-10-20"));
+            t2.setTicket_date(LocalDate.parse("2023-10-27"));
             t2.setTicket_count(5);
             t2.setTicket_type(TicketEnum.CHILD);
             t2 = ticketPerDayRepository.save(t2);
 
             TicketPerDay t3 = new TicketPerDay();
-            t3.setTicket_date(LocalDate.parse("2023-10-20"));
+            t3.setTicket_date(LocalDate.parse("2023-10-27"));
             t3.setTicket_count(5);
             t3.setTicket_type(TicketEnum.ADULT);
             t3 = ticketPerDayRepository.save(t3);
 
             TicketPerDay t4 = new TicketPerDay();
-            t4.setTicket_date(LocalDate.parse("2023-10-20"));
+            t4.setTicket_date(LocalDate.parse("2023-10-27"));
             t4.setTicket_count(5);
             t4.setTicket_type(TicketEnum.CHILD);
             t4 = ticketPerDayRepository.save(t4);
@@ -254,6 +289,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             List<Attraction> currentList = new ArrayList<>();
             currentList.add(attraction);
+            attractions.add(attraction);
             vendor1.setAttraction_list(currentList);
             vendorRepository.save(vendor1);
 
@@ -270,7 +306,7 @@ public class InitDataConfig implements CommandLineRunner {
             d1.setIs_govt_voucher(false);
             d1.setIs_published(true);
             List<String> imgList = new ArrayList<>();
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_1_black_friday_deal.jpeg");
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_backfriday.jpeg");
             d1.setDeal_image_list(imgList);
 
             d1 = dealRepository.save(d1);
@@ -288,7 +324,7 @@ public class InitDataConfig implements CommandLineRunner {
             d2.setIs_govt_voucher(true);
             d2.setIs_published(true);
             List<String> imgList2 = new ArrayList<>();
-            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/deals/Deal_2_gov_pic.png");
+            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.png");
             d2.setDeal_image_list(imgList2);
 
             d2 = dealRepository.save(d2);
@@ -367,9 +403,10 @@ public class InitDataConfig implements CommandLineRunner {
             r1 = restaurantRepository.save(r1);
             List<Restaurant> rList = new ArrayList<>();
             rList.add(r1);
-            vendor1.setRestaurant_list(rList);
-            vendorRepository.save(vendor1);
-            secondRestaurant(rList);
+            vendor4.setRestaurant_list(rList);
+            vendorRepository.save(vendor4);
+
+            secondRestaurant(vendor5);
         }
 
         if (accommodationRepository.count() == 0) {
@@ -390,6 +427,10 @@ public class InitDataConfig implements CommandLineRunner {
             a1.setEstimated_price_tier(PriceTierEnum.TIER_5);
             accommodationRepository.save(a1);
 
+            if (vendor1.getAccommodation_list() == null) vendor1.setAccommodation_list(new ArrayList<>());
+            vendor1.getAccommodation_list().add(a1);
+            vendorRepository.save(vendor1);
+
             Accommodation a2 = new Accommodation();
             a2.setName("Mangrove Sentosa");
             List<String> list2 = new ArrayList<>();
@@ -407,10 +448,9 @@ public class InitDataConfig implements CommandLineRunner {
             a2.setEstimated_price_tier(PriceTierEnum.TIER_1);
             accommodationRepository.save(a2);
 
-            if (vendor1.getAccommodation_list() == null) vendor1.setAccommodation_list(new ArrayList<>());
-            vendor1.getAccommodation_list().add(a1);
-            vendor1.getAccommodation_list().add(a2);
-            vendorRepository.save(vendor1);
+            if (vendor3.getAccommodation_list() == null) vendor3.setAccommodation_list(new ArrayList<>());
+            vendor3.getAccommodation_list().add(a2);
+            vendorRepository.save(vendor3);
 
             Room r1 = new Room();
             r1.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/rwsroom1.png");
@@ -453,12 +493,14 @@ public class InitDataConfig implements CommandLineRunner {
             roomList1.add(r2);
             a1.setRoom_list(roomList1);
             accommodationRepository.save(a1);
+            accommodations.add(a1);
 
             List<Room> roomList2 = new ArrayList<>();
             roomList2.add(r3);
             roomList2.add(r4);
             a2.setRoom_list(roomList2);
             accommodationRepository.save(a2);
+            accommodations.add(a2);
         }
 
         if (telecomRepository.count() == 0) {
@@ -472,17 +514,18 @@ public class InitDataConfig implements CommandLineRunner {
             t1.setNum_of_days_valid(7);
             t1.setData_limit(50);
             t1.setData_limit_category(GBLimitEnum.VALUE_50);
+            t1.setPlan_duration_category(NumberOfValidDaysEnum.SEVEN_DAY);
             t1.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_7_day.JPG");
 
             t1 = telecomRepository.save(t1);
+            telecoms.add(t1);
             List<Telecom> tList = new ArrayList<>();
             tList.add(t1);
-            vendor1.setTelecom_list(tList);
-            vendorRepository.save(vendor1);
-
+            vendor2.setTelecom_list(tList);
+            vendorRepository.save(vendor2);
 
             Telecom t2 = new Telecom();
-            t2.setName("Singetel");
+            t2.setName("Singtel");
             t2.setDescription("Singtel 14 Days 80GB plan");
             t2.setPrice(new BigDecimal(60));
             t2.setType(TelecomTypeEnum.PHYSICALSIM);
@@ -490,14 +533,16 @@ public class InitDataConfig implements CommandLineRunner {
             t2.setEstimated_price_tier(PriceTierEnum.TIER_3);
             t2.setNum_of_days_valid(14);
             t2.setData_limit(80);
+            t2.setPlan_duration_category(NumberOfValidDaysEnum.FOURTEEN_DAY);
             t2.setData_limit_category(GBLimitEnum.VALUE_100);
             t2.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_14_day.JPG");
 
             t2 = telecomRepository.save(t2);
+            telecoms.add(t2);
             List<Telecom> tList2 = new ArrayList<>();
             tList2.add(t2);
-            vendor2.setTelecom_list(tList2);
-            vendorRepository.save(vendor2);
+            vendor6.setTelecom_list(tList2);
+            vendorRepository.save(vendor6);
         }
 
         if (tourTypeRepository.count() == 0) {
@@ -532,10 +577,12 @@ public class InitDataConfig implements CommandLineRunner {
                 tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
                 tour1.setStart_time(currentDate.atTime(10, 0));
                 tour1.setEnd_time(currentDate.atTime(12, 0));
+                tour1.setRemaining_slot(10);
 
                 tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
                 tour2.setStart_time(currentDate.atTime(13, 0));
                 tour2.setEnd_time(currentDate.atTime(15, 0));
+                tour2.setRemaining_slot(10);
 
                 tour1 = tourRepository.save(tour1);
                 tour2 = tourRepository.save(tour2);
@@ -556,6 +603,7 @@ public class InitDataConfig implements CommandLineRunner {
                 String categoryName = value.toString().toLowerCase();
                 category.setName(categoryName.substring(0, 1).toUpperCase() + categoryName.substring(1));
                 category.setCategory_item_list(new ArrayList<>());
+                category.setIs_published(true);
                 category = categoryRepository.save(category);
                 List<CategoryItem> categoryItemList = new ArrayList<>();
 
@@ -566,6 +614,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(attraction.getName());
                         categoryItem.setImage(attraction.getAttraction_image_list().get(0));
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -576,6 +625,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(accommodation.getName());
                         categoryItem.setImage(accommodation.getAccommodation_image_list().get(0));
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -586,6 +636,7 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(telecom.getName());
                         categoryItem.setImage(telecom.getImage()); // init telecom w an image
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
@@ -596,18 +647,21 @@ public class InitDataConfig implements CommandLineRunner {
                         CategoryItem categoryItem = new CategoryItem();
                         categoryItem.setName(tourType.getName());
                         categoryItem.setImage(tourType.getTour_image_list().get(0));
+                        categoryItem.setIs_published(true);
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
                 }
 
                 category.getCategory_item_list().addAll(categoryItemList);
+                category.setIs_published(true);
                 categoryRepository.save(category);
             }
 
             Category category = new Category();
             category.setName("Restaurant");
             category.setCategory_item_list(new ArrayList<>());
+            category.setIs_published(true);
             category = categoryRepository.save(category);
             List<Restaurant> restaurants = restaurantRepository.findAll();
             List<CategoryItem> categoryItemList = new ArrayList<>();
@@ -616,21 +670,65 @@ public class InitDataConfig implements CommandLineRunner {
                 CategoryItem categoryItem = new CategoryItem();
                 categoryItem.setName(restaurant.getName());
                 categoryItem.setImage(restaurant.getRestaurant_image_list().get(0));
+                categoryItem.setIs_published(true);
                 categoryItem = categoryItemRepository.save(categoryItem);
                 categoryItemList.add(categoryItem);
             }
 
             category.getCategory_item_list().addAll(categoryItemList);
+            category.setIs_published(true);
             categoryRepository.save(category);
 
             Category category1 = new Category();
             category1.setName("Others"); // for all the misc forum post
             category1.setCategory_item_list(new ArrayList<>());
+            category1.setIs_published(true);
             categoryRepository.save(category1);
+        }
+
+        if (supportTicketRepository.count() == 0) {
+            SupportTicket s1 = new SupportTicket();
+            s1.setCreated_time(LocalDateTime.now().minusDays(1).minusHours(1));
+            s1.setUpdated_time(LocalDateTime.now().minusDays(1).minusHours(1));
+            s1.setDescription("Is it possible to rent a car via your app?");
+            s1.setIs_resolved(true);
+            s1.setTicket_category(SupportTicketCategoryEnum.GENERAL_ENQUIRY);
+            s1.setTicket_type(SupportTicketTypeEnum.ADMIN);
+            s1.setSubmitted_user(UserTypeEnum.TOURIST);
+            s1.setSubmitted_user_id(3l);
+            s1.setSubmitted_user_name("Rowoon");
+
+            List<Reply> replyList = new ArrayList<Reply>();
+            Reply r1 = new Reply();
+            r1.setCreated_time(LocalDateTime.now().minusHours(2));
+            r1.setUpdated_time(LocalDateTime.now().minusHours(2));
+            r1.setMessage("Unfortunately, we do not currently support car rentals. You can check out Car Rental SG's website instead. Thank you.");
+
+            InternalStaff internalStaff = internalStaffRepository.findById(1l).get();
+            r1.setInternal_staff_user(internalStaff);
+
+            replyRepository.save(r1);
+            replyList.add(r1);
+
+            s1.setReply_list(replyList);
+            SupportTicket supportTicket = supportTicketRepository.save(s1);
+
+            Tourist tourist = touristRepository.getTouristByUserId(3l);
+            List<SupportTicket> list = new ArrayList<>();
+            list.add(supportTicket);
+            tourist.setSupport_ticket_list(list);
+            touristRepository.save(tourist);
+
+            internalStaff.setSupport_ticket_list(list);
+            internalStaffRepository.save(internalStaff);
+        }
+
+        if (bookingRepository.count() == 0) {
+            createBookingsAndPayments(1000);
         }
     }
 
-    public void secondRestaurant(List<Restaurant> rList) {
+    public void secondRestaurant(Vendor vendor) {
         Restaurant r1 = new Restaurant();
         r1.setName("8 Noodles");
         r1.setDescription("Casual and authentic eatery at Shangri-La Rasa Sentosa that serves Asian noodles and more!");
@@ -741,9 +839,9 @@ public class InitDataConfig implements CommandLineRunner {
         r1.getDish_list().add(d10);
 
         restaurantRepository.save(r1);
-        Vendor vendor = vendorRepository.findById(1L).get();
-        rList.add(r1);
-        vendor.setRestaurant_list(rList);
+        List<Restaurant> list = new ArrayList<>();
+        list.add(r1);
+        vendor.setRestaurant_list(list);
         vendorRepository.save(vendor);
     }
 
@@ -785,25 +883,25 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
         TicketPerDay t1 = new TicketPerDay();
-        t1.setTicket_date(LocalDate.parse("2023-10-13"));
+        t1.setTicket_date(LocalDate.parse("2023-10-27"));
         t1.setTicket_count(5);
         t1.setTicket_type(TicketEnum.ADULT);
         t1 = ticketPerDayRepository.save(t1);
 
         TicketPerDay t2 = new TicketPerDay();
-        t2.setTicket_date(LocalDate.parse("2023-10-13"));
+        t2.setTicket_date(LocalDate.parse("2023-10-27"));
         t2.setTicket_count(5);
         t2.setTicket_type(TicketEnum.CHILD);
         t2 = ticketPerDayRepository.save(t2);
 
         TicketPerDay t3 = new TicketPerDay();
-        t3.setTicket_date(LocalDate.parse("2023-10-14"));
+        t3.setTicket_date(LocalDate.parse("2023-10-27"));
         t3.setTicket_count(5);
         t3.setTicket_type(TicketEnum.ADULT);
         t3 = ticketPerDayRepository.save(t3);
 
         TicketPerDay t4 = new TicketPerDay();
-        t4.setTicket_date(LocalDate.parse("2023-10-14"));
+        t4.setTicket_date(LocalDate.parse("2023-10-27"));
         t4.setTicket_count(5);
         t4.setTicket_type(TicketEnum.CHILD);
         t4 = ticketPerDayRepository.save(t4);
@@ -817,6 +915,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
         attractionRepository.save(attraction);
+        attractions.add(attraction);
         Vendor vendor = vendorRepository.findById(1L).get();
         currentList.add(attraction); // add on to the previous list
         vendor.setAttraction_list(currentList);
@@ -856,10 +955,12 @@ public class InitDataConfig implements CommandLineRunner {
             tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
             tour1.setStart_time(currentDate.atTime(10, 0));
             tour1.setEnd_time(currentDate.atTime(12, 0));
+            tour1.setRemaining_slot(10);
 
             tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
             tour2.setStart_time(currentDate.atTime(13, 0));
             tour2.setEnd_time(currentDate.atTime(15, 0));
+            tour2.setRemaining_slot(10);
 
             tour1 = tourRepository.save(tour1);
             tour2 = tourRepository.save(tour2);
@@ -873,28 +974,28 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     Vendor setUpVendor2(Vendor vendor2) {
-        vendor2.setBusiness_name("Business 2");
-        vendor2.setPoc_name("Ha Loon");
+        vendor2.setBusiness_name("M1");
+        vendor2.setPoc_name("Ang Shih Huei");
         vendor2.setPoc_position("Manager");
         vendor2.setCountry_code("+65");
         vendor2.setPoc_mobile_num("96969697");
         vendor2.setWallet_balance(new BigDecimal(0));
         vendor2.setApplication_status(ApplicationStatusEnum.APPROVED);
-        vendor2.setVendor_type(VendorEnum.ATTRACTION);
-        vendor2.setService_description("애정수를 믿으세요?");
+        vendor2.setVendor_type(VendorEnum.TELECOM);
+        vendor2.setService_description("The best telecom service you can find in Singapore! It's M1!");
 
         Map<String, Object> customer_parameters = new HashMap<>();
-        customer_parameters.put("email", "vendor2@gmail.com");
-        customer_parameters.put("name", "Business 2");
+        customer_parameters.put("email", "telecom@gmail.com");
+        customer_parameters.put("name", "M1");
         String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
         vendor2.setStripe_account_id(stripe_account_id);
 
         vendor2 = vendorRepository.save(vendor2);
 
         VendorStaff vendorStaff = new VendorStaff();
-        vendorStaff.setEmail("vendor2@gmail.com");
+        vendorStaff.setEmail("telecom@gmail.com");
         vendorStaff.setEmail_verified(true);
-        vendorStaff.setName("Na HAHHAH"); //ewww
+        vendorStaff.setName("Ang Shih Huei"); //ewww
         vendorStaff.setPassword(passwordEncoder.encode("password1!"));
         vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
         vendorStaff.setIs_blocked(false);
@@ -902,8 +1003,518 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaff.setIs_master_account(true);
         vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
         vendorStaff.setVendor(vendor2);
+        vendorStaff.setBadge_list(new ArrayList<>());
         vendorStaffRepository.save(vendorStaff);
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor2;
+    }
+
+    Vendor setUpVendor3(Vendor vendor) {
+        vendor.setBusiness_name("Mangrove Singapore");
+        vendor.setPoc_name("Angelene Chan");
+        vendor.setPoc_position("Manager");
+        vendor.setCountry_code("+65");
+        vendor.setPoc_mobile_num("96963457");
+        vendor.setWallet_balance(new BigDecimal(0));
+        vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor.setVendor_type(VendorEnum.ACCOMMODATION);
+        vendor.setService_description("We are Mangrove Singapore. A global hotel service provider!");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "accommodation@gmail.com");
+        customer_parameters.put("name", "Mangrove Singapore");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor.setStripe_account_id(stripe_account_id);
+
+        vendor = vendorRepository.save(vendor);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("accommodation@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Angelene Chan");
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor);
+        vendorStaff.setBadge_list(new ArrayList<>());
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor;
+    }
+
+    Vendor setUpVendor4(Vendor vendor) {
+        vendor.setBusiness_name("The Kitchen Table");
+        vendor.setPoc_name("Keith Tan");
+        vendor.setPoc_position("Manager");
+        vendor.setCountry_code("+65");
+        vendor.setPoc_mobile_num("96963431");
+        vendor.setWallet_balance(new BigDecimal(0));
+        vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor.setVendor_type(VendorEnum.RESTAURANT);
+        vendor.setService_description("We are The Kitchen Table! Our speciality is Singapore classic!");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "restaurant@gmail.com");
+        customer_parameters.put("name", "The Kitchen Table");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor.setStripe_account_id(stripe_account_id);
+
+        vendor = vendorRepository.save(vendor);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("restaurant@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Keith Tan");
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/restaurant.png");
+        vendorStaff.setVendor(vendor);
+        vendorStaff.setBadge_list(new ArrayList<>());
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor;
+    }
+
+    Vendor setUpVendor5(Vendor vendor) {
+        vendor.setBusiness_name("8 Noodles");
+        vendor.setPoc_name("Tan Boon Heng");
+        vendor.setPoc_position("Manager");
+        vendor.setCountry_code("+65");
+        vendor.setPoc_mobile_num("96963123");
+        vendor.setWallet_balance(new BigDecimal(0));
+        vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor.setVendor_type(VendorEnum.RESTAURANT);
+        vendor.setService_description("We are 8 Noodles! Try our noodles!");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "restaurant2@gmail.com");
+        customer_parameters.put("name", "8 Noodles");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor.setStripe_account_id(stripe_account_id);
+
+        vendor = vendorRepository.save(vendor);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("restaurant2@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("Tan Boon Heng");
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor);
+        vendorStaff.setBadge_list(new ArrayList<>());
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor;
+    }
+
+    Vendor setUpVendor6(Vendor vendor) {
+        vendor.setBusiness_name("Singtel");
+        vendor.setPoc_name("See Heng How");
+        vendor.setPoc_position("Manager");
+        vendor.setCountry_code("+65");
+        vendor.setPoc_mobile_num("96553123");
+        vendor.setWallet_balance(new BigDecimal(0));
+        vendor.setApplication_status(ApplicationStatusEnum.APPROVED);
+        vendor.setVendor_type(VendorEnum.TELECOM);
+        vendor.setService_description("Want the best telecom network? Join Singtel!");
+
+        Map<String, Object> customer_parameters = new HashMap<>();
+        customer_parameters.put("email", "telecom2@gmail.com");
+        customer_parameters.put("name", "Singtel");
+        String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
+        vendor.setStripe_account_id(stripe_account_id);
+
+        vendor = vendorRepository.save(vendor);
+
+        VendorStaff vendorStaff = new VendorStaff();
+        vendorStaff.setEmail("telecom2@gmail.com");
+        vendorStaff.setEmail_verified(true);
+        vendorStaff.setName("See Heng How");
+        vendorStaff.setPassword(passwordEncoder.encode("password1!"));
+        vendorStaff.setUser_type(UserTypeEnum.VENDOR_STAFF);
+        vendorStaff.setIs_blocked(false);
+        vendorStaff.setPosition("Manager");
+        vendorStaff.setIs_master_account(true);
+        vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+        vendorStaff.setVendor(vendor);
+        vendorStaff.setBadge_list(new ArrayList<>());
+        vendorStaffRepository.save(vendorStaff);
+        log.debug("created Vendor user - {}", vendorStaff);
+        return vendor;
+    }
+
+    @Transactional
+    public void createTourists(Integer numberOfTourists) {
+
+        for (int i = 0; i < numberOfTourists; i++) { // X is the number of tourists you want to generate
+            Tourist tourist = new Tourist();
+            Random rand = new Random();
+
+            // Generate a random email
+            String email = UUID.randomUUID().toString() + "@gmail.com";
+
+            // Generate a random name
+            String name = "Name" + rand.nextInt(1000);
+
+            // Generate a random country code
+            String[] countryCodes = {"+86", "+62", "+91", "+60", "+61"};
+            String countryCode = countryCodes[rand.nextInt(countryCodes.length)];
+
+            // Set attributes
+            tourist.setEmail(email);
+            tourist.setName(name);
+            tourist.setPassword(passwordEncoder.encode("password1!"));
+            tourist.setUser_type(UserTypeEnum.TOURIST);
+            tourist.setIs_blocked(false);
+            tourist.setPassport_num("A" + rand.nextInt(100000));
+            tourist.setDate_of_birth(new Date());
+            tourist.setCountry_code(countryCode);
+            tourist.setEmail_verified(true);
+            tourist.setMobile_num("010" + rand.nextInt(10000000));
+            tourist.setProfile_pic("");
+
+
+            tourist.setStripe_account_id("");
+
+            touristRepository.save(tourist);
+
+
+        }
+
+    }
+
+    @Transactional
+    public void createBookingsAndPayments(Integer numberOfBookingsAndPayments) {
+
+        for (int i = 0; i < numberOfBookingsAndPayments; i++) {
+
+            List<BookingItem> bookingItems = new ArrayList<>();
+
+            Random rand = new Random();
+
+            String[] activityTypes = {"ACCOMMODATION", "TELECOM", "ATTRACTION"};
+            String activity_type = activityTypes[rand.nextInt(activityTypes.length)];
+
+            Long selected_id = null;
+
+            Integer selected_quantity = null;
+
+            LocalDate selected_start = null;
+
+            LocalDate selected_end = null;
+
+            LocalDateTime selected_startTime = null;
+
+            LocalDateTime selected_endTime = null;
+
+            LocalDateTime lastUpdate = null;
+
+            String selected_activity = null;
+
+            String bookingStatus = null;
+
+            Room selected_room = null;
+
+            Tour selected_tour = null;
+
+            Attraction selected_attraction = null;
+
+            Telecom selected_telecom = null;
+
+            String selected_ticket = null;
+
+            Price selected_ticket_price = null;
+
+            Tourist selected_user = touristRepository.getTouristByUserId((long) (rand.nextInt(97) + 4));
+
+            User user = selected_user;
+
+            BigDecimal totalAmountPayable = BigDecimal.valueOf(0); // Quantity times price
+
+            if (activity_type.equals("ACCOMMODATION")) {
+                Long[] accom_ids = {1L, 2L};
+                selected_id = accom_ids[rand.nextInt(accom_ids.length)];
+                Optional<Accommodation> accomodation_optional = accommodationRepository.findById(selected_id);
+                if (accomodation_optional.isPresent()) {
+                    Accommodation accommodation = accommodations.get((int) (selected_id - 1));
+                    List<Room> rooms = accommodation.getRoom_list();
+
+                    selected_room = rooms.get(rand.nextInt(rooms.size()));
+                    selected_activity = accommodation.getName();
+                    selected_quantity = 1;
+
+                    int randomBookingPeriod = 2 + rand.nextInt(4);
+
+                    LocalDate nov14 = LocalDate.of(LocalDate.now().getYear(), 11, 14);
+
+                    // Calculate the date 6 months before November 14
+                    LocalDate sixMonthsBefore = nov14.minusMonths(6);
+
+
+
+                    // Calculate the number of days between the two dates
+                    int daysBetween = 180;
+
+                    // Generate a random number between 0 and daysBetween
+                    int randomDays = rand.nextInt((int) daysBetween + 1);
+
+                    System.out.println(randomDays);
+                    selected_start = sixMonthsBefore.plusDays(randomDays);
+                    System.out.println(selected_start);
+
+                    selected_end = selected_start.plusDays(randomBookingPeriod);
+
+                    int hoursToAddStart = accommodation.getCheck_in_time().getHour();
+                    int minutesToAddStart  = accommodation.getCheck_in_time().getMinute();
+
+
+                    selected_startTime = selected_start.atStartOfDay().plusHours(hoursToAddStart).plusMinutes(minutesToAddStart);
+
+                    int hoursToAddEnd = accommodation.getCheck_out_time().getHour();
+                    int minutesToAddEnd  = accommodation.getCheck_out_time().getMinute();
+
+                    selected_endTime = selected_end.atStartOfDay().plusHours(hoursToAddEnd).plusMinutes(minutesToAddEnd );
+
+                    lastUpdate = selected_endTime;
+
+                    bookingStatus = String.valueOf(BookingStatusEnum.COMPLETED);
+
+
+                }
+            } else if (activity_type.equals("TELECOM")) {
+                Long[] telecom_ids = {1L, 2L};
+                selected_id = telecom_ids[rand.nextInt(telecom_ids.length)];
+                Telecom telecom = telecoms.get((int) (selected_id - 1));
+                selected_telecom = telecom;
+
+                selected_activity = String.valueOf(telecom.getName());
+                selected_quantity = 1;
+
+                LocalDate nov14 = LocalDate.of(LocalDate.now().getYear(), 11, 14);
+
+                // Calculate the date 6 months before November 14
+                LocalDate sixMonthsBefore = nov14.minusMonths(6);
+
+
+
+                // Calculate the number of days between the two dates
+                int daysBetween = 180;
+
+                // Generate a random number between 0 and daysBetween
+                int randomDays = rand.nextInt((int) daysBetween + 1);
+
+                selected_start = sixMonthsBefore.plusDays(randomDays);
+
+                selected_end = sixMonthsBefore.plusDays(randomDays); // To update to add based on days valid
+
+                selected_startTime = selected_start.atStartOfDay();
+
+                selected_endTime = selected_end.atStartOfDay();
+
+                lastUpdate = selected_endTime;
+
+                bookingStatus = String.valueOf(BookingStatusEnum.COMPLETED);
+
+            } else if (activity_type.equals("ATTRACTION")) {
+                Long[] attraction_ids = {1L, 2L};
+                selected_id = attraction_ids[rand.nextInt(attraction_ids.length)];
+
+                selected_attraction = attractions.get((int) (selected_id - 1));
+
+                List<Price> priceList = selected_attraction.getPrice_list();
+
+                selected_ticket_price = priceList.get(rand.nextInt(priceList.size()));
+
+                selected_ticket = String.valueOf(selected_ticket_price.getTicket_type());
+
+                selected_activity = selected_ticket;
+
+                //selected
+
+                selected_quantity = 1;
+
+                LocalDate nov14 = LocalDate.of(LocalDate.now().getYear(), 11, 14);
+
+                // Calculate the date 6 months before November 14
+                LocalDate sixMonthsBefore = nov14.minusMonths(6);
+
+                // Calculate the number of days between the two dates
+                int daysBetween = 180;
+
+                // Generate a random number between 0 and daysBetween
+                int randomDays = rand.nextInt((int) daysBetween + 1);
+
+                selected_start = sixMonthsBefore.plusDays(randomDays);
+
+                selected_end = sixMonthsBefore.plusDays(randomDays); // To update
+
+                selected_startTime = selected_start.atStartOfDay();
+
+                selected_endTime = selected_end.atStartOfDay();
+
+                lastUpdate = selected_endTime;
+
+                bookingStatus = String.valueOf(BookingStatusEnum.COMPLETED);
+            }
+
+            int numberOfBookingItems = 1;
+
+            for (int j = 0; j < numberOfBookingItems; j++) {
+
+
+                BookingItem newBookingItem = new BookingItem();
+                newBookingItem.setQuantity(selected_quantity); // Random
+
+
+                newBookingItem.setStart_datetime(selected_start); //Need to make sense (Like book within their iternary?)
+                newBookingItem.setEnd_datetime(selected_end);
+
+
+
+                newBookingItem.setType(BookingTypeEnum.valueOf(activity_type));
+
+                newBookingItem.setActivity_selection(selected_activity);
+                bookingItemRepository.save(newBookingItem);
+                bookingItems.add(newBookingItem);
+
+                BigDecimal activityPrice = null;
+
+                if (activity_type.equals("ACCOMMODATION")) {
+                    activityPrice = selected_room.getPrice();
+                } else if (activity_type.equals("TELECOM")) {
+                    activityPrice = selected_telecom.getPrice();
+                } else if (activity_type.equals("ATTRACTION")) {
+                    if (user instanceof Local) {
+                        activityPrice = selected_ticket_price.getLocal_amount();
+                    } else if (user instanceof Tourist) {
+                        activityPrice = selected_ticket_price.getTourist_amount();
+
+                    }
+
+
+                }
+
+
+
+                BigDecimal itemPrice = activityPrice.multiply(BigDecimal.valueOf(selected_quantity));
+                totalAmountPayable = totalAmountPayable.add(itemPrice);
+            }
+
+            Payment bookingPayment = new Payment();
+
+            bookingPayment.setPayment_amount(totalAmountPayable);
+
+            // Assuming a 10% commission for the example
+            BigDecimal commission = BigDecimal.valueOf(0.10);
+            bookingPayment.setComission_percentage(commission);
+            bookingPayment.setIs_paid(true);
+
+
+
+            BigDecimal payoutAmount = totalAmountPayable.subtract(totalAmountPayable.multiply(commission));
+
+
+            Vendor vendor = null;
+            Local local = null;
+
+            if (Objects.equals(activity_type, "TOUR")) {
+                local = localRepository.findLocalByTour(selected_tour);
+                if (local != null) {
+                    local.setWallet_balance(payoutAmount.add(local.getWallet_balance()));
+
+                }
+
+            } else {
+                if (Objects.equals(activity_type, "ATTRACTION")) {
+                    vendor = vendorRepository.findVendorByAttractionName(selected_attraction.getName());
+
+                } else if (Objects.equals(activity_type, "TELECOM")) {
+                    vendor = vendorRepository.findVendorByTelecomName(selected_telecom.getName());
+
+                } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
+                    vendor = vendorRepository.findVendorByAccommodationName(selected_activity);
+                }
+
+                if (!(vendor == null)) {
+                    vendor.setWallet_balance(payoutAmount.add(vendor.getWallet_balance()));
+                }
+            }
+
+            UUID uuid = UUID.randomUUID();
+            bookingPayment.setPayment_id(uuid.toString()); // Randomly generated string
+
+
+            paymentRepository.save(bookingPayment);
+
+            Booking newBooking = new Booking();
+
+            newBooking.setStart_datetime(selected_startTime);
+            newBooking.setEnd_datetime(selected_endTime);
+            newBooking.setLast_update(lastUpdate); // Date when booking was completed
+            newBooking.setStatus(BookingStatusEnum.valueOf(bookingStatus)); // Completed
+            newBooking.setType(BookingTypeEnum.valueOf(activity_type)); // Randomly set
+
+            // Randomly set beforehand
+
+            newBooking.setActivity_name(selected_activity);
+
+
+            // Below will be randomly set based on init data
+
+            if (Objects.equals(activity_type, "ATTRACTION")) {
+                newBooking.setAttraction(selected_attraction);
+
+            } else if (Objects.equals(activity_type, "TELECOM")) {
+                newBooking.setTelecom(selected_telecom);
+            } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
+                newBooking.setRoom(selected_room);
+            }   else if (Objects.equals(activity_type, "TOUR")) {
+                newBooking.setTour(selected_tour);
+            }
+
+            newBooking.setBooking_item_list(bookingItems);
+            newBooking.setQr_code_list(new ArrayList<>());
+
+            // Randomly assigned, obtained by randomly selecting a user based on their id
+            if (user instanceof Local) {
+                Local local_user = (Local) user;
+                newBooking.setLocal_user(local_user);
+            } else if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                newBooking.setTourist_user(tourist);
+
+            } else {
+                throw new IllegalArgumentException("Invalid user type");
+            }
+
+
+            // Save the new booking
+
+            newBooking.setPayment(bookingPayment);
+
+            bookingRepository.save(newBooking);
+
+            bookingPayment.setBooking(newBooking);
+
+            paymentRepository.save(bookingPayment);
+
+
+        }
+
+
+
+
+
+
     }
 }

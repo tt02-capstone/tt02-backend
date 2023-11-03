@@ -2,6 +2,7 @@ package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+
 import com.nus.tt02backend.services.DataDashboardService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -17,6 +18,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 
+
+import java.util.List;
+
+
 @RestController
 @CrossOrigin
 @RequestMapping("/data")
@@ -24,6 +29,7 @@ public class DataDashboardController {
 
     @Autowired
     DataDashboardService dataDashboardService;
+
 
 
     private final String endpointSecret = "your-webhook-signing-secret-here";
@@ -101,5 +107,14 @@ public class DataDashboardController {
 
         return ResponseEntity.ok(subscriptionStatus);
     }
+
+    @GetMapping("/getData/{vendor_id}")
+    public ResponseEntity<List<Object[]>> getData(@PathVariable String vendor_id) throws NotFoundException {
+
+        List<Object[]> data = dataDashboardService.getData(vendor_id);
+        return ResponseEntity.ok(data);
+    }
+
+
 
 }

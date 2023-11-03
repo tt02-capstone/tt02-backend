@@ -71,9 +71,6 @@ public class Attraction {
     private List<Price> price_list;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<Review> review_list;
-
-    @OneToMany(fetch = FetchType.LAZY)
     private List<TourType> tour_type_list;
 
     @OneToMany(fetch = FetchType.LAZY)
