@@ -132,14 +132,43 @@ public class DIYEventService {
                     throw new BadRequestException("Accommodation does not exist!");
                 }
 
-                diyEventToCreate.setAccommodation(accommodationOptional.get());
+                Accommodation accommodation = accommodationOptional.get();
+                LocalDate checkInDate = diyEventToCreate.getStart_datetime().toLocalDate();
+                LocalDate checkOutDate = diyEventToCreate.getEnd_datetime().toLocalDate();
+                LocalTime checkInTime = diyEventToCreate.getStart_datetime().toLocalTime();
+                LocalTime checkOutTime = diyEventToCreate.getEnd_datetime().toLocalTime();
+
+                DIYEvent diyEvent = new DIYEvent();
+                for (LocalDate date = checkInDate; date.isBefore(checkOutDate.plusDays(1)); date = date.plusDays(1)) {
+                    DIYEvent newDiyEvent = new DIYEvent();
+                    newDiyEvent.setName(diyEventToCreate.getName());
+                    newDiyEvent.setLocation(diyEventToCreate.getLocation());
+                    newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
+                    newDiyEvent.setAccommodation(accommodation);
+
+                    if (date.isEqual(checkInDate)) {
+                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, checkInTime));
+                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+                    } else if (date.isEqual(checkOutDate)) {
+                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, checkOutTime));
+                    } else {
+                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+                    }
+
+                    diyEvent = diyEventRepository.save(newDiyEvent);
+                    itinerary.getDiy_event_list().add(diyEvent);
+                }
+
+                itineraryRepository.save(itinerary);
+                return diyEvent;
             } else if (type.equalsIgnoreCase("telecom")) {
                 Optional<Telecom> telecomOptional = telecomRepository.findById(typeId);
                 if (telecomOptional.isEmpty()) {
                     throw new BadRequestException("Telecom does not exist!");
                 }
 
-                diyEventToCreate.setTelecom(telecomOptional.get());
             } else if (type.equalsIgnoreCase("restaurant")) {
                 Optional<Restaurant> restaurantOptional = restaurantRepository.findById(typeId);
                 if (restaurantOptional.isEmpty()) {
