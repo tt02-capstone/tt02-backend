@@ -135,8 +135,8 @@ public class DIYEventService {
                 Accommodation accommodation = accommodationOptional.get();
                 LocalDate checkInDate = diyEventToCreate.getStart_datetime().toLocalDate();
                 LocalDate checkOutDate = diyEventToCreate.getEnd_datetime().toLocalDate();
-                LocalTime checkInTime = diyEventToCreate.getStart_datetime().toLocalTime();
-                LocalTime checkOutTime = diyEventToCreate.getEnd_datetime().toLocalTime();
+                LocalTime checkInTime = accommodation.getCheck_in_time().toLocalTime();
+                LocalTime checkOutTime = accommodation.getCheck_out_time().toLocalTime();
 
                 DIYEvent diyEvent = new DIYEvent();
                 for (LocalDate date = checkInDate; date.isBefore(checkOutDate.plusDays(1)); date = date.plusDays(1)) {
@@ -169,6 +169,36 @@ public class DIYEventService {
                     throw new BadRequestException("Telecom does not exist!");
                 }
 
+                Telecom telecom = telecomOptional.get();
+                LocalDate startDate = diyEventToCreate.getStart_datetime().toLocalDate();
+                LocalDate endDate = startDate.plusDays(telecom.getNum_of_days_valid());
+                LocalTime startTime = diyEventToCreate.getStart_datetime().toLocalTime();
+
+                DIYEvent diyEvent = new DIYEvent();
+                for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
+                    DIYEvent newDiyEvent = new DIYEvent();
+                    newDiyEvent.setName(diyEventToCreate.getName());
+                    newDiyEvent.setLocation(diyEventToCreate.getLocation());
+                    newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
+                    newDiyEvent.setTelecom(telecom);
+
+                    if (date.isEqual(startDate)) {
+                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, startTime));
+                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+                    } else if (date.isEqual(endDate)) {
+                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, startTime));
+                    } else {
+                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+                    }
+
+                    diyEvent = diyEventRepository.save(newDiyEvent);
+                    itinerary.getDiy_event_list().add(diyEvent);
+                }
+
+                itineraryRepository.save(itinerary);
+                return diyEvent;
             } else if (type.equalsIgnoreCase("restaurant")) {
                 Optional<Restaurant> restaurantOptional = restaurantRepository.findById(typeId);
                 if (restaurantOptional.isEmpty()) {
