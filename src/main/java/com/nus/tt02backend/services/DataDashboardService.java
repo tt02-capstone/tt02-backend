@@ -395,8 +395,7 @@ public class DataDashboardService {
     UserRepository userRepository;
     @Autowired
     AttractionRepository attractionRepository;
-    @Autowired
-    LocalRepository localRepository;
+
     @Autowired
     TouristRepository touristRepository;
     @Autowired
@@ -413,8 +412,7 @@ public class DataDashboardService {
     TicketPerDayRepository ticketPerDayRepository;
     @Autowired
     AttractionService attractionService;
-    @Autowired
-    VendorRepository vendorRepository;
+
     @Autowired
     TelecomRepository telecomRepository;
     @Autowired
