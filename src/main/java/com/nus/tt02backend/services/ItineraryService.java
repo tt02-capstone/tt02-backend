@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -495,12 +496,54 @@ public class ItineraryService {
         SuggestedEventsResponse suggestedEvents = new SuggestedEventsResponse();
         suggestedEvents.setRestaurants(new ArrayList<>());
         suggestedEvents.setAttractions(new ArrayList<>());
-        
+
         suggestedEvents.getRestaurants().addAll(restaurantRepository.getRestaurantsByDuration(durationInHours));
         suggestedEvents.getAttractions().addAll(attractionRepository.getAttractionsByDuration(durationInHours));
 
         if (suggestedEvents.getRestaurants().isEmpty() && suggestedEvents.getAttractions().isEmpty()) {
             throw new BadRequestException("There are no events available between the specified start and end times");
+        } else {
+            if (!suggestedEvents.getAttractions().isEmpty()) {
+                List<Attraction> filteredAttractions = new ArrayList<>();
+
+                for (Attraction attraction : suggestedEvents.getAttractions()) {
+                    String[] times = attraction.getOpening_hours().split(" - ");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h.mma");
+                    LocalTime openTime = LocalTime.parse(times[0], formatter);
+                    LocalTime closeTime = LocalTime.parse(times[1], formatter);
+
+                    if ((startTime.isAfter(openTime) || startTime.equals(openTime))
+                            && (endTime.isBefore(closeTime) || endTime.equals(closeTime))) {
+                        filteredAttractions.add(attraction);
+                    }
+                }
+
+                if (filteredAttractions.size() != suggestedEvents.getAttractions().size()) {
+                    suggestedEvents.getAttractions().clear();
+                    suggestedEvents.getAttractions().addAll(filteredAttractions);
+                }
+            }
+
+            if (!suggestedEvents.getRestaurants().isEmpty()) {
+                List<Restaurant> filteredRestaurants = new ArrayList<>();
+
+                for (Restaurant restaurant : suggestedEvents.getRestaurants()) {
+                    String[] times = restaurant.getOpening_hours().split(" - ");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h.mma");
+                    LocalTime openTime = LocalTime.parse(times[0], formatter);
+                    LocalTime closeTime = LocalTime.parse(times[1], formatter);
+
+                    if ((startTime.isAfter(openTime) || startTime.equals(openTime))
+                            && (endTime.isBefore(closeTime) || endTime.equals(closeTime))) {
+                        filteredRestaurants.add(restaurant);
+                    }
+                }
+
+                if (filteredRestaurants.size() != suggestedEvents.getRestaurants().size()) {
+                    suggestedEvents.getRestaurants().clear();
+                    suggestedEvents.getRestaurants().addAll(filteredRestaurants);
+                }
+            }
         }
 
         return suggestedEvents;
