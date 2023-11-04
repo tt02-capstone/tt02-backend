@@ -81,6 +81,7 @@ public class SecurityConfig {
               "/notification/**", // to remove
               "/itinerary/**", // to remove
               "/diyEvent/**", // to remove
+                "/item/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
@@ -91,6 +92,7 @@ public class SecurityConfig {
               "/comment/**", // to remove
               "/post/**", // to remove
                 "attraction/**", // to remove
+                "/item/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",
@@ -104,12 +106,14 @@ public class SecurityConfig {
               "/diyEvent/**", // to remove
               "/comment/**", // to remove
               "/post/**", // to remove
+                "/item/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.DELETE,
               "/itinerary/**", // to remove
               "/diyEvent/**", // to remove
               "/comment/**", // to remove
               "/post/**", // to remove
+                "/item/**", // to remove
               "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
               "/vendorStaff/verifyEmail/**",

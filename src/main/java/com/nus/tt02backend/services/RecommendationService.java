@@ -1,16 +1,22 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.dto.RecommendationResponse;
+import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Accommodation;
 import com.nus.tt02backend.models.Attraction;
 import com.nus.tt02backend.models.CategoryItem;
 import com.nus.tt02backend.models.Restaurant;
+import com.nus.tt02backend.models.*;
+import com.nus.tt02backend.models.enums.BookingTypeEnum;
 import com.nus.tt02backend.models.enums.GenericLocationEnum;
 import com.nus.tt02backend.models.enums.ListingTypeEnum;
 import com.nus.tt02backend.repositories.AccommodationRepository;
 import com.nus.tt02backend.repositories.AttractionRepository;
 import com.nus.tt02backend.repositories.CategoryItemRepository;
 import com.nus.tt02backend.repositories.RestaurantRepository;
+import com.nus.tt02backend.repositories.TourTypeRepository;
+import com.nus.tt02backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +33,22 @@ public class RecommendationService {
 
     @Autowired
     RestaurantService restaurantService;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    BookingService bookingService;
+
+    @Autowired
+    TourTypeRepository tourTypeRepository;
+
+    @Autowired
+    TourService tourService;
+
+    @Autowired
+    TelecomService telecomService;
+
 
     @Autowired
     CategoryItemRepository categoryItemRepository;
@@ -159,4 +181,88 @@ public class RecommendationService {
 //            throw new NotFoundException("No recommendations to return after finding for recommendation");
 //        }
 //    }
+
+
+    public RecommendationResponse getRecommendationFromBookings(Long userId) throws NotFoundException, BadRequestException {
+        List<Booking> bookingList = bookingService.getAllBookingsByUser(userId);
+
+        Set<Telecom> telecomList = new HashSet<>();
+        Set<Attraction> attractionList = new HashSet<>();
+        Set<Accommodation> accommodationList =  new HashSet<>();
+        Set<Restaurant> restaurantList = new HashSet<>();
+        Set<TourType> tourTypeList =  new HashSet<>();
+
+        Set<Telecom> telecomListOld = new HashSet<>();
+        Set<Attraction> attractionListOld = new HashSet<>();
+        Set<Accommodation> accommodationListOld =  new HashSet<>();
+        Set<Restaurant> restaurantListOld = new HashSet<>();
+        Set<TourType> tourTypeListOld =  new HashSet<>();
+
+        for (Booking booking: bookingList) {
+
+            if(booking.getType().equals(BookingTypeEnum.TELECOM)) {
+                Telecom telecom = booking.getTelecom();
+                telecomListOld.add(telecom);
+                List<Telecom>  pList = telecomService.getSimilarTierTelecom(telecom.getEstimated_price_tier());
+                List<Telecom>  dList = telecomService.getSimilarDurationTelecom(telecom.getPlan_duration_category());
+
+                if (!pList.isEmpty() || !dList.isEmpty()) {
+                    telecomList.addAll(pList);
+                    telecomList.addAll(dList);
+                }
+
+            } else if (booking.getType().equals(BookingTypeEnum.ACCOMMODATION)) {
+                Room room = booking.getRoom();
+                Accommodation accommodation = accommodationService.retrieveAccommodationByRoom(room.getRoom_id());
+                accommodationListOld.add(accommodation);
+                List<Accommodation> pList = accommodationService.similarPriceAccommRecommendation(accommodation.getEstimated_price_tier(), accommodation.getAccommodation_id());
+                List<Accommodation> dList = accommodationService.nearbyAccommRecommendation(accommodation.getGeneric_location(), accommodation.getAccommodation_id());
+
+                if (!pList.isEmpty() || !dList.isEmpty()) {
+                    accommodationList.addAll(pList);
+                    accommodationList.addAll(dList);
+                }
+
+            } else if (booking.getType().equals(BookingTypeEnum.ATTRACTION)) {
+                Attraction attraction = booking.getAttraction();
+                attractionListOld.add(attraction);
+//                attraction.getEstimated_price_tier();
+                List<Attraction> aList = attractionService.nearbyAttrRecommendation(attraction.getGeneric_location(), attraction.getAttraction_id());
+                List<Restaurant> rList = restaurantService.nearbyRestaurantRecommendation(attraction.getGeneric_location());
+
+                if (!aList.isEmpty() ) {
+                    attractionList.addAll(aList);
+                }
+
+                if (!rList.isEmpty()) {
+                    restaurantList.addAll(rList);
+
+                }
+            } else if (booking.getType().equals(BookingTypeEnum.TOUR)) {
+                Tour tour = booking.getTour();
+                TourType tourType = tourTypeRepository.getTourTypeTiedToTour(tour.getTour_id());
+                tourTypeListOld.add(tourType);
+                Attraction attraction = tourService.getAttractionForTourTypeId(tourType.getTour_type_id());
+
+                List<TourType> tourTypeL = attraction.getTour_type_list();
+                tourTypeList.addAll(tourTypeL);
+
+            }
+        }
+
+        attractionList.removeAll(attractionListOld);
+        telecomList.removeAll(telecomListOld);
+        accommodationList.removeAll(accommodationListOld);
+        tourTypeList.removeAll(tourTypeListOld);
+
+        return new RecommendationResponse(
+                attractionList.stream().toList(),
+                telecomList.stream().toList(),
+                accommodationList.stream().toList(),
+                restaurantList.stream().toList(),
+                tourTypeList.stream().toList()
+        );
+    }
+
 }
+
