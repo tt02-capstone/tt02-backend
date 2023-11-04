@@ -136,6 +136,12 @@ public class TourService {
             }
         }
 
+        validateNewTourTimings(differentDuration, tourType);
+
+        return tourType;
+    }
+
+    private static void validateNewTourTimings(Boolean differentDuration, TourType tourType) throws BadRequestException {
         if (differentDuration && !tourType.getTour_list().isEmpty()) {
             for (Tour firstTour : tourType.getTour_list()) {
                 for (Tour tourToCheck : tourType.getTour_list()) {
@@ -154,8 +160,6 @@ public class TourService {
                 }
             }
         }
-
-        return tourType;
     }
 
     public TourType adminUpdateTourType(Long tourTypeIdToUpdate, Boolean newPublishedStatus) throws BadRequestException {

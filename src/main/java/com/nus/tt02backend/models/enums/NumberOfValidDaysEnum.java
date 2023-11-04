@@ -14,6 +14,19 @@ public enum NumberOfValidDaysEnum {
     }
 
     public String getValue() {
-        return value;
+        switch (this) {
+            case ONE_DAY:
+                return "1 Day";
+            case THREE_DAY:
+                return "3 Days";
+            case SEVEN_DAY:
+                return "7 Days";
+            case FOURTEEN_DAY:
+                return "14 Days";
+            case MORE_THAN_FOURTEEN_DAYS:
+                return "More than 14 Days";
+            default:
+                return value;
+        }
     }
 }
