@@ -1294,7 +1294,7 @@ public class InitDataConfig implements CommandLineRunner {
             } else if (activity_type.equals("TELECOM")) {
                 Long[] telecom_ids = {1L, 2L};
                 selected_id = telecom_ids[rand.nextInt(telecom_ids.length)];
-                Telecom telecom = telecoms.get((int) (selected_id - 1));
+                Telecom telecom = telecoms.get(Math.toIntExact((selected_id - 1)));
                 selected_telecom = telecom;
 
                 selected_activity = String.valueOf(telecom.getName());
