@@ -78,7 +78,14 @@ public class DataDashboardController {
         return ResponseEntity.ok(subscriptionDetails);
     }
 
-    @PostMapping("/getSubscriptionStatus/{user_id}/{user_type}/{subscription_type}/{auto_renew}")
+    @GetMapping("/getSubscriptionStatuses/{user_type}")
+    public ResponseEntity<List<String>> getSubscriptionStatuses( @PathVariable String user_type) throws StripeException, NotFoundException {
+        List<String> subscriptionDetails = dataDashboardService.getSubscriptionStatuses(user_type);
+
+        return ResponseEntity.ok(subscriptionDetails);
+    }
+
+    @PostMapping("/subscribe/{user_id}/{user_type}/{subscription_type}/{auto_renew}")
     public ResponseEntity<String> subscribe(@PathVariable String user_id, @PathVariable String user_type,
                                             @PathVariable String subscription_type, @PathVariable Boolean auto_renew) throws StripeException, NotFoundException {
         String subscriptionStatus = dataDashboardService.createSubscription(user_id,user_type, subscription_type, auto_renew);
@@ -87,16 +94,16 @@ public class DataDashboardController {
     }
 
     @PutMapping("/updateSubscription/{subscription_id}/{subscription_type}/{auto_renew}")
-    public ResponseEntity<String> updateSubscription(@PathVariable String subscription_id,
+    public ResponseEntity<Map<String,Object>> updateSubscription(@PathVariable String subscription_id,
                                                     @PathVariable String subscription_type, @PathVariable Boolean auto_renew) throws StripeException, NotFoundException {
-        String subscriptionStatus = dataDashboardService.updateSubscription(subscription_id, subscription_type, auto_renew);
+        Map<String,Object> subscriptionStatus = dataDashboardService.updateSubscription(subscription_id, subscription_type, auto_renew);
 
         return ResponseEntity.ok(subscriptionStatus);
     }
 
     @PutMapping("/renewSubscription/{subscription_id}")
-    public ResponseEntity<String> renewSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException, BadRequestException {
-        String subscriptionStatus = dataDashboardService.renewSubscription(subscription_id);
+    public ResponseEntity<Map<String,Object>> renewSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException, BadRequestException {
+        Map<String,Object> subscriptionStatus = dataDashboardService.renewSubscription(subscription_id);
 
         return ResponseEntity.ok(subscriptionStatus);
     }
