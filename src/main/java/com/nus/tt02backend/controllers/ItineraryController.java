@@ -48,6 +48,7 @@ public class ItineraryController {
 
     @GetMapping("/getTelecomRecommendations/{itineraryId}")
     public ResponseEntity<List<Telecom>> getTelecomRecommendations(@PathVariable Long itineraryId) throws BadRequestException {
+        System.out.println("getTelecomRecommendations HERE!");
         List<Telecom> telecomRecommendations = itineraryService.getTelecomRecommendations(itineraryId);
         return ResponseEntity.ok(telecomRecommendations);
     }
@@ -55,8 +56,8 @@ public class ItineraryController {
     // Recommendations for Attraction (based on a specific date)
     // Sample GET request for Postman: http://localhost:8080/itinerary/getAttractionRecommendationsByDate/1/2023-10-25
     @GetMapping("/getAttractionRecommendationsByDate/{itineraryId}/{dateTime}")
-    public ResponseEntity<List<Attraction>> getAttractionRecommendationsByDate(@PathVariable Long itineraryId,
-                                                                               @PathVariable LocalDate dateTime) throws BadRequestException {
+    public ResponseEntity<List<Attraction>> getAttractionRecommendationsByDate(@PathVariable Long itineraryId, @PathVariable LocalDate dateTime) throws BadRequestException {
+        System.out.println("getAttractionRecommendationsByDate HERE!");
         List<Attraction> attractionRecommendations = itineraryService.getAttractionRecommendationsByDate(itineraryId, dateTime);
         return ResponseEntity.ok(attractionRecommendations);
     }
@@ -89,5 +90,17 @@ public class ItineraryController {
                                                                                      @PathVariable LocalTime endTime) throws BadRequestException {
         SuggestedEventsResponse suggestedEvents = itineraryService.getSuggestedEventsBasedOnTimeslot(startTime, endTime);
         return ResponseEntity.ok(suggestedEvents);
+    }
+
+    @GetMapping("/existingAccommodationInItinerary/{itineraryId}")
+    public ResponseEntity<Boolean> existingAccommodationInItinerary(@PathVariable Long itineraryId) throws BadRequestException {
+        Boolean existingAccommodation = itineraryService.existingAccommodationInItinerary(itineraryId);
+        return ResponseEntity.ok(existingAccommodation);
+    }
+
+    @GetMapping("/existingTelecomInItinerary/{itineraryId}")
+    public ResponseEntity<Boolean> existingTelecomInItinerary(@PathVariable Long itineraryId) throws BadRequestException {
+        Boolean existingTelecom = itineraryService.existingTelecomInItinerary(itineraryId);
+        return ResponseEntity.ok(existingTelecom);
     }
 }
