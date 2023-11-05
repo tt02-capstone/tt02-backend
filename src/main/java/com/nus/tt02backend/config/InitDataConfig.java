@@ -1,10 +1,14 @@
 package com.nus.tt02backend.config;
 
+import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import com.nus.tt02backend.services.AttractionService;
 import com.nus.tt02backend.services.PaymentService;
+import com.nus.tt02backend.services.VendorStaffService;
+import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentMethod;
 import com.stripe.model.Token;
 import com.stripe.param.PaymentMethodCreateParams;
@@ -55,6 +59,9 @@ public class InitDataConfig implements CommandLineRunner {
 
     @Autowired
     PaymentService paymentService;
+
+    @Autowired
+    VendorStaffService vendorStaffService;
 
     @Autowired
     AttractionService attractionService;
@@ -1009,7 +1016,7 @@ public class InitDataConfig implements CommandLineRunner {
         return vendor2;
     }
 
-    Vendor setUpVendor3(Vendor vendor) {
+    Vendor setUpVendor3(Vendor vendor) throws StripeException, NotFoundException, BadRequestException {
         vendor.setBusiness_name("Mangrove Singapore");
         vendor.setPoc_name("Angelene Chan");
         vendor.setPoc_position("Manager");
@@ -1026,6 +1033,8 @@ public class InitDataConfig implements CommandLineRunner {
         String stripe_account_id = paymentService.createStripeAccount("CUSTOMER", customer_parameters);
         vendor.setStripe_account_id(stripe_account_id);
 
+
+
         vendor = vendorRepository.save(vendor);
 
         VendorStaff vendorStaff = new VendorStaff();
@@ -1041,6 +1050,25 @@ public class InitDataConfig implements CommandLineRunner {
         vendorStaff.setVendor(vendor);
         vendorStaff.setBadge_list(new ArrayList<>());
         vendorStaffRepository.save(vendorStaff);
+
+//        Map<String, Object> bankAccount = new HashMap<>();
+//        bankAccount.put("country", "US");
+//        bankAccount.put("currency", "usd");
+//        bankAccount.put("account_holder_name", "Jenny Rosen");
+//        bankAccount.put("account_holder_type", "individual");
+//        bankAccount.put("routing_number", "110000000");
+//        bankAccount.put("account_number", "000123456789");
+//
+//// Create a Map to hold the PaymentMethod parameters
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("type", "us_bank_account");
+//        params.put("us_bank_account", bankAccount);
+//
+//// Create the PaymentMethod for the bank account
+//        PaymentMethod paymentMethod = PaymentMethod.create(params);
+//
+//
+//        vendorStaffService.addBankAccount(vendorStaff.getUser_id(), paymentMethod.getId());
         log.debug("created Vendor user - {}", vendorStaff);
         return vendor;
     }

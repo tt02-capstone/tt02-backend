@@ -290,24 +290,24 @@ public class DIYEventService {
             for (DIYEvent e : diyEventList) {
                 if (d.getAttraction() != null && e.getAttraction() != null
                         && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // attraction overlap
-                    return "There is an attraction overlap in your itinerary!";
+                    return d.getName() + " overlaps with " + e.getName() + "!";
 
                 } else if (d.getAccommodation() != null && e.getAccommodation() != null
                         && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // accommodation overlap
-                    return "There is an accommodation overlap in your itinerary!";
+                    return d.getName() + " overlaps with " + e.getName() + "!";
 
                 } else if (d.getTelecom() != null && e.getTelecom() != null
                         && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // telecom overlap
-                    return "There is a telecom overlap in your itinerary!";
+                    return d.getName() + " overlaps with " + e.getName() + "!";
 
                 } else if (d.getRestaurant() != null && e.getRestaurant() != null
                         && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // restaurant overlap
-                    return "There is a restaurant overlap in your itinerary!";
+                    return d.getName() + " overlaps with " + e.getName() + "!";
 
                 } else if (d.getBooking() == null && d.getAttraction() == null && d.getTelecom() == null && d.getRestaurant() != null
                         && (e.getAttraction() != null || e.getRestaurant() != null)
                         && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // diy overlap with either attraction, telecom or rest
-                    return "There is a DIY event overlap in your itinerary!";
+                    return d.getName() + " overlaps with " + e.getName() + "!";
                 }
             }
         }
@@ -327,7 +327,7 @@ public class DIYEventService {
         for (DIYEvent d : diyEventList) { // non-booking diy event
             for (DIYEvent e : diyEventList) { // booking diy event
                 if (d.getBooking() == null && e.getBooking() != null && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) {
-                    return "One of your event overlaps with " + e.getName() + "!";
+                    return d.getName() + " overlaps with " + e.getName() + "!";
                 }
             }
         }

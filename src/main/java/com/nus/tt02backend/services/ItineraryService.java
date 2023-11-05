@@ -257,7 +257,6 @@ public class ItineraryService {
         List<Attraction> attractionRecommendations = new ArrayList<>();
         if (!events.isEmpty() && !eventsOnCurrentDate.isEmpty()) {
             processEventsForAttractions(eventsOnCurrentDate, attractionRecommendations);
-
             if (!attractionRecommendations.isEmpty()) {
                 return removeDuplicates(attractionRecommendations);
             }
@@ -298,9 +297,15 @@ public class ItineraryService {
     }
 
     private void processEventsForAttractions(List<DIYEvent> events, List<Attraction> attractionRecommendations) {
+
         // Remove accommodation and telecom from list as it's a full-day thing
-        events.removeIf(event -> event.getAccommodation() != null);
-        events.removeIf(event -> event.getTelecom() != null);
+        List<DIYEvent> filteredEvents = new ArrayList<>();
+        for (DIYEvent event : events) {
+            if (event.getAccommodation() == null && event.getTelecom() == null) {
+                filteredEvents.add(event);
+            }
+        }
+        events = filteredEvents;
 
         for (int j = 0; j < events.size() - 1; j++) {
             DIYEvent currentEvent = events.get(j);
@@ -579,5 +584,47 @@ public class ItineraryService {
         }
 
         return suggestedEvents;
+    }
+
+    public Boolean existingAccommodationInItinerary(Long itineraryId) throws BadRequestException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new BadRequestException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<DIYEvent> events = itinerary.getDiy_event_list();
+        if (!events.isEmpty()) {
+            for (DIYEvent diyEvent : events) {
+                if (diyEvent.getAccommodation() != null) {
+                    return true;
+                } else if (diyEvent.getBooking() != null && diyEvent.getBooking().getRoom() != null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public Boolean existingTelecomInItinerary(Long itineraryId) throws BadRequestException {
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) {
+            throw new BadRequestException("Itinerary does not exist!");
+        }
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<DIYEvent> events = itinerary.getDiy_event_list();
+        if (!events.isEmpty()) {
+            for (DIYEvent diyEvent : events) {
+                if (diyEvent.getTelecom() != null) {
+                    return true;
+                } else if (diyEvent.getBooking() != null && diyEvent.getBooking().getTelecom() != null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
