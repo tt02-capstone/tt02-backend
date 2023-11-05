@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, Long>{
 
-   }
+   @Query("SELECT MAX(i.item_id) FROM Item i")
+   Long findMaxItemId();
+}
 
 

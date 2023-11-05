@@ -53,4 +53,14 @@ public class ItemController {
         Item item = itemService.retrieveItemById(itemId);
         return ResponseEntity.ok(item);
     }
+
+    @GetMapping("/getLastItemId")
+    public ResponseEntity<?> getLastItemId() {
+        try {
+            Long lastItemId = itemService.getLastItemId();
+            return ResponseEntity.ok(lastItemId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
 }
