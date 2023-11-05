@@ -1,5 +1,6 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.dto.ItineraryFriendResponse;
 import com.nus.tt02backend.dto.SuggestedEventsResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
@@ -7,9 +8,11 @@ import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import jakarta.mail.MessagingException;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -85,6 +88,9 @@ public class ItineraryService {
 
         itineraryToCreate.setDiy_event_list(new ArrayList<>());
 
+        itineraryToCreate.setAccepted_people_list(new ArrayList<>());
+        itineraryToCreate.setInvited_people_list(new ArrayList<>());
+        itineraryToCreate.setMaster_id(userId);
         Itinerary itinerary = itineraryRepository.save(itineraryToCreate);
 
         if (user instanceof Tourist) {
@@ -626,5 +632,79 @@ public class ItineraryService {
         }
 
         return false;
+    }
+
+    public List<ItineraryFriendResponse> getUserWithEmailSimilarity(Long masterUserId, Long itineraryId, String email) throws NotFoundException {
+
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) throw new NotFoundException("Itinerary not found!");
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<User> userList = new ArrayList<>();
+        if (email.equals("undefined")) {
+            userList = userRepository.getUserListWithEmailSimilarity(masterUserId, "");
+        } else {
+            userList = userRepository.getUserListWithEmailSimilarity(masterUserId, email);
+        }
+        List<ItineraryFriendResponse> list = new ArrayList<>();
+
+        for (User u : userList) {
+            if (!itinerary.getAccepted_people_list().contains(u.getUser_id()) && !itinerary.getInvited_people_list().contains(u.getUser_id())) {
+                list.add(new ItineraryFriendResponse(u.getUser_id(), u.getEmail(), u.getName(), u.getProfile_pic()));
+            }
+        }
+
+        return list;
+    }
+
+    public List<ItineraryFriendResponse> getInvitedUsers(Long itineraryId) throws NotFoundException {
+
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) throw new NotFoundException("Itinerary not found!");
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<ItineraryFriendResponse> list = new ArrayList<>();
+        for (Long l : itinerary.getInvited_people_list()) {
+            Optional<User> userOptional = userRepository.findById(l);
+            if (userOptional.isEmpty()) throw new NotFoundException("User not found!");
+            User u = userOptional.get();
+            list.add(new ItineraryFriendResponse(u.getUser_id(), u.getEmail(), u.getName(), u.getProfile_pic()));
+        }
+
+        return list;
+    }
+
+    public List<ItineraryFriendResponse> getAcceptedUsers(Long itineraryId) throws NotFoundException {
+
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) throw new NotFoundException("Itinerary not found!");
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<ItineraryFriendResponse> list = new ArrayList<>();
+        for (Long l : itinerary.getAccepted_people_list()) {
+            Optional<User> userOptional = userRepository.findById(l);
+            if (userOptional.isEmpty()) throw new NotFoundException("User not found!");
+            User u = userOptional.get();
+            list.add(new ItineraryFriendResponse(u.getUser_id(), u.getEmail(), u.getName(), u.getProfile_pic()));
+        }
+
+        return list;
+    }
+
+    public String toggleItineraryInvite(Long itineraryId, Long userIdToAddOrRemove) throws NotFoundException {
+
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) throw new NotFoundException("Itinerary not found!");
+        Itinerary itinerary = itineraryOptional.get();
+
+        if (itinerary.getInvited_people_list().contains(userIdToAddOrRemove)) { // if already added, remove
+            itinerary.getInvited_people_list().remove(userIdToAddOrRemove);
+            itineraryRepository.save(itinerary);
+            return "User removed!";
+        } else { // if not yet added, add id in
+            itinerary.getInvited_people_list().add((userIdToAddOrRemove));
+            itineraryRepository.save(itinerary);
+            return "User invited!";
+        }
     }
 }

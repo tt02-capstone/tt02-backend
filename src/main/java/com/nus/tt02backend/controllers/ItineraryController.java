@@ -1,19 +1,17 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.ItineraryFriendResponse;
 import com.nus.tt02backend.dto.SuggestedEventsResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
-import com.nus.tt02backend.services.DIYEventService;
 import com.nus.tt02backend.services.ItineraryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
+import java.time.*;
+import java.util.*;
 
 @RestController
 @CrossOrigin
@@ -102,5 +100,29 @@ public class ItineraryController {
     public ResponseEntity<Boolean> existingTelecomInItinerary(@PathVariable Long itineraryId) throws BadRequestException {
         Boolean existingTelecom = itineraryService.existingTelecomInItinerary(itineraryId);
         return ResponseEntity.ok(existingTelecom);
+    }
+
+    @GetMapping("/getUserWithEmailSimilarity/{masterUserId}/{itineraryId}/{email}")
+    public ResponseEntity<List<ItineraryFriendResponse>> getUserWithEmailSimilarity(@PathVariable Long masterUserId, @PathVariable Long itineraryId,  @PathVariable String email) throws NotFoundException {
+        List<ItineraryFriendResponse> list = itineraryService.getUserWithEmailSimilarity(masterUserId, itineraryId, email);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getInvitedUsers/{itineraryId}")
+    public ResponseEntity<List<ItineraryFriendResponse>> getInvitedUsers(@PathVariable Long itineraryId) throws NotFoundException {
+        List<ItineraryFriendResponse> list = itineraryService.getInvitedUsers(itineraryId);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getAcceptedUsers/{itineraryId}")
+    public ResponseEntity<List<ItineraryFriendResponse>> getAcceptedUsers(@PathVariable Long itineraryId) throws NotFoundException {
+        List<ItineraryFriendResponse> list = itineraryService.getAcceptedUsers(itineraryId);
+        return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/toggleItineraryInvite/{itineraryId}/{userIdToAddOrRemove}")
+    public ResponseEntity<String> toggleItineraryInvite(@PathVariable Long itineraryId, @PathVariable Long userIdToAddOrRemove) throws NotFoundException {
+        String string = itineraryService.toggleItineraryInvite(itineraryId, userIdToAddOrRemove);
+        return ResponseEntity.ok(string);
     }
 }

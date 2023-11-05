@@ -6,9 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Data
 @Entity
@@ -36,5 +34,16 @@ public class Itinerary {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<DIYEvent> diy_event_list;
+
+    @ElementCollection
+    @CollectionTable(name="invited_people_list")
+    private List<Long> invited_people_list;
+
+    @ElementCollection
+    @CollectionTable(name="accepted_people_list")
+    private List<Long> accepted_people_list;
+
+    @Column(nullable = false)
+    private Long master_id;
 
 }
