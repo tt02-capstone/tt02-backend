@@ -212,7 +212,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setIs_blocked(false);
             vendorStaff.setPosition("Manager");
             vendorStaff.setIs_master_account(true);
-            vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/attraction.png");
             vendorStaff.setVendor(vendor1);
             vendorStaff.setBadge_list(new ArrayList<>());
             vendorStaffRepository.save(vendorStaff);
