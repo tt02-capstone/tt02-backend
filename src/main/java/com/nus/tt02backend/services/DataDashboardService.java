@@ -3,6 +3,7 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Booking;
 import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.repositories.LocalRepository;
@@ -508,24 +509,89 @@ public class DataDashboardService {
     @Autowired
     TourRepository tourRepository;
 
-    public List<Object[]> getData(String vendorId) throws NotFoundException {
-        Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
-        if (vendorOptional.isPresent()) {
-            Vendor vendor = vendorOptional.get();
+    Map<String, String> countryCodeToCountry = new HashMap<String, String>() {
+        {
+            put("+62", "Indonesia");
+            put("+86", "China");
+            put("+60", "Malaysia");
+            put("+61", "Australia");
+            put("+91", "India");
+            put("+63", "Philippines");
+            put("+1", "United States");
+            put("+82", "South Korea");
+            put("+84", "Vietnam");
+            put("+44", "United Kingdom");
+            put("+65", "Singapore");
+        }
+    };
 
-            List<Accommodation> accommodations = vendor.getAccommodation_list();
+    public List<List<Object>> getData(String data_usecase, String type, String vendorId) throws NotFoundException {
 
-            LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
 
-            LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+        if (Objects.equals(data_usecase, "Total Bookings Over Time")) {
 
-            List<Object[]> data = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+            Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
+            if (vendorOptional.isPresent()) {
 
-            return data;
-        } else {
-            throw new NotFoundException("Vendor not found");
+
+
+                Vendor vendor = vendorOptional.get();
+
+                List<Accommodation> accommodations = vendor.getAccommodation_list();
+
+                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+
+                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+
+                Map<LocalDate, Integer> dateCounts = new HashMap<>();
+
+                System.out.println(bookings.size());
+
+                List<List<Object>> dateCountryList = new ArrayList<>();
+
+                for (Booking booking : bookings) {
+                    LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
+                    String countryCode = null;
+
+                    // Determine which user type (tourist or local) is not null and get the country code
+                    if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                        countryCode = booking.getTourist_user().getCountry_code();
+                    } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                        countryCode = booking.getLocal_user().getCountry_code();
+                    }
+
+                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                    // Create [Date, Country] pair and add to the list
+                    List<Object> dateCountryPair = Arrays.asList(bookingDate, country);
+                    dateCountryList.add(dateCountryPair);
+                }
+
+                System.out.println(dateCountryList);
+
+                return dateCountryList;
+            } else {
+                throw new NotFoundException("Vendor not found");
+            }
+
+        } else if (Objects.equals(data_usecase, "Revenue Over Time")) {
+
+        } else if (Objects.equals(data_usecase, "Bookings Breakdown by Activity, Nationality, Age")) {
+
+        } else if (Objects.equals(data_usecase, "Revenue Breakdown by Activity, Nationality, Age")) {
+
+        } else if (Objects.equals(data_usecase, "Customer Retention (Number of Repeat Bookings Over Time)")) {
+
         }
 
+        throw new NotFoundException("Data Use Case Not Found");
+
+
+
     }
+
+
 
 }

@@ -23,16 +23,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long>  {
     List<Booking> getAllTourBookings(BookingTypeEnum bookingType);
 
 
-    @Query("SELECT DATE(b.start_datetime) AS bookingDate, COUNT(b) AS bookingCount " +
+    @Query("SELECT b " +
             "FROM Booking b " +
             "WHERE b.start_datetime >= :startDate AND b.end_datetime <= :endDate " +
             "AND (:entityId IS NULL OR " +
             "      (b.attraction.attraction_id = :entityId AND :entityType = 'ATTRACTION') OR " +
             "      (b.room.room_id = :entityId AND :entityType = 'ACCOMMODATION') OR " +
             "      (b.telecom.telecom_id = :entityId AND :entityType = 'TELECOM')) " +
-            "GROUP BY DATE(b.start_datetime)"+
-            "ORDER BY DATE(b.start_datetime)")
-    List<Object[]> getBookingsOverTime(
+            "ORDER BY b.start_datetime")
+    List<Booking> getBookingsOverTime(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             @Param("entityId") Long entityId,
