@@ -214,6 +214,8 @@ public class ReportService {
             p.getLocal_user().setBooking_list(null);
             p.getLocal_user().setTour_type_list(null);
             p.getLocal_user().setSupport_ticket_list(null);
+            p.getLocal_user().setItinerary(null);
+            p.getLocal_user().setUnused_diy_event_list(null);
         }
         else if (p.getTourist_user() != null) {
             p.getTourist_user().setPost_list(null);
@@ -222,6 +224,8 @@ public class ReportService {
             p.getTourist_user().setBooking_list(null);
             p.getTourist_user().setTour_type_list(null);
             p.getTourist_user().setSupport_ticket_list(null);
+            p.getTourist_user().setItinerary(null);
+            p.getTourist_user().setUnused_diy_event_list(null);
         }
         else if (p.getInternal_staff_user() != null) {
             p.getInternal_staff_user().setPost_list(null);
@@ -260,6 +264,8 @@ public class ReportService {
             comment.getLocal_user().setTour_type_list(null);
             comment.getLocal_user().setBooking_list(null);
             comment.getLocal_user().setSupport_ticket_list(null);
+            comment.getLocal_user().setItinerary(null);
+            comment.getLocal_user().setUnused_diy_event_list(null);
         }
         if (comment.getTourist_user() != null) {
             comment.getTourist_user().setPost_list(null);
@@ -268,6 +274,8 @@ public class ReportService {
             comment.getTourist_user().setTour_type_list(null);
             comment.getTourist_user().setBooking_list(null);
             comment.getTourist_user().setSupport_ticket_list(null);
+            comment.getTourist_user().setItinerary(null);
+            comment.getTourist_user().setUnused_diy_event_list(null);
         }
 
         if (comment.getVendor_staff_user() != null) {
