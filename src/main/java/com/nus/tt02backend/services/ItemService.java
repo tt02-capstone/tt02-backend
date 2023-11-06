@@ -109,4 +109,9 @@ public class ItemService {
 
         return itemOptional.get();
     }
+
+    public Long getLastItemId() {
+        Long lastItemId = itemRepository.findMaxItemId();
+        return (lastItemId != null) ? lastItemId : 0L;
+    }
 }

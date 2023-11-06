@@ -3,6 +3,7 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Booking;
 import com.nus.tt02backend.models.Local;
 import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.repositories.LocalRepository;
@@ -35,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DataDashboardService {
@@ -131,11 +133,69 @@ public class DataDashboardService {
         return new ResponseEntity<>("Received", HttpStatus.OK);
     }
 
+    public LocalDate LongToDate(Long dateLong) {
+        return Instant.ofEpochSecond(dateLong)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+    }
+
+    public Map<String, Object> getExtractedFields(Subscription subscription) {
+        String subscription_id = subscription.getId();
+        Boolean auto_renewal = subscription.getCancelAtPeriodEnd();
+        String status = subscription.getStatus();
+        Map<String, Object> extractedFields = new HashMap<>();
+        Long currentPeriodEndLong = subscription.getCurrentPeriodEnd();
+        System.out.println(currentPeriodEndLong);
+        LocalDate currentPeriodEnd = Instant.ofEpochSecond(currentPeriodEndLong)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        if (subscription.getCancelAtPeriodEnd()) {
+            extractedFields.put("current_period_start", "NA");
+
+
+
+
+        } else {
+            if (subscription.getCancelAt() != null) {
+                Long cancelAtLong = subscription.getCancelAt();
+                LocalDate cancelAt = Instant.ofEpochSecond(cancelAtLong)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
+                extractedFields.put("current_period_start", cancelAt);
+            }
+
+        }
+
+        if (subscription.getItems() != null && !subscription.getItems().getData().isEmpty()) {
+            SubscriptionItem subscriptionItem = subscription.getItems().getData().get(0);
+            if (subscriptionItem != null) {
+                String priceId = subscriptionItem.getPrice().getId(); // Get the price ID
+                if (Objects.equals(priceId, "price_1O1Pf2JuLboRjh4qv1wswh2w")) {
+                    extractedFields.put("plan",  "Monthly");
+                } else if (Objects.equals(priceId, "price_1O1PfLJuLboRjh4qj2lYrFHi")) {
+                    extractedFields.put("plan",  "Yearly");
+                }
+            }
+        }
+
+        extractedFields.put("subscription_id",  subscription_id);
+        extractedFields.put("current_period_end", currentPeriodEnd);
+
+        extractedFields.put("auto_renewal", auto_renewal);
+        extractedFields.put("status", status);
+
+        return extractedFields;
+    }
+
 
 
     public String createSubscription(String user_id, String user_type, String subscription_type, Boolean auto_renew) throws StripeException, NotFoundException {
 
         String stripe_account_id = getStripe_Id(user_id, user_type);
+
+        System.out.println(stripe_account_id);
 
         List<Object> items = new ArrayList<>();
 
@@ -149,7 +209,7 @@ public class DataDashboardService {
                 Customer.retrieve(stripe_account_id);
 
         Map<String, String> subscription_price = new HashMap<>();
-        if (Objects.equals(subscription_type, "MONTHLY")) {
+        if (Objects.equals(subscription_type, "Monthly")) {
 
             subscription_price.put(
                     "price",
@@ -158,9 +218,9 @@ public class DataDashboardService {
 
             calendar.add(Calendar.MONTH, 1);
             long newCancelAt = calendar.getTimeInMillis() / 1000L;
-            subscription_params.put("cancel_at", newCancelAt);
+            subscription_params.put("days_until_due", 30);
 
-        } else if (Objects.equals(subscription_type, "YEARLY")) {
+        } else if (Objects.equals(subscription_type, "Yearly")) {
 
             subscription_price.put(
                     "price",
@@ -169,11 +229,11 @@ public class DataDashboardService {
 
             calendar.add(Calendar.YEAR, 1);
             long newCancelAt = calendar.getTimeInMillis() / 1000L;
-            subscription_params.put("cancel_at", newCancelAt);
+            subscription_params.put("days_until_due", 365);
 
 
         }
-        items.add(subscription_price );
+        items.add(subscription_price);
         subscription_params.put("items", items);
         Price price = Price.retrieve(subscription_price.get("price"));
         BigDecimal subscription_payment = price.getUnitAmountDecimal();
@@ -187,6 +247,8 @@ public class DataDashboardService {
             subscription_params.put("cancel_at_period_end", true);
         }
 
+        subscription_params.put("collection_method", "send_invoice");
+
         Subscription subscription =
                 Subscription.create(subscription_params);
 
@@ -198,61 +260,48 @@ public class DataDashboardService {
         return subscription.getId();
     }
 
-    public String updateSubscription(String subscription_id, String subscription_type, Boolean auto_renew) throws StripeException {
+    public Map<String, Object> updateSubscription(String subscription_id, String subscription_type, Boolean auto_renew) throws StripeException {
 
-        Subscription subscription =
-                Subscription.retrieve(
-                        subscription_id
-                );
+        Subscription subscription = Subscription.retrieve(subscription_id);
 
-        Calendar calendar = new GregorianCalendar();
-        //calendar.setTimeInMillis(currentCancelAt * 1000L);
         Map<String, Object> params = new HashMap<>();
-        Map<String, String> subscription_price = new HashMap<>();
-        if (Objects.equals(subscription_type, "MONTHLY")) {
-
-            subscription_price.put(
-                    "price",
-                    "price_1O1Pf2JuLboRjh4qv1wswh2w"
-            );
-
-            calendar.add(Calendar.MONTH, 1);
-            long newCancelAt = calendar.getTimeInMillis() / 1000L;
-            params.put("cancel_at", newCancelAt);
-
-        } else if (Objects.equals(subscription_type, "YEARLY")) {
-
-            subscription_price.put(
-                    "price",
-                    "price_1O1PfLJuLboRjh4qj2lYrFHi"
-            );
-
-            calendar.add(Calendar.YEAR, 1);
-            long newCancelAt = calendar.getTimeInMillis() / 1000L;
-            params.put("cancel_at", newCancelAt);
-
-        }
-
-
-        List<Object> items = new ArrayList<>();
-
 
         if (!auto_renew) {
             params.put("cancel_at_period_end", true);
         }
-        items.add(subscription_price );
-        params.put("items", items);
 
 
-        Subscription updatedSubscription =
-                subscription.update(params);
+        SubscriptionItem subscriptionItem = subscription.getItems().getData().get(0); // Get the first item
+        String currentPriceId = subscriptionItem.getPrice().getId(); // Get the current price ID
+        String newPriceId = (Objects.equals(subscription_type, "Monthly")) ? "price_1O1Pf2JuLboRjh4qv1wswh2w" : "price_1O1PfLJuLboRjh4qj2lYrFHi";
 
-        return updatedSubscription.getId();
+        if (!currentPriceId.equals(newPriceId)) {
+            Map<String, Object> itemParams = new HashMap<>();
+            itemParams.put("id", subscriptionItem.getId());
+            itemParams.put("price", newPriceId); // Set the new price ID
+
+            List<Map<String, Object>> items = new ArrayList<>();
+            items.add(itemParams);
+
+            params.put("items", items);
+        }
+
+        if (!auto_renew) {
+            params.put("cancel_at_period_end", true);
+        }
+
+        Subscription updatedSubscription = subscription.update(params);
+
+        Map<String, Object> extractedFields = getExtractedFields(updatedSubscription);
+
+        return extractedFields;
     }
 
     // Might need to change
 
-    public String renewSubscription(String subscription_id) throws StripeException, BadRequestException {
+    public Map<String,Object> renewSubscription(String subscription_id) throws StripeException, BadRequestException {
+
+        System.out.println(subscription_id);
 
         Subscription subscription =
                 Subscription.retrieve(
@@ -260,6 +309,49 @@ public class DataDashboardService {
                 );
 
         if (Objects.equals(subscription.getStatus(), "active")) {
+            Long currentCancelAt = subscription.getCancelAt();
+            System.out.println(currentCancelAt);
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTimeInMillis(currentCancelAt * 1000L); // Stripe timestamps are in seconds
+            Price price = subscription.getItems().getData().get(0).getPrice();
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billing_cycle_anchor", "now");
+            if (Objects.equals(price.getId(), "price_1O1Pf2JuLboRjh4qv1wswh2w")) {
+                calendar.add(Calendar.MONTH, 1);
+                long newCancelAt = calendar.getTimeInMillis() / 1000L;
+                long newBillingCycleAnchor = subscription.getCurrentPeriodEnd() + TimeUnit.DAYS.toSeconds(30);
+                params.put("billing_cycle_anchor", newBillingCycleAnchor);
+                params.put("days_until_due", 30);
+            } else if (Objects.equals(price.getId(), "price_1O1PfLJuLboRjh4qj2lYrFHi")) {
+                calendar.add(Calendar.YEAR, 1);
+                long newCancelAt = calendar.getTimeInMillis() / 1000L;
+                long newBillingCycleAnchor = subscription.getCurrentPeriodEnd() + TimeUnit.DAYS.toSeconds(365);
+                params.put("billing_cycle_anchor", newBillingCycleAnchor);
+                params.put("days_until_due", 365);
+            }
+
+            params.put("cancel_at_period_end", true);
+
+
+
+            Subscription updatedSubscription =
+                    subscription.update(params);
+
+            System.out.println(updatedSubscription);
+
+            Map<String, Object> extractedFields = getExtractedFields(updatedSubscription);
+            return extractedFields;
+        } else if (Objects.equals(subscription.getStatus(), "canceled")) {
+
+            Subscription updatedSubscription =
+                    subscription.resume();
+
+
+            Map<String, Object> extractedFields = getExtractedFields(updatedSubscription);
+            return extractedFields;
+        } else if (Objects.equals(subscription.getStatus(), "incomplete")){
+
             Long currentCancelAt = subscription.getCancelAt();
             Calendar calendar = new GregorianCalendar();
             calendar.setTimeInMillis(currentCancelAt * 1000L); // Stripe timestamps are in seconds
@@ -269,20 +361,20 @@ public class DataDashboardService {
                 calendar.add(Calendar.MONTH, 1);
                 long newCancelAt = calendar.getTimeInMillis() / 1000L;
                 params.put("cancel_at", newCancelAt);
+
             } else if (Objects.equals(price.getId(), "price_1O1PfLJuLboRjh4qj2lYrFHi")) {
                 calendar.add(Calendar.YEAR, 1);
                 long newCancelAt = calendar.getTimeInMillis() / 1000L;
                 params.put("cancel_at", newCancelAt);
+
             }
 
             Subscription updatedSubscription =
                     subscription.update(params);
 
-            return updatedSubscription.getId();
-        } else if (Objects.equals(subscription.getStatus(), "canceled")) {
-            Subscription updatedSubscription =
-                    subscription.resume();
-            return updatedSubscription.getId();
+            Map<String, Object> extractedFields = getExtractedFields(updatedSubscription);
+
+            return extractedFields;
         }
 
 
@@ -303,11 +395,6 @@ public class DataDashboardService {
         return deletedSubscription.getId();
     }
 
-    public String checkSubscriptionStatus() {
-
-        return "";
-
-    }
 
     public String getSubscriptionStatus(String user_id, String user_type) throws NotFoundException, StripeException {
         String stripe_account_id = getStripe_Id(user_id, user_type);
@@ -335,58 +422,60 @@ public class DataDashboardService {
 
         Subscription current_subscription = subscriptions.getData().get(0);
 
-        Map<String, Object> extractedFields = new HashMap<>();
-
-        // Convert current_period_end to LocalDate
-        Long currentPeriodEndLong = current_subscription.getCurrentPeriodEnd();
-
-        LocalDate currentPeriodEnd = Instant.ofEpochMilli(currentPeriodEndLong)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
-        // Convert current_period_start to LocalDate
-        Long currentPeriodStartLong = current_subscription.getCurrentPeriodStart();
-
-        LocalDate currentPeriodStart = Instant.ofEpochMilli(currentPeriodStartLong)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
-
-        // Get recurring interval
-        //String recurringInterval = current_subscription.getPlan().getInterval();
-
-        // Get status
-        String status = current_subscription.getStatus();
-
-        String subscription_id = current_subscription.getId();
-
-        // Add to the Map
-        extractedFields.put("subscription_id",  subscription_id);
-        extractedFields.put("current_period_end", currentPeriodEnd);
-        extractedFields.put("current_period_start", currentPeriodStart);
-        //extractedFields.put("recurring_interval", recurringInterval);
-        extractedFields.put("status", status);
+        Map<String, Object> extractedFields = getExtractedFields(current_subscription);
 
 
 
         return extractedFields;
     }
 
-    public String getSubscriptions() throws NotFoundException, StripeException {
+    public List<String> getSubscriptionStatuses(String user_type) throws NotFoundException, StripeException {
+
+        List<Vendor> vendors = vendorRepository.findAll();
+
+
+        List<String> statuses = new ArrayList<>();
+
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("limit", 3);
+//
+//        SubscriptionCollection subscriptions =
+//                Subscription.list(params);
+
+        for (Vendor vendor : vendors) {
+            String stripe_id = vendor.getStripe_account_id();
+            Map<String, Object> params = new HashMap<>();
+            params.put("customer", stripe_id);
+
+            SubscriptionCollection subscriptions =
+                    Subscription.list(params);
 
 
 
-        Map<String, Object> params = new HashMap<>();
+            if (subscriptions != null) {
+                if (subscriptions.getData() != null) {
+                    if (!subscriptions.getData().isEmpty()) {
+                        String status = subscriptions.getData().get(0).getStatus();
+
+                        statuses.add(status);
+
+                    } else {
+                        statuses.add("Never subscribed");
+                    }
 
 
-        SubscriptionCollection subscriptions =
-                Subscription.list(params);
-
-        Subscription current_subscription = subscriptions.getData().get(0);
+                }
+            }
 
 
 
-        return "";
+
+        }
+
+
+
+
+        return statuses;
     }
 
 
@@ -420,24 +509,89 @@ public class DataDashboardService {
     @Autowired
     TourRepository tourRepository;
 
-    public List<Object[]> getData(String vendorId) throws NotFoundException {
-        Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
-        if (vendorOptional.isPresent()) {
-            Vendor vendor = vendorOptional.get();
+    Map<String, String> countryCodeToCountry = new HashMap<String, String>() {
+        {
+            put("+62", "Indonesia");
+            put("+86", "China");
+            put("+60", "Malaysia");
+            put("+61", "Australia");
+            put("+91", "India");
+            put("+63", "Philippines");
+            put("+1", "United States");
+            put("+82", "South Korea");
+            put("+84", "Vietnam");
+            put("+44", "United Kingdom");
+            put("+65", "Singapore");
+        }
+    };
 
-            List<Accommodation> accommodations = vendor.getAccommodation_list();
+    public List<List<Object>> getData(String data_usecase, String type, String vendorId) throws NotFoundException {
 
-            LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
 
-            LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+        if (Objects.equals(data_usecase, "Total Bookings Over Time")) {
 
-            List<Object[]> data = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+            Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
+            if (vendorOptional.isPresent()) {
 
-            return data;
-        } else {
-            throw new NotFoundException("Vendor not found");
+
+
+                Vendor vendor = vendorOptional.get();
+
+                List<Accommodation> accommodations = vendor.getAccommodation_list();
+
+                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+
+                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+
+                Map<LocalDate, Integer> dateCounts = new HashMap<>();
+
+                System.out.println(bookings.size());
+
+                List<List<Object>> dateCountryList = new ArrayList<>();
+
+                for (Booking booking : bookings) {
+                    LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
+                    String countryCode = null;
+
+                    // Determine which user type (tourist or local) is not null and get the country code
+                    if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                        countryCode = booking.getTourist_user().getCountry_code();
+                    } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                        countryCode = booking.getLocal_user().getCountry_code();
+                    }
+
+                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                    // Create [Date, Country] pair and add to the list
+                    List<Object> dateCountryPair = Arrays.asList(bookingDate, country);
+                    dateCountryList.add(dateCountryPair);
+                }
+
+                System.out.println(dateCountryList);
+
+                return dateCountryList;
+            } else {
+                throw new NotFoundException("Vendor not found");
+            }
+
+        } else if (Objects.equals(data_usecase, "Revenue Over Time")) {
+
+        } else if (Objects.equals(data_usecase, "Bookings Breakdown by Activity, Nationality, Age")) {
+
+        } else if (Objects.equals(data_usecase, "Revenue Breakdown by Activity, Nationality, Age")) {
+
+        } else if (Objects.equals(data_usecase, "Customer Retention (Number of Repeat Bookings Over Time)")) {
+
         }
 
+        throw new NotFoundException("Data Use Case Not Found");
+
+
+
     }
+
+
 
 }

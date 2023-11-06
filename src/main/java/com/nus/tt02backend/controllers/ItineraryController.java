@@ -1,19 +1,17 @@
 package com.nus.tt02backend.controllers;
 
+import com.nus.tt02backend.dto.ItineraryFriendResponse;
 import com.nus.tt02backend.dto.SuggestedEventsResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
-import com.nus.tt02backend.services.DIYEventService;
 import com.nus.tt02backend.services.ItineraryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
+import java.time.*;
+import java.util.*;
 
 @RestController
 @CrossOrigin
@@ -48,6 +46,7 @@ public class ItineraryController {
 
     @GetMapping("/getTelecomRecommendations/{itineraryId}")
     public ResponseEntity<List<Telecom>> getTelecomRecommendations(@PathVariable Long itineraryId) throws BadRequestException {
+        System.out.println("getTelecomRecommendations HERE!");
         List<Telecom> telecomRecommendations = itineraryService.getTelecomRecommendations(itineraryId);
         return ResponseEntity.ok(telecomRecommendations);
     }
@@ -55,8 +54,8 @@ public class ItineraryController {
     // Recommendations for Attraction (based on a specific date)
     // Sample GET request for Postman: http://localhost:8080/itinerary/getAttractionRecommendationsByDate/1/2023-10-25
     @GetMapping("/getAttractionRecommendationsByDate/{itineraryId}/{dateTime}")
-    public ResponseEntity<List<Attraction>> getAttractionRecommendationsByDate(@PathVariable Long itineraryId,
-                                                                               @PathVariable LocalDate dateTime) throws BadRequestException {
+    public ResponseEntity<List<Attraction>> getAttractionRecommendationsByDate(@PathVariable Long itineraryId, @PathVariable LocalDate dateTime) throws BadRequestException {
+        System.out.println("getAttractionRecommendationsByDate HERE!");
         List<Attraction> attractionRecommendations = itineraryService.getAttractionRecommendationsByDate(itineraryId, dateTime);
         return ResponseEntity.ok(attractionRecommendations);
     }
@@ -89,5 +88,65 @@ public class ItineraryController {
                                                                                      @PathVariable LocalTime endTime) throws BadRequestException {
         SuggestedEventsResponse suggestedEvents = itineraryService.getSuggestedEventsBasedOnTimeslot(startTime, endTime);
         return ResponseEntity.ok(suggestedEvents);
+    }
+
+    @GetMapping("/existingAccommodationInItinerary/{itineraryId}")
+    public ResponseEntity<Boolean> existingAccommodationInItinerary(@PathVariable Long itineraryId) throws BadRequestException {
+        Boolean existingAccommodation = itineraryService.existingAccommodationInItinerary(itineraryId);
+        return ResponseEntity.ok(existingAccommodation);
+    }
+
+    @GetMapping("/existingTelecomInItinerary/{itineraryId}")
+    public ResponseEntity<Boolean> existingTelecomInItinerary(@PathVariable Long itineraryId) throws BadRequestException {
+        Boolean existingTelecom = itineraryService.existingTelecomInItinerary(itineraryId);
+        return ResponseEntity.ok(existingTelecom);
+    }
+
+    @GetMapping("/getUserWithEmailSimilarity/{masterUserId}/{itineraryId}/{email}")
+    public ResponseEntity<List<ItineraryFriendResponse>> getUserWithEmailSimilarity(@PathVariable Long masterUserId, @PathVariable Long itineraryId,  @PathVariable String email) throws NotFoundException {
+        List<ItineraryFriendResponse> list = itineraryService.getUserWithEmailSimilarity(masterUserId, itineraryId, email);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getInvitedUsers/{itineraryId}")
+    public ResponseEntity<List<ItineraryFriendResponse>> getInvitedUsers(@PathVariable Long itineraryId) throws NotFoundException {
+        List<ItineraryFriendResponse> list = itineraryService.getInvitedUsers(itineraryId);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/getAcceptedUsers/{itineraryId}")
+    public ResponseEntity<List<ItineraryFriendResponse>> getAcceptedUsers(@PathVariable Long itineraryId) throws NotFoundException {
+        List<ItineraryFriendResponse> list = itineraryService.getAcceptedUsers(itineraryId);
+        return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/toggleItineraryInvite/{itineraryId}/{userIdToAddOrRemove}")
+    public ResponseEntity<String> toggleItineraryInvite(@PathVariable Long itineraryId, @PathVariable Long userIdToAddOrRemove) throws NotFoundException {
+        String string = itineraryService.toggleItineraryInvite(itineraryId, userIdToAddOrRemove);
+        return ResponseEntity.ok(string);
+    }
+
+    @GetMapping("/getInvitationsByUser/{userId}")
+    public ResponseEntity<List<Itinerary>> getInvitationsByUser(@PathVariable Long userId) {
+        List<Itinerary> list = itineraryService.getInvitationsByUser(userId);
+        return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/addUserToItinerary/{itineraryId}/{userId}")
+    public ResponseEntity<String> addUserToItinerary(@PathVariable Long itineraryId, @PathVariable Long userId) throws NotFoundException {
+        String string = itineraryService.addUserToItinerary(itineraryId, userId);
+        return ResponseEntity.ok(string);
+    }
+
+    @PostMapping("/removeUserFromItinerary/{itineraryId}/{userId}")
+    public ResponseEntity<String> removeUserFromItinerary(@PathVariable Long itineraryId, @PathVariable Long userId) throws NotFoundException {
+        String string = itineraryService.removeUserFromItinerary(itineraryId, userId);
+        return ResponseEntity.ok(string);
+    }
+
+    @GetMapping("/getItineraryMasterUserEmail/{userId}")
+    public ResponseEntity<String> getItineraryMasterUserEmail(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        String email = itineraryService.getItineraryMasterUserEmail(userId);
+        return ResponseEntity.ok(email);
     }
 }

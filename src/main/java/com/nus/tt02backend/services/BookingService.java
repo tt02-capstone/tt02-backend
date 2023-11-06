@@ -261,6 +261,7 @@ public class BookingService {
                     local.setTour_type_list(null);
                     local.setSupport_ticket_list(null);
                     local.setItinerary(null);
+                    local.setUnused_diy_event_list(null);
 
                 } else if (booking.getTourist_user() != null) {
                     Tourist tourist = booking.getTourist_user();
@@ -271,6 +272,7 @@ public class BookingService {
                     tourist.setTour_type_list(null);
                     tourist.setSupport_ticket_list(null);
                     tourist.setItinerary(null);
+                    tourist.setUnused_diy_event_list(null);
                 }
 
                 return booking;

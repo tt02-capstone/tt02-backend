@@ -69,60 +69,70 @@ public class SecurityConfig {
     )
     .authorizeHttpRequests(authorize -> authorize
         .requestMatchers(HttpMethod.POST,
-              "/local/create",
-              "/tourist/create",
-              "/admin/createStaff",
-              "/admin/staffLogin/**",
-              "/admin/passwordResetStageOne/**",
-              "/admin/passwordResetStageTwo/**",
-              "/admin/passwordResetStageThree/**",
-              "/vendor/createVendor",
-              "/vendorStaff/createVendorStaff",
-              "/notification/**", // to remove
-              "/itinerary/**", // to remove
-              "/diyEvent/**", // to remove
+                "/local/create",
+                "/tourist/create",
+                "/admin/createStaff",
+                "/admin/staffLogin/**",
+                "/admin/passwordResetStageOne/**",
+                "/admin/passwordResetStageTwo/**",
+                "/admin/passwordResetStageThree/**",
+                "/vendor/createVendor",
+                "/vendorStaff/createVendorStaff",
+                "/notification/**", // to remove
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
                 "/item/**", // to remove
-              "/user/**").permitAll()
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
-              "/vendorStaff/verifyEmail/**",
-              "/supportTicket/**", // to remove
-              "/booking/**", // to remove
-              "/itinerary/**", // to remove
-              "/diyEvent/**", // to remove
-              "/comment/**", // to remove
-              "/post/**", // to remove
+                "/vendorStaff/verifyEmail/**",
+                "/supportTicket/**", // to remove
+                "/booking/**", // to remove
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/comment/**", // to remove
+                "/post/**", // to remove
                 "attraction/**", // to remove
                 "/item/**", // to remove
-              "/user/**").permitAll()
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
-              "/vendorStaff/verifyEmail/**",
-              "/itinerary/**", // to remove
-              "/diyEvent/**", // to remove
-              "/comment/**", // to remove
-              "/post/**", // to remove
-              "/user/**").permitAll()
+                "/vendorStaff/verifyEmail/**",
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/comment/**", // to remove
+                "/post/**", // to remove
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.PUT,
-              "/itinerary/**", // to remove
-              "/diyEvent/**", // to remove
-              "/comment/**", // to remove
-              "/post/**", // to remove
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/comment/**", // to remove
+                "/post/**", // to remove
                 "/item/**", // to remove
-              "/user/**").permitAll()
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.DELETE,
-              "/itinerary/**", // to remove
-              "/diyEvent/**", // to remove
-              "/comment/**", // to remove
-              "/post/**", // to remove
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/comment/**", // to remove
+                "/post/**", // to remove
                 "/item/**", // to remove
-              "/user/**").permitAll()
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
-              "/vendorStaff/verifyEmail/**",
-              "/itinerary/**", // to remove
-              "/diyEvent/**", // to remove
-              "/comment/**", // to remove
-              "/post/**", // to remove
-              "/recommendation/**", // to remove
-              "/user/**").permitAll()
+                "/vendorStaff/verifyEmail/**",
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/comment/**", // to remove
+                "/post/**", // to remove
+                "/recommendation/**", // to remove
+                "/itinerary/**", // to remove
+                "/diyEvent/**", // to remove
+                "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()
     )
