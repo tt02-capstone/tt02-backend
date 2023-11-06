@@ -578,17 +578,409 @@ public class DataDashboardService {
 
         } else if (Objects.equals(data_usecase, "Revenue Over Time")) {
 
+            Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
+            if (vendorOptional.isPresent()) {
+
+
+
+                Vendor vendor = vendorOptional.get();
+
+                List<Accommodation> accommodations = vendor.getAccommodation_list();
+
+                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+
+                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+
+                Map<LocalDate, Integer> dateCounts = new HashMap<>();
+                List<List<Object>> dateCountryRevenueList = new ArrayList<>();
+
+                for (Booking booking : bookings) {
+                    LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
+                    BigDecimal commission = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
+                    BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
+                    String countryCode = null;
+
+                    // Determine which user type (tourist or local) is not null and get the country code
+                    if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                        countryCode = booking.getTourist_user().getCountry_code();
+                    } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                        countryCode = booking.getLocal_user().getCountry_code();
+                    }
+
+                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                    // Create [Date, Country, Revenue] triple and add to the list
+                    List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue);
+                    dateCountryRevenueList.add(dateCountryRevenueTriple);
+                }
+
+                System.out.println(dateCountryRevenueList);
+
+                return dateCountryRevenueList;
+
+            } else {
+                throw new NotFoundException("Vendor not found");
+            }
+
         } else if (Objects.equals(data_usecase, "Bookings Breakdown by Activity, Nationality, Age")) {
+
+            Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
+            if (vendorOptional.isPresent()) {
+
+
+
+                Vendor vendor = vendorOptional.get();
+
+                List<Accommodation> accommodations = vendor.getAccommodation_list();
+
+                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+
+                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+
+                Map<LocalDate, Integer> dateCounts = new HashMap<>();
+                List<List<Object>> dateCountryRevenueList = new ArrayList<>();
+
+                Map<String, Object> result = new HashMap<>();
+                Map<String, Integer> categoryCounts = new HashMap<>();
+                Map<String, Integer> countryCounts = new HashMap<>();
+                Map<String, Integer> statusCounts = new HashMap<>();
+
+                for (Booking booking : bookings) {
+
+                    String countryCode = null;
+                    String roomType = String.valueOf(booking.getRoom().getRoom_type());
+                    categoryCounts.put(roomType, categoryCounts.getOrDefault(roomType, 0) + 1);
+
+                    if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                        countryCode = booking.getTourist_user().getCountry_code();
+                    } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                        countryCode = booking.getLocal_user().getCountry_code();
+                    }
+
+                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown");
+
+                    countryCounts.put(country, countryCounts.getOrDefault(country, 0) + 1);
+
+                    String bookingStatus = String.valueOf(booking.getStatus());
+
+                    statusCounts.put(bookingStatus, statusCounts.getOrDefault(bookingStatus, 0) + 1);
+
+
+                }
+
+                result.put("Category", categoryCounts);
+                result.put("Country", countryCounts);
+                result.put("Status", statusCounts);
+
+                System.out.println(result);
+
+                return dateCountryRevenueList;
+
+            } else {
+                throw new NotFoundException("Vendor not found");
+            }
 
         } else if (Objects.equals(data_usecase, "Revenue Breakdown by Activity, Nationality, Age")) {
 
+            Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
+            if (vendorOptional.isPresent()) {
+
+                Vendor vendor = vendorOptional.get();
+
+                List<Accommodation> accommodations = vendor.getAccommodation_list();
+
+                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+
+                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+
+                Map<LocalDate, Integer> dateCounts = new HashMap<>();
+                List<List<Object>> dateCountryRevenueList = new ArrayList<>();
+
+                Map<String, Object> result = new HashMap<>();
+                Map<String, BigDecimal> categoryRevenues = new HashMap<>();
+                Map<String, BigDecimal> countryRevenues = new HashMap<>();
+                Map<String, BigDecimal> statusRevenues = new HashMap<>();
+
+                for (Booking booking : bookings) {
+
+                    BigDecimal commission = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
+                    BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
+
+                    String countryCode = null;
+                    String roomType = String.valueOf(booking.getRoom().getRoom_type());
+                    categoryRevenues.put(roomType, categoryRevenues.getOrDefault(roomType, BigDecimal.valueOf(0)).add(revenue));
+
+                    if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                        countryCode = booking.getTourist_user().getCountry_code();
+                    } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                        countryCode = booking.getLocal_user().getCountry_code();
+                    }
+
+                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown");
+
+                    countryRevenues.put(country, countryRevenues.getOrDefault(country,  BigDecimal.valueOf(0)).add(revenue));
+
+                    String bookingStatus = String.valueOf(booking.getStatus());
+
+                    statusRevenues.put(bookingStatus, statusRevenues.getOrDefault(bookingStatus,  BigDecimal.valueOf(0)).add(revenue));
+
+
+                }
+
+                result.put("Category", categoryRevenues);
+                result.put("Country", countryRevenues);
+                result.put("Status", statusRevenues);
+
+                System.out.println(result);
+
+                return dateCountryRevenueList;
+
+            } else {
+                throw new NotFoundException("Vendor not found");
+            }
+
+
         } else if (Objects.equals(data_usecase, "Customer Retention (Number of Repeat Bookings Over Time)")) {
+
+            Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
+            if (vendorOptional.isPresent()) {
+
+
+
+                Vendor vendor = vendorOptional.get();
+
+                List<Accommodation> accommodations = vendor.getAccommodation_list();
+
+                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+
+                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+
+// Create a map to store the booking count, revenue, and country for each date
+                Map<LocalDate, List<Object>> bookingDataByDate = new HashMap<>();
+
+                for (Booking booking : bookings) {
+                    LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
+                    BigDecimal revenue = booking.getPayment().getPayment_amount();
+                    String countryCode = null;
+
+                    // Determine which user type (tourist or local) is not null and get the country code
+                    if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                        countryCode = booking.getTourist_user().getCountry_code();
+                    } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                        countryCode = booking.getLocal_user().getCountry_code();
+                    }
+
+                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                    // Check if the booking date is already in the map
+                    if (bookingDataByDate.containsKey(bookingDate)) {
+                        List<Object> existingData = bookingDataByDate.get(bookingDate);
+                        int currentCount = (int) existingData.get(0);
+                        BigDecimal currentRevenue = (BigDecimal) existingData.get(1);
+
+                        // Update the count and revenue
+                        existingData.set(0, currentCount + 1);
+                        existingData.set(1, currentRevenue.add(revenue));
+                    } else {
+                        // Initialize the list with count, revenue, and country
+                        List<Object> newData = new ArrayList<>();
+                        newData.add(1); // Count for the first booking on this date
+                        newData.add(revenue);
+                        newData.add(country);
+                        bookingDataByDate.put(bookingDate, newData);
+                    }
+                }
+
+// Convert the map to a list of [Date, Count, Revenue, Country] for sending to the frontend
+                List<List<Object>> dateBookingDataList = new ArrayList<>();
+                for (Map.Entry<LocalDate, List<Object>> entry : bookingDataByDate.entrySet()) {
+                    LocalDate date = entry.getKey();
+                    List<Object> data = entry.getValue();
+                    dateBookingDataList.add(Arrays.asList(date, data.get(0), data.get(1), data.get(2)));
+                }
+
+                System.out.println(dateBookingDataList);
+
+                return dateBookingDataList;
+
+
+
+            } else {
+                throw new NotFoundException("Vendor not found");
+            }
 
         }
 
         throw new NotFoundException("Data Use Case Not Found");
 
 
+
+    }
+
+
+    public List<List<Object>> getPlatformData(String data_usecase) throws NotFoundException {
+
+        LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+
+        LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+
+        List<Booking> bookings = bookingRepository.getPlatformBookingsOverTime(startDate, endDate);
+
+        if (Objects.equals(data_usecase, "Platform Bookings Over Time")) {
+
+            Map<LocalDate, Integer> dateCounts = new HashMap<>();
+
+            List<List<Object>> dateCountryList = new ArrayList<>();
+
+            for (Booking booking : bookings) {
+                LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
+                String countryCode = null;
+
+                // Determine which user type (tourist or local) is not null and get the country code
+                if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                    countryCode = booking.getTourist_user().getCountry_code();
+                } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                    countryCode = booking.getLocal_user().getCountry_code();
+                }
+
+                String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                // Create [Date, Country] pair and add to the list
+                List<Object> dateCountryPair = Arrays.asList(bookingDate, country);
+                dateCountryList.add(dateCountryPair);
+            }
+
+            System.out.println(dateCountryList);
+
+            return dateCountryList;
+
+        } else if (Objects.equals(data_usecase, "Platform Revenue Over Time")) {
+
+            Map<LocalDate, Integer> dateCounts = new HashMap<>();
+            List<List<Object>> dateCountryRevenueList = new ArrayList<>();
+
+            for (Booking booking : bookings) {
+                LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
+                BigDecimal commission = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
+                BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
+                String countryCode = null;
+
+                // Determine which user type (tourist or local) is not null and get the country code
+                if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                    countryCode = booking.getTourist_user().getCountry_code();
+                } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                    countryCode = booking.getLocal_user().getCountry_code();
+                }
+
+                String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                // Create [Date, Country, Revenue] triple and add to the list
+                List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue);
+                dateCountryRevenueList.add(dateCountryRevenueTriple);
+
+                // To add vendors
+            }
+
+            System.out.println(dateCountryRevenueList);
+
+            return dateCountryRevenueList;
+
+        } else if (Objects.equals(data_usecase, "Platform Bookings Breakdown by Category, Nationality, Status")) {
+
+            Map<LocalDate, Integer> dateCounts = new HashMap<>();
+            List<List<Object>> dateCountryRevenueList = new ArrayList<>();
+
+            Map<String, Object> result = new HashMap<>();
+            Map<String, Integer> categoryCounts = new HashMap<>();
+            Map<String, Integer> countryCounts = new HashMap<>();
+            Map<String, Integer> statusCounts = new HashMap<>();
+
+            for (Booking booking : bookings) {
+
+                String countryCode = null;
+                String roomType = String.valueOf(booking.getRoom().getRoom_type());
+                categoryCounts.put(roomType, categoryCounts.getOrDefault(roomType, 0) + 1);
+
+                if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                    countryCode = booking.getTourist_user().getCountry_code();
+                } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                    countryCode = booking.getLocal_user().getCountry_code();
+                }
+
+                String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown");
+
+                countryCounts.put(country, countryCounts.getOrDefault(country, 0) + 1);
+
+                String bookingStatus = String.valueOf(booking.getStatus());
+
+                statusCounts.put(bookingStatus, statusCounts.getOrDefault(bookingStatus, 0) + 1);
+
+
+            }
+
+            result.put("Category", categoryCounts);
+            result.put("Country", countryCounts);
+            result.put("Status", statusCounts);
+
+            System.out.println(result);
+
+            return dateCountryRevenueList;
+
+        } else if (Objects.equals(data_usecase, "Platform Revenue Breakdown by Category, Nationality, Status")) {
+
+            Map<String, Object> result = new HashMap<>();
+            List<List<Object>> dateCountryRevenueList = new ArrayList<>();
+            Map<String, BigDecimal> categoryRevenues = new HashMap<>();
+            Map<String, BigDecimal> countryRevenues = new HashMap<>();
+            Map<String, BigDecimal> statusRevenues = new HashMap<>();
+
+            for (Booking booking : bookings) {
+
+                BigDecimal commission = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
+                BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
+
+                String countryCode = null;
+                String roomType = String.valueOf(booking.getRoom().getRoom_type());
+                categoryRevenues.put(roomType, categoryRevenues.getOrDefault(roomType, BigDecimal.valueOf(0)).add(revenue));
+
+                if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                    countryCode = booking.getTourist_user().getCountry_code();
+                } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                    countryCode = booking.getLocal_user().getCountry_code();
+                }
+
+                String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown");
+
+                countryRevenues.put(country, countryRevenues.getOrDefault(country, BigDecimal.valueOf(0)).add(revenue));
+
+                String bookingStatus = String.valueOf(booking.getStatus());
+
+                statusRevenues.put(bookingStatus, statusRevenues.getOrDefault(bookingStatus, BigDecimal.valueOf(0)).add(revenue));
+
+
+            }
+
+            result.put("Category", categoryRevenues);
+            result.put("Country", countryRevenues);
+            result.put("Status", statusRevenues);
+
+            System.out.println(result);
+
+            return dateCountryRevenueList;
+        }
+
+//        } else if (Objects.equals(data_usecase, "Vendor Retention (Number of Repeat Bookings Over Time)")) {
+//
+//        }
+        throw new NotFoundException("Data Use Case Not Found");
 
     }
 

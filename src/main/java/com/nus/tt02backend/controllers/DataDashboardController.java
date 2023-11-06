@@ -122,6 +122,13 @@ public class DataDashboardController {
         return ResponseEntity.ok(data);
     }
 
+    @GetMapping("/getPlatformData/{data_usecase}")
+    public ResponseEntity<List<List<Object>>> getPlatformData(@PathVariable String data_usecase) throws NotFoundException {
+
+        List<List<Object>> data = dataDashboardService.getPlatformData(data_usecase);
+        return ResponseEntity.ok(data);
+    }
+
 
 
 }

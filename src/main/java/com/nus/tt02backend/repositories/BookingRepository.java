@@ -38,4 +38,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long>  {
             @Param("entityType") String entityType
     );
 
+
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.start_datetime >= :startDate AND b.end_datetime <= :endDate " +
+            "ORDER BY b.start_datetime")
+    List<Booking> getPlatformBookingsOverTime(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
 }
