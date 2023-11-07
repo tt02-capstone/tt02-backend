@@ -131,4 +131,28 @@ public class ItineraryController {
         List<String> profilePicList = itineraryService.getProfileImageByIdList(itineraryId);
         return ResponseEntity.ok(profilePicList);
     }
+
+    @GetMapping("/getInvitationsByUser/{userId}")
+    public ResponseEntity<List<Itinerary>> getInvitationsByUser(@PathVariable Long userId) {
+        List<Itinerary> list = itineraryService.getInvitationsByUser(userId);
+        return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/addUserToItinerary/{itineraryId}/{userId}")
+    public ResponseEntity<String> addUserToItinerary(@PathVariable Long itineraryId, @PathVariable Long userId) throws NotFoundException {
+        String string = itineraryService.addUserToItinerary(itineraryId, userId);
+        return ResponseEntity.ok(string);
+    }
+
+    @PostMapping("/removeUserFromItinerary/{itineraryId}/{userId}")
+    public ResponseEntity<String> removeUserFromItinerary(@PathVariable Long itineraryId, @PathVariable Long userId) throws NotFoundException {
+        String string = itineraryService.removeUserFromItinerary(itineraryId, userId);
+        return ResponseEntity.ok(string);
+    }
+
+    @GetMapping("/getItineraryMasterUserEmail/{userId}")
+    public ResponseEntity<ItineraryFriendResponse> getItineraryMasterUserEmail(@PathVariable Long userId) throws NotFoundException, BadRequestException {
+        ItineraryFriendResponse response = itineraryService.getItineraryMasterUserEmail(userId);
+        return ResponseEntity.ok(response);
+    }
 }

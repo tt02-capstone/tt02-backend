@@ -41,4 +41,19 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
                                                            @Param("endDate") LocalDateTime endDate,
                                                            @Param("entityId") Long entityId,
                                                            @Param("entityType") String entityType);
+
+
+    @Query("SELECT p " +
+            "FROM Payment p " +
+            "INNER JOIN p.booking b " +
+            "WHERE b.start_datetime >= :startDate " +
+            "AND b.start_datetime <= :endDate " +
+            "AND (:entityId IS NULL OR " +
+            "      (b.attraction.attraction_id = :entityId AND :entityType = 'ATTRACTION') OR " +
+            "      (b.room.room_id = :entityId AND :entityType = 'ACCOMMODATION') OR " +
+            "      (b.telecom.telecom_id = :entityId AND :entityType = 'TELECOM'))")
+    List<Payment> getPaymentsWithinDateRange(@Param("startDate") LocalDateTime startDate,
+                                             @Param("endDate") LocalDateTime endDate,
+                                             @Param("entityId") Long entityId,
+                                             @Param("entityType") String entityType);
 }

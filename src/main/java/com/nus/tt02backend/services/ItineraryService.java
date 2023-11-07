@@ -53,21 +53,22 @@ public class ItineraryService {
 
         Itinerary itineraryToReturn = null;
 
-        if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
-            Tourist tourist = (Tourist) user;
-            itineraryToReturn = tourist.getItinerary();
+        List<Itinerary> allItineraries = itineraryRepository.findAll();
 
-            for (DIYEvent d : itineraryToReturn.getDiy_event_list()) {
-                if (d.getBooking() != null) {
-                    d.getBooking().setPayment(null);
-                    d.getBooking().setTourist_user(null);
-                    d.getBooking().setLocal_user(null);
+        for (Itinerary itinerary: allItineraries) {
+            if (itinerary.getMaster_id().equals(userId)) {
+                itineraryToReturn = itinerary;
+                break;
+            } else {
+                List<Long> addedUsers = itinerary.getAccepted_people_list();
+                if (addedUsers.contains(userId)) {
+                    itineraryToReturn = itinerary;
+                    break;
                 }
             }
-        } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
-            Local local = (Local) user;
-            itineraryToReturn = local.getItinerary();
+        }
 
+        if (itineraryToReturn != null ) {
             for (DIYEvent d : itineraryToReturn.getDiy_event_list()) {
                 if (d.getBooking() != null) {
                     d.getBooking().setPayment(null);
@@ -76,6 +77,7 @@ public class ItineraryService {
                 }
             }
         }
+
         return itineraryToReturn;
     }
 
@@ -709,7 +711,6 @@ public class ItineraryService {
     }
 
     public List<String> getProfileImageByIdList(Long itineraryId) throws NotFoundException {
-
         Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
         if (itineraryOptional.isEmpty()) throw new NotFoundException("Itinerary not found!");
         Itinerary itinerary = itineraryOptional.get();
@@ -724,5 +725,55 @@ public class ItineraryService {
         if (masterProfilePic.length() > 4) list.add(masterProfilePic);
 
         return list;
+    }
+
+    public List<Itinerary> getInvitationsByUser(Long userId) {
+
+        List<Itinerary> allItineraries = itineraryRepository.findAll();
+        List<Itinerary> itinerariesInvitedTo = new ArrayList<>();
+
+        for (Itinerary itinerary : allItineraries) {
+            List<Long> invitedUsers = itinerary.getInvited_people_list();
+            for (Long user : invitedUsers) {
+                if (Objects.equals(user, userId)) {
+                    itinerariesInvitedTo.add(itinerary);
+                }
+            }
+        }
+
+        return itinerariesInvitedTo;
+    }
+
+    public String addUserToItinerary(Long itineraryId, Long userId) throws NotFoundException {
+
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) throw new NotFoundException("Itinerary not found!");
+        Itinerary itinerary = itineraryOptional.get();
+
+        itinerary.getInvited_people_list().remove(userId);
+        itinerary.getAccepted_people_list().add(userId);
+        itineraryRepository.save(itinerary);
+        return "User added!";
+    }
+
+    public String removeUserFromItinerary(Long itineraryId, Long userId) throws NotFoundException {
+
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) throw new NotFoundException("Itinerary not found!");
+        Itinerary itinerary = itineraryOptional.get();
+
+        itinerary.getAccepted_people_list().remove(userId);
+        itineraryRepository.save(itinerary);
+        return "User removed!";
+    }
+
+    public ItineraryFriendResponse getItineraryMasterUserEmail(Long userId) throws BadRequestException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new BadRequestException("User does not exist!");
+        }
+        User user = userOptional.get();
+
+        return new ItineraryFriendResponse(user.getUser_id(), user.getEmail(), user.getName(), user.getProfile_pic());
     }
 }

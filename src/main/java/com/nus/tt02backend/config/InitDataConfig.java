@@ -56,6 +56,8 @@ public class InitDataConfig implements CommandLineRunner {
     private final BookingItemRepository bookingItemRepository;
     private final SupportTicketRepository supportTicketRepository;
     private final ReplyRepository replyRepository;
+    private final PostRepository postRepository;
+    private final BadgeRepository badgeRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -73,6 +75,7 @@ public class InitDataConfig implements CommandLineRunner {
     List<Attraction> attractions = new ArrayList<>();
 
     List<User> users = new ArrayList<>();
+
 
     @Transactional
     @Override
@@ -209,7 +212,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendorStaff.setIs_blocked(false);
             vendorStaff.setPosition("Manager");
             vendorStaff.setIs_master_account(true);
-            vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/default_profile.jpg");
+            vendorStaff.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/attraction.png");
             vendorStaff.setVendor(vendor1);
             vendorStaff.setBadge_list(new ArrayList<>());
             vendorStaffRepository.save(vendorStaff);
@@ -647,7 +650,8 @@ public class InitDataConfig implements CommandLineRunner {
                         categoryItem = categoryItemRepository.save(categoryItem);
                         categoryItemList.add(categoryItem);
                     }
-                } else if (value.equals(BookingTypeEnum.TOUR)) {
+                }
+                else if (value.equals(BookingTypeEnum.TOUR)) {
                     List<TourType> tourTypes = tourTypeRepository.findAll();
 
                     for (TourType tourType : tourTypes) {
@@ -733,6 +737,59 @@ public class InitDataConfig implements CommandLineRunner {
         if (bookingRepository.count() == 0) {
             createBookingsAndPayments(1000);
         }
+
+        if (postRepository.count() == 0) {
+            Post p1 = new Post();
+            p1.setTitle("Best Chili Lobster");
+            p1.setContent("This is the best chili lobster I have in Singapore");
+            p1.setIs_published(true);
+            List<String> imgList = new ArrayList<>();
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/post/init/chilli_lobster.jpg");
+            p1.setPost_image_list(imgList);
+            p1.setPublish_time(LocalDateTime.parse("2023-11-11T16:00:00"));
+            p1.setUpdated_time(LocalDateTime.parse("2023-11-11T16:01:00"));
+            p1.setDownvoted_user_id_list(null);
+            p1.setUpvoted_user_id_list(null);
+            p1.setLocal_user(local);
+
+            postRepository.save(p1);
+
+            Post p2 = new Post();
+            p2.setTitle("Best Burger!!");
+            p2.setContent("This is the best burger I have in Singapore");
+            p2.setIs_published(true);
+            List<String> imgList1 = new ArrayList<>();
+            imgList1.add("https://tt02.s3.ap-southeast-1.amazonaws.com/post/init/burger3.jpeg");
+            p2.setPost_image_list(imgList1);
+            p2.setPublish_time(LocalDateTime.parse("2023-11-12T16:00:00"));
+            p2.setUpdated_time(LocalDateTime.parse("2023-11-12T16:01:00"));
+            p2.setDownvoted_user_id_list(null);
+            p2.setUpvoted_user_id_list(null);
+            p2.setLocal_user(local);
+
+            postRepository.save(p2);
+
+            List<Post> pList = new ArrayList<>();
+            pList.add(p1);
+            pList.add(p2);
+
+            CategoryItem cat = categoryItemRepository.getCategoryItemsById(9L);
+            cat.setPost_list(pList);
+            categoryItemRepository.save(cat); // save to the first restaurant category
+
+            Badge b = new Badge(); // set a badge for the local user
+            b.setBadge_type(BadgeTypeEnum.FOODIE);
+            b.setBadge_icon("https://tt02.s3.ap-southeast-1.amazonaws.com/static/badges/FOODIE.png");
+            b.setCreation_date(LocalDateTime.parse("2023-11-12T16:04:00"));
+            b.setIs_primary(false);
+            badgeRepository.save(b);
+
+            List<Badge> bList = new ArrayList<>();
+            bList.add(b);
+            local.setBadge_list(bList);
+            localRepository.save(local);
+        }
+
     }
 
     public void secondRestaurant(Vendor vendor) {

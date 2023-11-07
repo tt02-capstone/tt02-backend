@@ -115,10 +115,17 @@ public class DataDashboardController {
         return ResponseEntity.ok(subscriptionStatus);
     }
 
-    @GetMapping("/getData/{vendor_id}")
-    public ResponseEntity<List<Object[]>> getData(@PathVariable String vendor_id) throws NotFoundException {
+    @GetMapping("/getData/{data_usecase}/{type}/{vendor_id}")
+    public ResponseEntity<List<List<Object>>> getData(@PathVariable String data_usecase, @PathVariable String type, @PathVariable String vendor_id) throws NotFoundException {
 
-        List<Object[]> data = dataDashboardService.getData(vendor_id);
+        List<List<Object>> data = dataDashboardService.getData(data_usecase, type, vendor_id);
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/getPlatformData/{data_usecase}")
+    public ResponseEntity<List<List<Object>>> getPlatformData(@PathVariable String data_usecase) throws NotFoundException {
+
+        List<List<Object>> data = dataDashboardService.getPlatformData(data_usecase);
         return ResponseEntity.ok(data);
     }
 

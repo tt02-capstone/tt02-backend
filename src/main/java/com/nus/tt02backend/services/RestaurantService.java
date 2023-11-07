@@ -78,15 +78,11 @@ public class RestaurantService {
     }
 
     public Restaurant getRestaurant(Long restId) throws NotFoundException {
-        try {
-            Optional<Restaurant> rOptional = restaurantRepository.findById(restId);
-            if (rOptional.isPresent()) {
-                return rOptional.get();
-            } else {
-                throw new NotFoundException("Restaurant not found!");
-            }
-        } catch (Exception ex) {
-            throw new NotFoundException((ex.getMessage()));
+        Optional<Restaurant> rOptional = restaurantRepository.findById(restId);
+        if (rOptional.isPresent()) {
+            return rOptional.get();
+        } else {
+            throw new NotFoundException("Restaurant not found!");
         }
     }
 
@@ -159,23 +155,32 @@ public class RestaurantService {
     }
 
     public List<Dish> addDish(Long restId, Dish newDish) throws BadRequestException, NotFoundException {
-        Restaurant r = getRestaurant(restId);
-        if (!r.getDish_list().isEmpty()) {
-            for (Dish d : r.getDish_list()) {
-                if (d.getName().equals(newDish.getName())) {
+        // Restaurant r = getRestaurant(restId);
+
+        Optional<Restaurant> restOptional = restaurantRepository.findById(restId);
+        if (restOptional.isEmpty()) {
+            throw new NotFoundException("Restaurant not found!");
+        }
+
+        Restaurant r = restOptional.get();
+        List<Dish> dishList = r.getDish_list();
+
+        if (!dishList.isEmpty()) {
+            for (Dish dishItem : r.getDish_list()) {
+                if (dishItem.getName().equals(newDish.getName())) {
                     throw new BadRequestException("Dish name already exist! Please use another name!");
                 }
             }
         }
 
         Dish dish = dishRepository.save(newDish);
-        r.getDish_list().add(dish);
+        dishList.add(dish);
 
         restaurantRepository.save(r);
 
-        updatePriceTier(r.getDish_list(), r.getRestaurant_id()); // add in the pricing tier
+        updatePriceTier(dishList, r.getRestaurant_id()); // add in the pricing tier
 
-        return r.getDish_list();
+        return dishList;
     }
 
     // update dish
