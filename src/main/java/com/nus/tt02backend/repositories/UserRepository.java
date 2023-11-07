@@ -35,4 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.user_id != ?1 AND (u.user_type = 'TOURIST' OR u.user_type = 'LOCAL') AND u.email LIKE CONCAT('%', ?2 ,'%')")
     List<User> getUserListWithEmailSimilarity(Long masterItineraryUserId, String email);
+
+    @Query("SELECT u.profile_pic FROM User u WHERE u.user_id = ?1")
+    String getProfileImageByIdList(Long userId);
 }

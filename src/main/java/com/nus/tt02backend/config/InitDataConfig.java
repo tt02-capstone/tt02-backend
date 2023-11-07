@@ -146,7 +146,7 @@ public class InitDataConfig implements CommandLineRunner {
             tourist.setCountry_code("+82");
             tourist.setEmail_verified(true);
             tourist.setMobile_num("01037596775");
-            tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/tourist.png.jpg");
+            tourist.setProfile_pic("https://tt02.s3.ap-southeast-1.amazonaws.com/user/tourist.png");
             tourist.setBadge_list(new ArrayList<>());
 
             Map<String, Object> customer_parameters = new HashMap<>();

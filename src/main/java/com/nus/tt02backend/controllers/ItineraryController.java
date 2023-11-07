@@ -125,4 +125,10 @@ public class ItineraryController {
         String string = itineraryService.toggleItineraryInvite(itineraryId, userIdToAddOrRemove);
         return ResponseEntity.ok(string);
     }
+
+    @GetMapping("/getProfileImageByIdList/{itineraryId}")
+    public ResponseEntity<List<String>> getProfileImageByIdList(@PathVariable Long itineraryId) throws NotFoundException {
+        List<String> profilePicList = itineraryService.getProfileImageByIdList(itineraryId);
+        return ResponseEntity.ok(profilePicList);
+    }
 }

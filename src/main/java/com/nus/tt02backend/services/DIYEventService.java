@@ -126,6 +126,11 @@ public class DIYEventService {
                 }
 
                 diyEventToCreate.setAttraction(attractionOptional.get());
+                DIYEvent event = diyEventRepository.save(diyEventToCreate);
+                itinerary.getDiy_event_list().add(event);
+                itineraryRepository.save(itinerary);
+                return event;
+
             } else if (type.equalsIgnoreCase("accommodation")) {
                 Optional<Accommodation> accommodationOptional = accommodationRepository.findById(typeId);
                 if (accommodationOptional.isEmpty()) {
@@ -163,6 +168,7 @@ public class DIYEventService {
 
                 itineraryRepository.save(itinerary);
                 return diyEvent;
+
             } else if (type.equalsIgnoreCase("telecom")) {
                 Optional<Telecom> telecomOptional = telecomRepository.findById(typeId);
                 if (telecomOptional.isEmpty()) {
@@ -199,6 +205,7 @@ public class DIYEventService {
 
                 itineraryRepository.save(itinerary);
                 return diyEvent;
+
             } else if (type.equalsIgnoreCase("restaurant")) {
                 Optional<Restaurant> restaurantOptional = restaurantRepository.findById(typeId);
                 if (restaurantOptional.isEmpty()) {
@@ -206,6 +213,11 @@ public class DIYEventService {
                 }
 
                 diyEventToCreate.setRestaurant(restaurantOptional.get());
+                DIYEvent event = diyEventRepository.save(diyEventToCreate);
+                itinerary.getDiy_event_list().add(event);
+                itineraryRepository.save(itinerary);
+                return event;
+
             } else if (type.equalsIgnoreCase("booking")) {
                 Optional<Booking> bookingOptional = bookingRepository.findById(typeId);
                 if (bookingOptional.isEmpty()) {
@@ -219,11 +231,38 @@ public class DIYEventService {
             }
         }
 
-        DIYEvent diyEvent = diyEventRepository.save(diyEventToCreate);
-        itinerary.getDiy_event_list().add(diyEvent);
-        itineraryRepository.save(itinerary);
+        if (!hasBooking) {
+            LocalDate startDate = diyEventToCreate.getStart_datetime().toLocalDate();
+            LocalTime startTime = diyEventToCreate.getStart_datetime().toLocalTime();
+            LocalDate endDate = diyEventToCreate.getEnd_datetime().toLocalDate();
+            LocalTime endTime = diyEventToCreate.getEnd_datetime().toLocalTime();
+            for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
+                DIYEvent newDiyEvent = new DIYEvent();
+                newDiyEvent.setName(diyEventToCreate.getName());
+                newDiyEvent.setLocation(diyEventToCreate.getLocation());
+                newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
 
-        if (hasBooking) {
+                if (date.isEqual(startDate)) {
+                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, startTime));
+                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+                } else if (date.isEqual(endDate)) {
+                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, endTime));
+                } else {
+                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+                }
+
+                DIYEvent event = diyEventRepository.save(newDiyEvent);
+                itinerary.getDiy_event_list().add(event);
+                itineraryRepository.save(itinerary);
+            }
+
+            return itinerary.getDiy_event_list().get(itinerary.getDiy_event_list().size()-1); // return last one
+        } else {
+            DIYEvent diyEvent = diyEventRepository.save(diyEventToCreate);
+            itinerary.getDiy_event_list().add(diyEvent);
+            itineraryRepository.save(itinerary);
             if (diyEvent.getBooking().getLocal_user() != null) {
                 Local local = diyEvent.getBooking().getLocal_user();
                 local.setPost_list(null);
@@ -241,9 +280,8 @@ public class DIYEventService {
                 tourist.setTour_type_list(null);
                 tourist.setSupport_ticket_list(null);
             }
+            return diyEvent;
         }
-
-        return diyEvent;
     }
 
     public DIYEvent updateDiyEvent(DIYEvent diyEventToUpdate) throws BadRequestException {
@@ -278,6 +316,7 @@ public class DIYEventService {
         return "Event successfully deleted";
     }
 
+    // minor overlap
     public String diyEventOverlap(Long itineraryId) throws NotFoundException {
         Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
         if (itineraryOptional.isEmpty()) {
@@ -288,8 +327,8 @@ public class DIYEventService {
 
         for (DIYEvent d : diyEventList) {
             for (DIYEvent e : diyEventList) {
-                if (d.getAttraction() != null && e.getAttraction() != null
-                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // attraction overlap
+                if ((d.getAttraction() != null || d.getRestaurant() != null) && (e.getAttraction() != null || e.getRestaurant() != null)
+                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // attraction or restaurant overlap
                     return d.getName() + " overlaps with " + e.getName() + "!";
 
                 } else if (d.getAccommodation() != null && e.getAccommodation() != null
@@ -300,13 +339,10 @@ public class DIYEventService {
                         && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // telecom overlap
                     return d.getName() + " overlaps with " + e.getName() + "!";
 
-                } else if (d.getRestaurant() != null && e.getRestaurant() != null
-                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // restaurant overlap
-                    return d.getName() + " overlaps with " + e.getName() + "!";
-
+                // d - diy event, e - attraction or restaurant event
                 } else if (d.getBooking() == null && d.getAttraction() == null && d.getTelecom() == null && d.getRestaurant() != null
                         && (e.getAttraction() != null || e.getRestaurant() != null)
-                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // diy overlap with either attraction, telecom or rest
+                        && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) { // diy overlap with either attraction or rest
                     return d.getName() + " overlaps with " + e.getName() + "!";
                 }
             }
@@ -315,6 +351,7 @@ public class DIYEventService {
         return null;
     }
 
+    // major overlap
     public String diyEventBookingOverlap(Long itineraryId) throws NotFoundException {
         Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
         if (itineraryOptional.isEmpty()) {
@@ -326,7 +363,18 @@ public class DIYEventService {
         Set<List<LocalDateTime>> set = new HashSet<>();
         for (DIYEvent d : diyEventList) { // non-booking diy event
             for (DIYEvent e : diyEventList) { // booking diy event
-                if (d.getBooking() == null && e.getBooking() != null && (long) d.getDiy_event_id() != e.getDiy_event_id() && !notOverlap(d, e)) {
+                if (d.getBooking() == null && e.getBooking() != null && (long) d.getDiy_event_id() != e.getDiy_event_id() &&
+                    d.getAccommodation() != null && e.getBooking().getRoom() != null && !notOverlap(d, e)) { // accommodation overlap
+                    return d.getName() + " overlaps with " + e.getName() + "!";
+
+                } else if (d.getBooking() == null && e.getBooking() != null && (long) d.getDiy_event_id() != e.getDiy_event_id() &&
+                           d.getTelecom() != null && e.getBooking().getTelecom() != null && !notOverlap(d, e)) { // telecom overlap
+                    return d.getName() + " overlaps with " + e.getName() + "!";
+
+                // any overlap other than accommodation and telecom
+                } else if (d.getBooking() == null && e.getBooking() != null && (long) d.getDiy_event_id() != e.getDiy_event_id() &&
+                           d.getAccommodation() == null && d.getTelecom() == null &&
+                           e.getBooking().getRoom() == null && e.getBooking().getTelecom() == null && !notOverlap(d, e)) {
                     return d.getName() + " overlaps with " + e.getName() + "!";
                 }
             }

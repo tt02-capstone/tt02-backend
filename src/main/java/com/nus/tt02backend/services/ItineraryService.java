@@ -707,4 +707,22 @@ public class ItineraryService {
             return "User invited!";
         }
     }
+
+    public List<String> getProfileImageByIdList(Long itineraryId) throws NotFoundException {
+
+        Optional<Itinerary> itineraryOptional = itineraryRepository.findById(itineraryId);
+        if (itineraryOptional.isEmpty()) throw new NotFoundException("Itinerary not found!");
+        Itinerary itinerary = itineraryOptional.get();
+
+        List<String> list = new ArrayList<>();
+        for (Long i : itinerary.getAccepted_people_list()) {
+            String profilePic = userRepository.getProfileImageByIdList(i);
+            if (profilePic.length() > 4) list.add(profilePic);
+        }
+
+        String masterProfilePic = userRepository.getProfileImageByIdList(itinerary.getMaster_id());
+        if (masterProfilePic.length() > 4) list.add(masterProfilePic);
+
+        return list;
+    }
 }
