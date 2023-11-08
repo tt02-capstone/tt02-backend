@@ -44,9 +44,9 @@ public class BadgeController {
         return ResponseEntity.ok(b);
     }
 
-    @GetMapping("/getAllBadgeTypes")
-    public ResponseEntity<List<BadgeTypeEnum>> getAllBadgeTypes() {
-        List<BadgeTypeEnum> badgeTypes = badgeService.getAllBadgeTypes();
+    @GetMapping("/getAllBadgeTypes/{userId}")
+    public ResponseEntity<List<BadgeTypeEnum>> getAllBadgeTypes(@PathVariable Long userId) throws NotFoundException {
+        List<BadgeTypeEnum> badgeTypes = badgeService.getAllBadgeTypes(userId);
         return ResponseEntity.ok(badgeTypes);
     }
 
