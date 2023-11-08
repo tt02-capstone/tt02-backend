@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BadgeService {
@@ -322,8 +323,34 @@ public class BadgeService {
         return ans;
     }
 
-    public List<BadgeTypeEnum> getAllBadgeTypes() {
-        return Arrays.asList(BadgeTypeEnum.values());
+    public List<BadgeTypeEnum> getAllBadgeTypes(Long userId) throws NotFoundException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) throw new NotFoundException("User not found!");
+        User user = userOptional.get();
+
+        List<Badge> badges = new ArrayList<>();
+        if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
+            Tourist tourist = (Tourist) user;
+            badges.addAll(tourist.getBadge_list());
+        } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
+            Local local = (Local) user;
+            badges.addAll(local.getBadge_list());
+        } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
+            VendorStaff vendorStaff = (VendorStaff) user;
+            badges.addAll(vendorStaff.getBadge_list());
+        } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
+            InternalStaff internalStaff = (InternalStaff) user;
+            badges.addAll(internalStaff.getBadge_list());
+        }
+
+        List<BadgeTypeEnum> badgeTypeEnums = new ArrayList<>(Arrays.asList(BadgeTypeEnum.values()));
+        List<String> existingBadges = badges.stream()
+                .map(badge -> badge.getBadge_type().name())
+                .collect(Collectors.toList());
+
+        badgeTypeEnums.removeIf(badgeType -> existingBadges.contains(badgeType.name()));
+
+        return badgeTypeEnums;
     }
 
     public BadgeProgressResponse getBadgeProgress(Long userId) throws NotFoundException {
