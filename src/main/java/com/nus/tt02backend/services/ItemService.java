@@ -93,6 +93,22 @@ public class ItemService {
         return vendor.getItem_list();
     }
 
+    public List<Item> retrieveAllPublishedItemsByVendor(Long vendorId) throws BadRequestException {
+        Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
+        if (vendorOptional.isEmpty()) {
+            throw new BadRequestException("Vendor does not exist!");
+        }
+        Vendor vendor = vendorOptional.get();
+
+        if (vendor.getItem_list() == null) {
+            vendor.setItem_list(new ArrayList<>());
+        }
+
+        return vendor.getItem_list().stream()
+                .filter(Item::getIs_published)
+                .toList();
+    }
+
     public List<Item> retrieveAllPublishedItems() {
         List<Item> items = itemRepository.findAll();
 

@@ -42,6 +42,12 @@ public class ItemController {
         return ResponseEntity.ok(items);
     }
 
+    @GetMapping("/retrieveAllPublishedItemsByVendor/{vendorId}")
+    public ResponseEntity<List<Item>> retrieveAllPublishedItemsByVendor(@PathVariable Long vendorId) throws BadRequestException {
+        List<Item> items = itemService.retrieveAllPublishedItemsByVendor(vendorId);
+        return ResponseEntity.ok(items);
+    }
+
     @GetMapping("/retrieveAllPublishedItems")
     public ResponseEntity<List<Item>> retrieveAllPublishedItems() {
         List<Item> items = itemService.retrieveAllPublishedItems();
