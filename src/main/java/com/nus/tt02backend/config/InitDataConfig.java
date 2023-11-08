@@ -241,77 +241,7 @@ public class InitDataConfig implements CommandLineRunner {
 
 
         if (restaurantRepository.count() == 0) {
-            Restaurant r1 = new Restaurant();
-            r1.setName("The Kitchen Table");
-            r1.setDescription("The Kitchen Table brings to life a culmination of culinary finesse. Step through our doors and satisfy your appetite anytime of the day! ");
-            r1.setAddress("21 Ocean Way Sentosa, 098374");
-            r1.setOpening_hours("6.30am - 10pm");
-            r1.setContact_num("68087777");
-            r1.setIs_published(true);
-            r1.setSuggested_duration(3);
-            r1.setRestaurant_type(RestaurantEnum.WESTERN);
-            r1.setGeneric_location(GenericLocationEnum.SENTOSA);
-            r1.setEstimated_price_tier(PriceTierEnum.TIER_5);
-            List<String> imgList = new ArrayList<>();
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen1.jpeg");
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen2.jpeg");
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen3.jpeg");
-            r1.setRestaurant_image_list(imgList);
-
-            Dish d1 = new Dish();
-            d1.setName("BBQ Chicken Pizza");
-            d1.setSpicy(false);
-            d1.setIs_signature(false);
-            d1.setDish_type(DishTypeEnum.MAINS);
-            d1.setPrice(new BigDecimal(30));
-            d1 = dishRepository.save(d1);
-
-            Dish d2 = new Dish();
-            d2.setName("Singapore Chili Lobster");
-            d2.setSpicy(true);
-            d2.setIs_signature(true);
-            d2.setDish_type(DishTypeEnum.MAINS);
-            d2.setPrice(new BigDecimal(80));
-            d2 = dishRepository.save(d2);
-
-            Dish d3 = new Dish();
-            d3.setName("Vegan Mediterranean Bowl");
-            d3.setSpicy(false);
-            d3.setIs_signature(false);
-            d3.setDish_type(DishTypeEnum.SIDES);
-            d3.setPrice(new BigDecimal(20));
-            d3 = dishRepository.save(d3);
-
-            Dish d4 = new Dish();
-            d4.setName("Ibérico Pork Jowl");
-            d4.setSpicy(false);
-            d4.setIs_signature(true);
-            d4.setDish_type(DishTypeEnum.MAINS);
-            d4.setPrice(new BigDecimal(35));
-            d4 = dishRepository.save(d4);
-
-            Dish d5 = new Dish();
-            d5.setName("Vanilla Milk Shake");
-            d5.setSpicy(false);
-            d5.setIs_signature(true);
-            d5.setDish_type(DishTypeEnum.DESSERT);
-            d5.setPrice(new BigDecimal(15));
-            d5 = dishRepository.save(d5);
-
-            r1.setDish_list(new ArrayList<>());
-            r1.getDish_list().add(d1);
-            r1.getDish_list().add(d2);
-            r1.getDish_list().add(d3);
-            r1.getDish_list().add(d4);
-            r1.getDish_list().add(d5);
-
-            r1 = restaurantRepository.save(r1);
-            List<Restaurant> rList = new ArrayList<>();
-            rList.add(r1);
-            vendor4.setRestaurant_list(rList);
-            vendorRepository.save(vendor4);
-
-            secondRestaurant(vendor5);
+            generateRestaurants();
         }
 
         if (accommodationRepository.count() == 0) {
