@@ -1,6 +1,8 @@
 package com.nus.tt02backend.services;
 
+import com.nus.tt02backend.dto.BadgeProgressResponse;
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.models.enums.BadgeTypeEnum;
 import com.nus.tt02backend.models.enums.UserTypeEnum;
@@ -11,10 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class BadgeService {
@@ -32,6 +31,8 @@ public class BadgeService {
     VendorStaffRepository vendorStaffRepository;
     @Autowired
     InternalStaffRepository internalStaffRepository;
+    @Autowired
+    CategoryItemRepository categoryItemRepository;
 
     public void awardBadge(User user, UserTypeEnum userType, Long categoryItemId) {
         List<Post> postList = new ArrayList<>();
@@ -319,5 +320,99 @@ public class BadgeService {
             }
         }
         return ans;
+    }
+
+    public List<BadgeTypeEnum> getAllBadgeTypes() {
+        return Arrays.asList(BadgeTypeEnum.values());
+    }
+
+    public BadgeProgressResponse getBadgeProgress(Long userId) throws NotFoundException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) throw new NotFoundException("User not found!");
+        User user = userOptional.get();
+
+        List<Post> posts = new ArrayList<>();
+        if (user.getUser_type().equals(UserTypeEnum.TOURIST)) {
+            Tourist tourist = (Tourist) user;
+            posts.addAll(tourist.getPost_list());
+        } else if (user.getUser_type().equals(UserTypeEnum.LOCAL)) {
+            Local local = (Local) user;
+            posts.addAll(local.getPost_list());
+        } else if (user.getUser_type().equals(UserTypeEnum.VENDOR_STAFF)) {
+            VendorStaff vendorStaff = (VendorStaff) user;
+            posts.addAll(vendorStaff.getPost_list());
+        } else if (user.getUser_type().equals(UserTypeEnum.INTERNAL_STAFF)) {
+            InternalStaff internalStaff = (InternalStaff) user;
+            posts.addAll(internalStaff.getPost_list());
+        }
+
+        BadgeProgressResponse badgeProgress = new BadgeProgressResponse();
+        badgeProgress.setACCOMMODATION_EXPERT(0.0);
+        badgeProgress.setATTRACTION_EXPERT(0.0);
+        badgeProgress.setTELECOM_EXPERT(0.0);
+        badgeProgress.setFOODIE(0.0);
+        badgeProgress.setTOP_CONTRIBUTOR(0.0);
+        int attractionPostCount = 0;
+        int accommodationPostCount = 0;
+        int telecomPostCount = 0;
+        int foodiePostCount = 0;
+        int topContributorPostCount = 0;
+        int tourPostCount = 0;
+
+        for (Post post : posts) {
+            CategoryItem categoryItem = categoryItemRepository.getCategoryItemContainingPost(post.getPost_id());
+            Category category = categoryRepository.getCategoryContainingCategoryItem(categoryItem.getCategory_item_id());
+
+            if (category.getName().equals("Attraction")) {
+                attractionPostCount++;
+            } else if (category.getName().equals("Accommodation")) {
+                accommodationPostCount++;
+            } else if (category.getName().equals("Telecom")) {
+                telecomPostCount++;
+            } else if (category.getName().equals("Tour")) {
+                tourPostCount++;
+            } else {
+                foodiePostCount++;
+            }
+            topContributorPostCount++;
+        }
+
+        if (attractionPostCount >= 2) {
+            badgeProgress.setATTRACTION_EXPERT(1.0);
+        } else {
+            badgeProgress.setATTRACTION_EXPERT(attractionPostCount/2.0);
+        }
+
+        if (accommodationPostCount >= 2) {
+            badgeProgress.setACCOMMODATION_EXPERT(1.0);
+        } else {
+            badgeProgress.setACCOMMODATION_EXPERT(accommodationPostCount/2.0);
+        }
+
+        if (telecomPostCount >= 2) {
+            badgeProgress.setTELECOM_EXPERT(1.0);
+        } else {
+            badgeProgress.setTELECOM_EXPERT(telecomPostCount/2.0);
+        }
+
+        if (foodiePostCount >= 2) {
+            badgeProgress.setFOODIE(1.0);
+        } else {
+            badgeProgress.setFOODIE(foodiePostCount/2.0);
+        }
+
+        if (tourPostCount >= 2) {
+            badgeProgress.setTOUR_EXPERT(1.0);
+        } else {
+            badgeProgress.setTOUR_EXPERT(tourPostCount/2.0);
+        }
+
+        if (topContributorPostCount >= 4) {
+            badgeProgress.setTOP_CONTRIBUTOR(1.0);
+        } else {
+            badgeProgress.setTOP_CONTRIBUTOR(topContributorPostCount/4.0);
+        }
+
+        return badgeProgress;
     }
 }
