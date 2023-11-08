@@ -548,6 +548,8 @@ public class UserService {
                 tourist.setCart_list(null);
                 tourist.setBooking_list(null);
                 tourist.setSupport_ticket_list(null);
+                tourist.setUnused_diy_event_list(null);
+                tourist.setItinerary(null);
 
                 List<Post> postList = tourist.getPost_list();
                 for (Post p : postList) {
@@ -576,6 +578,8 @@ public class UserService {
                 local.setCart_list(null);
                 local.setBooking_list(null);
                 local.setSupport_ticket_list(null);
+                local.setUnused_diy_event_list(null);
+                local.setItinerary(null);
 
                 List<Post> postList = local.getPost_list();
                 for (Post p : postList) {
