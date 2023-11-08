@@ -3,6 +3,7 @@ package com.nus.tt02backend.controllers;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.models.Category;
 import com.nus.tt02backend.models.Item;
+import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.services.CategoryService;
 import com.nus.tt02backend.services.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,5 +69,11 @@ public class ItemController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/getItemVendor/{itemId}")
+    public ResponseEntity<Vendor> getItemVendor(@PathVariable Long itemId) {
+        Vendor v = itemService.getItemVendor(itemId);
+        return ResponseEntity.ok(v);
     }
 }

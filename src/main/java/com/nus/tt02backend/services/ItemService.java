@@ -130,4 +130,10 @@ public class ItemService {
         Long lastItemId = itemRepository.findMaxItemId();
         return (lastItemId != null) ? lastItemId : 0L;
     }
+
+    public Vendor getItemVendor(Long itemId) {
+        Vendor v = vendorRepository.findVendorByItemId(itemId);
+        v.setVendor_staff_list(null);
+        return v;
+    }
 }
