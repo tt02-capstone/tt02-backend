@@ -623,7 +623,7 @@ public class CartService {
                 cartBookingRepository.save(cartBooking);
                 return cartBooking;
 
-            } else if (cartBooking.getType() == BookingTypeEnum.TELECOM) {
+            } else if (cartBooking.getType() == BookingTypeEnum.TELECOM || cartBooking.getType() == BookingTypeEnum.ITEM) {
                 if (quantity < 0) {
                     throw new BadRequestException("Cart item quantity cannot be negative!");
 
@@ -650,7 +650,7 @@ public class CartService {
             } else {
                 throw new BadRequestException("Yet to implement"); // to be changed once tour and accom comes in
             }
-        } else {
+        }  else {
             throw new NotFoundException("No cart item found!");
         }
     }
