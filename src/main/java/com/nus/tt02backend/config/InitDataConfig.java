@@ -326,190 +326,210 @@ public class InitDataConfig implements CommandLineRunner {
             generateTour();
         }
 
-//        if (categoryRepository.count() == 0) {
-//            for (BookingTypeEnum value : BookingTypeEnum.values()) {
-//                Category category = new Category();
-//                String categoryName = value.toString().toLowerCase();
-//                category.setName(categoryName.substring(0, 1).toUpperCase() + categoryName.substring(1));
-//                category.setCategory_item_list(new ArrayList<>());
-//                category.setIs_published(true);
-//                category = categoryRepository.save(category);
-//                List<CategoryItem> categoryItemList = new ArrayList<>();
-//
-//                if (value.equals(BookingTypeEnum.ATTRACTION)) {
-//                    List<Attraction> attractions = attractionRepository.findAll();
-//
-//                    for (Attraction attraction : attractions) {
-//                        CategoryItem categoryItem = new CategoryItem();
-//                        categoryItem.setName(attraction.getName());
-//                        categoryItem.setImage(attraction.getAttraction_image_list().get(0));
-//                        categoryItem.setIs_published(true);
-//                        categoryItem = categoryItemRepository.save(categoryItem);
-//                        categoryItemList.add(categoryItem);
-//                    }
-//                } else if (value.equals(BookingTypeEnum.ACCOMMODATION)) {
-//                    List<Accommodation> accommodations = accommodationRepository.findAll();
-//
-//                    for (Accommodation accommodation : accommodations) {
-//                        CategoryItem categoryItem = new CategoryItem();
-//                        categoryItem.setName(accommodation.getName());
-//                        categoryItem.setImage(accommodation.getAccommodation_image_list().get(0));
-//                        categoryItem.setIs_published(true);
-//                        categoryItem = categoryItemRepository.save(categoryItem);
-//                        categoryItemList.add(categoryItem);
-//                    }
-//                } else if (value.equals(BookingTypeEnum.TELECOM)) {
-//                    List<Telecom> telecoms = telecomRepository.findAll();
-//
-//                    for (Telecom telecom : telecoms) {
-//                        CategoryItem categoryItem = new CategoryItem();
-//                        categoryItem.setName(telecom.getName());
-//                        categoryItem.setImage(telecom.getImage()); // init telecom w an image
-//                        categoryItem.setIs_published(true);
-//                        categoryItem = categoryItemRepository.save(categoryItem);
-//                        categoryItemList.add(categoryItem);
-//                    }
-//                }
-//                else if (value.equals(BookingTypeEnum.TOUR)) {
-//                    List<TourType> tourTypes = tourTypeRepository.findAll();
-//
-//                    for (TourType tourType : tourTypes) {
-//                        CategoryItem categoryItem = new CategoryItem();
-//                        categoryItem.setName(tourType.getName());
-//                        categoryItem.setImage(tourType.getTour_image_list().get(0));
-//                        categoryItem.setIs_published(true);
-//                        categoryItem = categoryItemRepository.save(categoryItem);
-//                        categoryItemList.add(categoryItem);
-//                    }
-//                }
-//
-//                category.getCategory_item_list().addAll(categoryItemList);
-//                category.setIs_published(true);
-//                categoryRepository.save(category);
-//            }
-//
-//            Category category = new Category();
-//            category.setName("Restaurant");
-//            category.setCategory_item_list(new ArrayList<>());
-//            category.setIs_published(true);
-//            category = categoryRepository.save(category);
-//            List<Restaurant> restaurants = restaurantRepository.findAll();
-//            List<CategoryItem> categoryItemList = new ArrayList<>();
-//
-//            for (Restaurant restaurant : restaurants) {
-//                CategoryItem categoryItem = new CategoryItem();
-//                categoryItem.setName(restaurant.getName());
-//                categoryItem.setImage(restaurant.getRestaurant_image_list().get(0));
-//                categoryItem.setIs_published(true);
-//                categoryItem = categoryItemRepository.save(categoryItem);
-//                categoryItemList.add(categoryItem);
-//            }
-//
-//            category.getCategory_item_list().addAll(categoryItemList);
-//            category.setIs_published(true);
-//            categoryRepository.save(category);
-//
-//            Category category1 = new Category();
-//            category1.setName("Others"); // for all the misc forum post
-//            category1.setCategory_item_list(new ArrayList<>());
-//            category1.setIs_published(true);
-//            categoryRepository.save(category1);
-//        }
-//
-//        if (supportTicketRepository.count() == 0) {
-//            SupportTicket s1 = new SupportTicket();
-//            s1.setCreated_time(LocalDateTime.now().minusDays(1).minusHours(1));
-//            s1.setUpdated_time(LocalDateTime.now().minusDays(1).minusHours(1));
-//            s1.setDescription("Is it possible to rent a car via your app?");
-//            s1.setIs_resolved(true);
-//            s1.setTicket_category(SupportTicketCategoryEnum.GENERAL_ENQUIRY);
-//            s1.setTicket_type(SupportTicketTypeEnum.ADMIN);
-//            s1.setSubmitted_user(UserTypeEnum.TOURIST);
-//            s1.setSubmitted_user_id(3l);
-//            s1.setSubmitted_user_name("Rowoon");
-//
-//            List<Reply> replyList = new ArrayList<Reply>();
-//            Reply r1 = new Reply();
-//            r1.setCreated_time(LocalDateTime.now().minusHours(2));
-//            r1.setUpdated_time(LocalDateTime.now().minusHours(2));
-//            r1.setMessage("Unfortunately, we do not currently support car rentals. You can check out Car Rental SG's website instead. Thank you.");
-//
-//            InternalStaff internalStaff = internalStaffRepository.findById(1l).get();
-//            r1.setInternal_staff_user(internalStaff);
-//
-//            replyRepository.save(r1);
-//            replyList.add(r1);
-//
-//            s1.setReply_list(replyList);
-//            SupportTicket supportTicket = supportTicketRepository.save(s1);
-//
-//            Tourist tourist = touristRepository.getTouristByUserId(3l);
-//            List<SupportTicket> list = new ArrayList<>();
-//            list.add(supportTicket);
-//            tourist.setSupport_ticket_list(list);
-//            touristRepository.save(tourist);
-//
-//            internalStaff.setSupport_ticket_list(list);
-//            internalStaffRepository.save(internalStaff);
-//        }
-//
+        if (categoryRepository.count() == 0) {
+            generateCategories();
+        }
+
+        if (supportTicketRepository.count() == 0) {
+            generateSupportTickets();
+        }
+
         if (bookingRepository.count() == 0) {
             createBookingsAndPayments(1000);
         }
 
-//        if (postRepository.count() == 0) {
-//            Post p1 = new Post();
-//            p1.setTitle("Best Chili Lobster");
-//            p1.setContent("This is the best chili lobster I have in Singapore");
-//            p1.setIs_published(true);
-//            List<String> imgList = new ArrayList<>();
-//            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/post/init/chilli_lobster.jpg");
-//            p1.setPost_image_list(imgList);
-//            p1.setPublish_time(LocalDateTime.parse("2023-11-11T16:00:00"));
-//            p1.setUpdated_time(LocalDateTime.parse("2023-11-11T16:01:00"));
-//            p1.setDownvoted_user_id_list(null);
-//            p1.setUpvoted_user_id_list(null);
-//            p1.setLocal_user(local);
-//
-//            postRepository.save(p1);
-//
-//            Post p2 = new Post();
-//            p2.setTitle("Best Burger!!");
-//            p2.setContent("This is the best burger I have in Singapore");
-//            p2.setIs_published(true);
-//            List<String> imgList1 = new ArrayList<>();
-//            imgList1.add("https://tt02.s3.ap-southeast-1.amazonaws.com/post/init/burger3.jpeg");
-//            p2.setPost_image_list(imgList1);
-//            p2.setPublish_time(LocalDateTime.parse("2023-11-12T16:00:00"));
-//            p2.setUpdated_time(LocalDateTime.parse("2023-11-12T16:01:00"));
-//            p2.setDownvoted_user_id_list(null);
-//            p2.setUpvoted_user_id_list(null);
-//            p2.setLocal_user(local);
-//
-//            postRepository.save(p2);
-//
-//            List<Post> pList = new ArrayList<>();
-//            pList.add(p1);
-//            pList.add(p2);
-//
-//            CategoryItem cat = categoryItemRepository.getCategoryItemsById(9L);
-//            cat.setPost_list(pList);
-//            categoryItemRepository.save(cat); // save to the first restaurant category
-//
-//            Badge b = new Badge(); // set a badge for the local user
-//            b.setBadge_type(BadgeTypeEnum.FOODIE);
-//            b.setBadge_icon("https://tt02.s3.ap-southeast-1.amazonaws.com/static/badges/FOODIE.png");
-//            b.setCreation_date(LocalDateTime.parse("2023-11-12T16:04:00"));
-//            b.setIs_primary(false);
-//            badgeRepository.save(b);
-//
-//            List<Badge> bList = new ArrayList<>();
-//            bList.add(b);
-//            local.setBadge_list(bList);
-//            localRepository.save(local);
-//        }
+        if (postRepository.count() == 0) {
+            generatePosts(local);
+        }
 
     }
+
+
+    @Transactional
+    public void generatePosts(Local local) {
+        Post p1 = new Post();
+        p1.setTitle("Best Chili Lobster");
+        p1.setContent("This is the best chili lobster I have in Singapore");
+        p1.setIs_published(true);
+        List<String> imgList = new ArrayList<>();
+        imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/post/init/chilli_lobster.jpg");
+        p1.setPost_image_list(imgList);
+        p1.setPublish_time(LocalDateTime.parse("2023-11-11T16:00:00"));
+        p1.setUpdated_time(LocalDateTime.parse("2023-11-11T16:01:00"));
+        p1.setDownvoted_user_id_list(null);
+        p1.setUpvoted_user_id_list(null);
+        p1.setLocal_user(local);
+
+        postRepository.save(p1);
+
+        Post p2 = new Post();
+        p2.setTitle("Best Burger!!");
+        p2.setContent("This is the best burger I have in Singapore");
+        p2.setIs_published(true);
+        List<String> imgList1 = new ArrayList<>();
+        imgList1.add("https://tt02.s3.ap-southeast-1.amazonaws.com/post/init/burger3.jpeg");
+        p2.setPost_image_list(imgList1);
+        p2.setPublish_time(LocalDateTime.parse("2023-11-12T16:00:00"));
+        p2.setUpdated_time(LocalDateTime.parse("2023-11-12T16:01:00"));
+        p2.setDownvoted_user_id_list(null);
+        p2.setUpvoted_user_id_list(null);
+        p2.setLocal_user(local);
+
+        postRepository.save(p2);
+
+        List<Post> pList = new ArrayList<>();
+        pList.add(p1);
+        pList.add(p2);
+
+        CategoryItem cat = categoryItemRepository.getCategoryItemsById(9L);
+        cat.setPost_list(pList);
+        categoryItemRepository.save(cat); // save to the first restaurant category
+
+        Badge b = new Badge(); // set a badge for the local user
+        b.setBadge_type(BadgeTypeEnum.FOODIE);
+        b.setBadge_icon("https://tt02.s3.ap-southeast-1.amazonaws.com/static/badges/FOODIE.png");
+        b.setCreation_date(LocalDateTime.parse("2023-11-12T16:04:00"));
+        b.setIs_primary(false);
+        badgeRepository.save(b);
+
+        List<Badge> bList = new ArrayList<>();
+        bList.add(b);
+        local.setBadge_list(bList);
+        localRepository.save(local);
+    }
+
+    @Transactional
+    public void generateSupportTickets() {
+        SupportTicket s1 = new SupportTicket();
+        s1.setCreated_time(LocalDateTime.now().minusDays(1).minusHours(1));
+        s1.setUpdated_time(LocalDateTime.now().minusDays(1).minusHours(1));
+        s1.setDescription("Is it possible to rent a car via your app?");
+        s1.setIs_resolved(true);
+        s1.setTicket_category(SupportTicketCategoryEnum.GENERAL_ENQUIRY);
+        s1.setTicket_type(SupportTicketTypeEnum.ADMIN);
+        s1.setSubmitted_user(UserTypeEnum.TOURIST);
+        s1.setSubmitted_user_id(3l);
+        s1.setSubmitted_user_name("Rowoon");
+
+        List<Reply> replyList = new ArrayList<Reply>();
+        Reply r1 = new Reply();
+        r1.setCreated_time(LocalDateTime.now().minusHours(2));
+        r1.setUpdated_time(LocalDateTime.now().minusHours(2));
+        r1.setMessage("Unfortunately, we do not currently support car rentals. You can check out Car Rental SG's website instead. Thank you.");
+
+        InternalStaff internalStaff = internalStaffRepository.findById(1l).get();
+        r1.setInternal_staff_user(internalStaff);
+
+        replyRepository.save(r1);
+        replyList.add(r1);
+
+        s1.setReply_list(replyList);
+        SupportTicket supportTicket = supportTicketRepository.save(s1);
+
+        Tourist tourist = touristRepository.getTouristByUserId(3l);
+        List<SupportTicket> list = new ArrayList<>();
+        list.add(supportTicket);
+        tourist.setSupport_ticket_list(list);
+        touristRepository.save(tourist);
+
+        internalStaff.setSupport_ticket_list(list);
+        internalStaffRepository.save(internalStaff);
+    }
+    @Transactional
+    public void generateCategories() {
+        for (BookingTypeEnum value : BookingTypeEnum.values()) {
+            Category category = new Category();
+            String categoryName = value.toString().toLowerCase();
+            category.setName(categoryName.substring(0, 1).toUpperCase() + categoryName.substring(1));
+            category.setCategory_item_list(new ArrayList<>());
+            category.setIs_published(true);
+            category = categoryRepository.save(category);
+            List<CategoryItem> categoryItemList = new ArrayList<>();
+
+            if (value.equals(BookingTypeEnum.ATTRACTION)) {
+                List<Attraction> attractions = attractionRepository.findAll();
+
+                for (Attraction attraction : attractions) {
+                    CategoryItem categoryItem = new CategoryItem();
+                    categoryItem.setName(attraction.getName());
+                    categoryItem.setImage(attraction.getAttraction_image_list().get(0));
+                    categoryItem.setIs_published(true);
+                    categoryItem = categoryItemRepository.save(categoryItem);
+                    categoryItemList.add(categoryItem);
+                }
+            } else if (value.equals(BookingTypeEnum.ACCOMMODATION)) {
+                List<Accommodation> accommodations = accommodationRepository.findAll();
+
+                for (Accommodation accommodation : accommodations) {
+                    CategoryItem categoryItem = new CategoryItem();
+                    categoryItem.setName(accommodation.getName());
+                    categoryItem.setImage(accommodation.getAccommodation_image_list().get(0));
+                    categoryItem.setIs_published(true);
+                    categoryItem = categoryItemRepository.save(categoryItem);
+                    categoryItemList.add(categoryItem);
+                }
+            } else if (value.equals(BookingTypeEnum.TELECOM)) {
+                List<Telecom> telecoms = telecomRepository.findAll();
+                List<String> namesList = new ArrayList<>();
+                for (Telecom telecom : telecoms) {
+                    if (namesList.contains(telecom.getName())) {
+                        continue;
+                    }
+                    namesList.add(telecom.getName());
+                    CategoryItem categoryItem = new CategoryItem();
+                    categoryItem.setName(telecom.getName());
+                    categoryItem.setImage(telecom.getImage()); // init telecom w an image
+                    categoryItem.setIs_published(true);
+                    categoryItem = categoryItemRepository.save(categoryItem);
+                    categoryItemList.add(categoryItem);
+                }
+            }
+            else if (value.equals(BookingTypeEnum.TOUR)) {
+                List<TourType> tourTypes = tourTypeRepository.findAll();
+
+                for (TourType tourType : tourTypes) {
+                    CategoryItem categoryItem = new CategoryItem();
+                    categoryItem.setName(tourType.getName());
+                    categoryItem.setImage(tourType.getTour_image_list().get(0));
+                    categoryItem.setIs_published(true);
+                    categoryItem = categoryItemRepository.save(categoryItem);
+                    categoryItemList.add(categoryItem);
+                }
+            }
+
+            category.getCategory_item_list().addAll(categoryItemList);
+            category.setIs_published(true);
+            categoryRepository.save(category);
+        }
+
+        Category category = new Category();
+        category.setName("Restaurant");
+        category.setCategory_item_list(new ArrayList<>());
+        category.setIs_published(true);
+        category = categoryRepository.save(category);
+        List<Restaurant> restaurants = restaurantRepository.findAll();
+        List<CategoryItem> categoryItemList = new ArrayList<>();
+
+        for (Restaurant restaurant : restaurants) {
+            CategoryItem categoryItem = new CategoryItem();
+            categoryItem.setName(restaurant.getName());
+            categoryItem.setImage(restaurant.getRestaurant_image_list().get(0));
+            categoryItem.setIs_published(true);
+            categoryItem = categoryItemRepository.save(categoryItem);
+            categoryItemList.add(categoryItem);
+        }
+
+        category.getCategory_item_list().addAll(categoryItemList);
+        category.setIs_published(true);
+        categoryRepository.save(category);
+
+        Category category1 = new Category();
+        category1.setName("Others"); // for all the misc forum post
+        category1.setCategory_item_list(new ArrayList<>());
+        category1.setIs_published(true);
+        categoryRepository.save(category1);
+    }
+
 
     @Transactional
     public void secondRestaurant(Vendor vendor) {
