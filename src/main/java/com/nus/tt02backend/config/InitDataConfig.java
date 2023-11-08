@@ -232,89 +232,6 @@ public class InitDataConfig implements CommandLineRunner {
 
         if (attractionRepository.count() == 0) {
             generateAttraction();
-//            Attraction attraction = new Attraction();
-//            attraction.setName("Mega Adventure Singapore");
-//            attraction.setDescription("Mega Adventure Park Singapore is located on the picturesque Sentosa Island, host to " +
-//                    "Singapore’s main attractions. The park operates world famous MegaZip flying fox, spanning 450m, flying at " +
-//                    "60 km/hour");
-//            attraction.setAddress("10A Siloso Bch Walk, 099008");
-//            attraction.setOpening_hours("11am - 6pm");
-//            attraction.setAge_group("Suitable for all ages");
-//            attraction.setContact_num("62353535");
-//            attraction.setIs_published(true);
-//            attraction.setSuggested_duration(4);
-//            attraction.setAvg_rating_tier(0.0);
-//            attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
-//            attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
-//            attraction.setAttraction_image_list(new ArrayList<>());
-//            attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
-//            attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega2.jpeg");
-//            attraction.setTour_type_list(new ArrayList<>());
-//
-//            Price childPrice = new Price();
-//            childPrice.setLocal_amount(new BigDecimal(30));
-//            childPrice.setTourist_amount(new BigDecimal(40));
-//            childPrice.setTicket_type(TicketEnum.CHILD);
-//
-//            Price adultPrice = new Price();
-//            adultPrice.setLocal_amount(new BigDecimal(40));
-//            adultPrice.setTourist_amount(new BigDecimal(50));
-//            adultPrice.setTicket_type(TicketEnum.ADULT);
-//
-//            List<Price> priceList = new ArrayList<>();
-//            priceList.add(childPrice);
-//            priceList.add(adultPrice);
-//            PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
-//
-//            attraction.setPrice_list(priceList);
-//            attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
-//
-//            String date = "2023-11-14";
-//
-//            TicketPerDay t1 = new TicketPerDay();
-//            t1.setTicket_date(LocalDate.parse(date));
-//            t1.setTicket_count(5);
-//            t1.setTicket_type(TicketEnum.ADULT);
-//            t1 = ticketPerDayRepository.save(t1);
-//
-//            TicketPerDay t2 = new TicketPerDay();
-//            t2.setTicket_date(LocalDate.parse(date));
-//            t2.setTicket_count(5);
-//            t2.setTicket_type(TicketEnum.CHILD);
-//            t2 = ticketPerDayRepository.save(t2);
-//
-//            TicketPerDay t3 = new TicketPerDay();
-//            t3.setTicket_date(LocalDate.parse(date));
-//            t3.setTicket_count(5);
-//            t3.setTicket_type(TicketEnum.ADULT);
-//            t3 = ticketPerDayRepository.save(t3);
-//
-//            TicketPerDay t4 = new TicketPerDay();
-//            t4.setTicket_date(LocalDate.parse(date));
-//            t4.setTicket_count(5);
-//            t4.setTicket_type(TicketEnum.CHILD);
-//            t4 = ticketPerDayRepository.save(t4);
-//
-//            attraction.setTicket_per_day_list(new ArrayList<>());
-//            attraction.getTicket_per_day_list().add(t1);
-//            attraction.getTicket_per_day_list().add(t2);
-//            attraction.getTicket_per_day_list().add(t3);
-//            attraction.getTicket_per_day_list().add(t4);
-//
-//            attraction.setListing_type(ListingTypeEnum.ATTRACTION);
-//
-//            attraction = attractionRepository.save(attraction);
-//
-//            List<Attraction> currentList = new ArrayList<>();
-//            currentList.add(attraction);
-//            attractions.add(attraction);
-//            vendor1.setAttraction_list(currentList);
-//            vendorRepository.save(vendor1);
-//
-//            currentList = createSecondAttraction(currentList, vendor1, date);
-//            currentList = createThirdAttraction(currentList, vendor1, date);
-//            currentList = createFourthAttraction(currentList, vendor1, date);
-//            currentList = createFifthAttraction(currentList, vendor1, date);
         }
 
         if (dealRepository.count() == 0) {
@@ -407,56 +324,6 @@ public class InitDataConfig implements CommandLineRunner {
 
         if (tourTypeRepository.count() == 0) {
             generateTour();
-
-//            TourType tourType = new TourType();
-//            tourType.setName("Mega Adventure Tour");
-//            List<String> imageList = new ArrayList<>();
-//            imageList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/web/mega_tour.jpg");
-//            tourType.setTour_image_list(imageList);
-//            tourType.setDescription("Join me on the mega adventure tour where we will embark on thrilling outdoor activities");
-//            tourType.setPrice(new BigDecimal(10));
-//            tourType.setRecommended_pax(10);
-//            tourType.setEstimated_duration(2);
-//            tourType.setSpecial_note("Avoid wearing loose items like sunglasses");
-//            tourType.setIs_published(true);
-//            tourType.setTour_list(new ArrayList<>());
-//            tourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
-//            tourType = tourTypeRepository.save(tourType);
-//
-//            local.getTour_type_list().add(tourType);
-//
-//            Attraction attraction = attractionRepository.findById(1L).get();
-//            List<TourType> tourTypes = new ArrayList<>();
-//            tourTypes.add(tourType);
-//            attraction.setTour_type_list(tourTypes);
-//            attractionRepository.save(attraction);
-//
-//            LocalDate currentDate = LocalDate.now();
-//            LocalDate endDate = LocalDate.of(2023, 11, 20);
-//            while (!currentDate.isAfter(endDate)) {
-//                Tour tour1 = new Tour();
-//                Tour tour2 = new Tour();
-//                tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
-//                tour1.setStart_time(currentDate.atTime(10, 0));
-//                tour1.setEnd_time(currentDate.atTime(12, 0));
-//                tour1.setRemaining_slot(10);
-//
-//                tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
-//                tour2.setStart_time(currentDate.atTime(13, 0));
-//                tour2.setEnd_time(currentDate.atTime(15, 0));
-//                tour2.setRemaining_slot(10);
-//
-//                tour1 = tourRepository.save(tour1);
-//                tour2 = tourRepository.save(tour2);
-//
-//                tourType.getTour_list().add(tour1);
-//                tourType.getTour_list().add(tour2);
-//
-//                currentDate = currentDate.plusDays(1);
-//            }
-//            tourTypeRepository.save(tourType);
-//
-//            createSecondTourType(local);
         }
 
 //        if (categoryRepository.count() == 0) {
@@ -586,10 +453,10 @@ public class InitDataConfig implements CommandLineRunner {
 //            internalStaffRepository.save(internalStaff);
 //        }
 //
-//        if (bookingRepository.count() == 0) {
-//            createBookingsAndPayments(1000);
-//        }
-//
+        if (bookingRepository.count() == 0) {
+            createBookingsAndPayments(1000);
+        }
+
 //        if (postRepository.count() == 0) {
 //            Post p1 = new Post();
 //            p1.setTitle("Best Chili Lobster");
@@ -644,6 +511,7 @@ public class InitDataConfig implements CommandLineRunner {
 
     }
 
+    @Transactional
     public void secondRestaurant(Vendor vendor) {
         Restaurant r1 = new Restaurant();
         r1.setName("8 Noodles");
@@ -762,6 +630,84 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     @Transactional
+    void generateRestaurants() {
+        Restaurant r1 = new Restaurant();
+        r1.setName("The Kitchen Table");
+        r1.setDescription("The Kitchen Table brings to life a culmination of culinary finesse. Step through our doors and satisfy your appetite anytime of the day! ");
+        r1.setAddress("21 Ocean Way Sentosa, 098374");
+        r1.setOpening_hours("6.30am - 10pm");
+        r1.setContact_num("68087777");
+        r1.setIs_published(true);
+        r1.setSuggested_duration(3);
+        r1.setRestaurant_type(RestaurantEnum.WESTERN);
+        r1.setGeneric_location(GenericLocationEnum.SENTOSA);
+        r1.setEstimated_price_tier(PriceTierEnum.TIER_5);
+        List<String> imgList = new ArrayList<>();
+        imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen1.jpeg");
+        imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen2.jpeg");
+        imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/restaurant/init/kitchen3.jpeg");
+        r1.setRestaurant_image_list(imgList);
+
+        Dish d1 = new Dish();
+        d1.setName("BBQ Chicken Pizza");
+        d1.setSpicy(false);
+        d1.setIs_signature(false);
+        d1.setDish_type(DishTypeEnum.MAINS);
+        d1.setPrice(new BigDecimal(30));
+        d1 = dishRepository.save(d1);
+
+        Dish d2 = new Dish();
+        d2.setName("Singapore Chili Lobster");
+        d2.setSpicy(true);
+        d2.setIs_signature(true);
+        d2.setDish_type(DishTypeEnum.MAINS);
+        d2.setPrice(new BigDecimal(80));
+        d2 = dishRepository.save(d2);
+
+        Dish d3 = new Dish();
+        d3.setName("Vegan Mediterranean Bowl");
+        d3.setSpicy(false);
+        d3.setIs_signature(false);
+        d3.setDish_type(DishTypeEnum.SIDES);
+        d3.setPrice(new BigDecimal(20));
+        d3 = dishRepository.save(d3);
+
+        Dish d4 = new Dish();
+        d4.setName("Ibérico Pork Jowl");
+        d4.setSpicy(false);
+        d4.setIs_signature(true);
+        d4.setDish_type(DishTypeEnum.MAINS);
+        d4.setPrice(new BigDecimal(35));
+        d4 = dishRepository.save(d4);
+
+        Dish d5 = new Dish();
+        d5.setName("Vanilla Milk Shake");
+        d5.setSpicy(false);
+        d5.setIs_signature(true);
+        d5.setDish_type(DishTypeEnum.DESSERT);
+        d5.setPrice(new BigDecimal(15));
+        d5 = dishRepository.save(d5);
+
+        r1.setDish_list(new ArrayList<>());
+        r1.getDish_list().add(d1);
+        r1.getDish_list().add(d2);
+        r1.getDish_list().add(d3);
+        r1.getDish_list().add(d4);
+        r1.getDish_list().add(d5);
+
+        r1 = restaurantRepository.save(r1);
+        List<Restaurant> rList = new ArrayList<>();
+        rList.add(r1);
+        Vendor vendor4 = vendorRepository.findById(4L).get();
+        vendor4.setRestaurant_list(rList);
+        vendorRepository.save(vendor4);
+        Vendor vendor5 = vendorRepository.findById(5L).get();
+        System.out.println("Vendor 5" + vendor5.getBusiness_name());
+
+        secondRestaurant(vendor5);
+    }
+
+    @Transactional
     void generateAttraction() {
         Attraction attraction = new Attraction();
         attraction.setName("Mega Adventure Singapore");
@@ -835,6 +781,8 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
         attraction = attractionRepository.save(attraction);
+
+        attractions.add(attraction);
 
         List<Attraction> currentList = new ArrayList<>();
         currentList.add(attraction);
@@ -918,6 +866,9 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
         attractionRepository.save(attraction);
+
+        attractions.add(attraction);
+
 //        Vendor vendor = vendorRepository.findById(1L).get();
         currentList.add(attraction); // add on to the previous list
         vendor1.setAttraction_list(currentList);
@@ -996,6 +947,8 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
         attractionRepository.save(attraction);
+        attractions.add(attraction);
+
 //        Vendor vendor = vendorRepository.findById(1L).get();
         currentList.add(attraction); // add on to the previous list
         vendor1.setAttraction_list(currentList);
@@ -1074,6 +1027,8 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
         attractionRepository.save(attraction);
+        attractions.add(attraction);
+
 //        Vendor vendor = vendorRepository.findById(1L).get();
         currentList.add(attraction); // add on to the previous list
         vendor1.setAttraction_list(currentList);
@@ -1150,6 +1105,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setListing_type(ListingTypeEnum.ATTRACTION);
 
         attractionRepository.save(attraction);
+        attractions.add(attraction);
 //        Vendor vendor = vendorRepository.findById(1L).get();
         currentList.add(attraction); // add on to the previous list
         vendor1.setAttraction_list(currentList);
@@ -1643,12 +1599,14 @@ public class InitDataConfig implements CommandLineRunner {
         roomList1.add(r2);
         a1.setRoom_list(roomList1);
         accommodationRepository.save(a1);
+        accommodations.add(a1);
 
         List<Room> roomList2 = new ArrayList<>();
         roomList2.add(r3);
         roomList2.add(r4);
         a2.setRoom_list(roomList2);
         accommodationRepository.save(a2);
+        accommodations.add(a2);
     }
 
     @Transactional
@@ -1757,6 +1715,7 @@ public class InitDataConfig implements CommandLineRunner {
                 continue;
             }
 
+            telecoms.add(t1);
             List<Telecom> tList = new ArrayList<>();
             tList.add(t1);
             Vendor telecomVendor = telecomVendorOpt.get();
