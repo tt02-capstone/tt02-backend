@@ -68,6 +68,8 @@ public class CartService {
     DIYEventRepository diyEventRepository;
     @Autowired
     ItineraryRepository itineraryRepository;
+    @Autowired
+    ItemRepository itemRepository;
 
     public Long addCartItems(String user_type, String tourist_email, String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
@@ -621,7 +623,7 @@ public class CartService {
                 cartBookingRepository.save(cartBooking);
                 return cartBooking;
 
-            } else if (cartBooking.getType() == BookingTypeEnum.TELECOM) {
+            } else if (cartBooking.getType() == BookingTypeEnum.TELECOM || cartBooking.getType() == BookingTypeEnum.ITEM) {
                 if (quantity < 0) {
                     throw new BadRequestException("Cart item quantity cannot be negative!");
 
@@ -648,7 +650,7 @@ public class CartService {
             } else {
                 throw new BadRequestException("Yet to implement"); // to be changed once tour and accom comes in
             }
-        } else {
+        }  else {
             throw new NotFoundException("No cart item found!");
         }
     }
@@ -700,6 +702,41 @@ public class CartService {
         }
 
         cartBooking.setRoom(room);
+        vendor.setVendor_staff_list(null);
+        cartBooking.setVendor(vendor);
+        cartBookingRepository.save(cartBooking);
+
+        if (user instanceof Local) {
+            Local local = (Local) user;
+            if (local.getCart_list() == null) local.setCart_list(new ArrayList<>());
+            local.getCart_list().add(cartBooking);
+            localRepository.save(local);
+            return cartBooking.getCart_booking_id();
+
+        } else if (user instanceof Tourist) {
+            Tourist tourist = (Tourist) user;
+            if (tourist.getCart_list() == null) tourist.setCart_list(new ArrayList<>());
+            tourist.getCart_list().add(cartBooking);
+            touristRepository.save(tourist);
+            return cartBooking.getCart_booking_id();
+
+        } else {
+            throw new NotFoundException("User is not tourist or local!");
+        }
+    }
+
+    public Long addItemToCart(Long userId, Long itemId, CartBooking cartBooking) throws NotFoundException {
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found!"));
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found!"));
+        Vendor vendor = vendorRepository.findVendorByItemId(itemId);
+
+        List<CartItem> list = cartBooking.getCart_item_list();
+        for (CartItem c : list) {
+            cartItemRepository.save(c);
+        }
+
+        cartBooking.setItem(item);
         vendor.setVendor_staff_list(null);
         cartBooking.setVendor(vendor);
         cartBookingRepository.save(cartBooking);

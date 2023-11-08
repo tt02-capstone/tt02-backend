@@ -1,6 +1,8 @@
 package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Accommodation;
 import com.nus.tt02backend.models.Category;
 import com.nus.tt02backend.models.Item;
 import com.nus.tt02backend.services.CategoryService;
@@ -42,6 +44,12 @@ public class ItemController {
         return ResponseEntity.ok(items);
     }
 
+    @GetMapping("/retrieveAllPublishedItemsByVendor/{vendorId}")
+    public ResponseEntity<List<Item>> retrieveAllPublishedItemsByVendor(@PathVariable Long vendorId) throws BadRequestException {
+        List<Item> items = itemService.retrieveAllPublishedItemsByVendor(vendorId);
+        return ResponseEntity.ok(items);
+    }
+
     @GetMapping("/retrieveAllPublishedItems")
     public ResponseEntity<List<Item>> retrieveAllPublishedItems() {
         List<Item> items = itemService.retrieveAllPublishedItems();
@@ -62,5 +70,11 @@ public class ItemController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+    }
+
+    @PutMapping("/toggleSaveItem/{userId}/{itemId}")
+    public ResponseEntity<List<Item>> toggleSaveItem(@PathVariable Long userId, @PathVariable Long itemId) throws NotFoundException {
+        List<Item> itemList = itemService.toggleSaveItem(userId, itemId);
+        return ResponseEntity.ok(itemList);
     }
 }

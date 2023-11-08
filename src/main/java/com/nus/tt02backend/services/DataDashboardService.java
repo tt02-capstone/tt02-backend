@@ -525,7 +525,8 @@ public class DataDashboardService {
         }
     };
 
-    public List<List<Object>> getData(String data_usecase, String type, String vendorId) throws NotFoundException {
+    public List<List<Object>> getData(String data_usecase, String type, String vendorId, LocalDateTime start_date,
+                                      LocalDateTime end_date) throws NotFoundException {
 
 
         if (Objects.equals(data_usecase, "Total Bookings Over Time")) {
@@ -826,7 +827,8 @@ public class DataDashboardService {
     }
 
 
-    public List<List<Object>> getPlatformData(String data_usecase) throws NotFoundException {
+    public List<List<Object>> getPlatformData(String data_usecase, LocalDateTime start_date,
+                                              LocalDateTime end_date) throws NotFoundException {
 
         LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
 

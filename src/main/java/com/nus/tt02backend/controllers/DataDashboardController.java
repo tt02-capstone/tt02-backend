@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 
@@ -115,17 +117,27 @@ public class DataDashboardController {
         return ResponseEntity.ok(subscriptionStatus);
     }
 
-    @GetMapping("/getData/{data_usecase}/{type}/{vendor_id}")
-    public ResponseEntity<List<List<Object>>> getData(@PathVariable String data_usecase, @PathVariable String type, @PathVariable String vendor_id) throws NotFoundException {
+    @PostMapping("/getData/{data_usecase}/{type}/{vendor_id}")
+    public ResponseEntity<List<List<Object>>> getData(@PathVariable String data_usecase,
+                                                      @PathVariable String type, @PathVariable String vendor_id,
+                                                      @RequestBody Map<String, LocalDateTime> dateRangeMap) throws NotFoundException {
 
-        List<List<Object>> data = dataDashboardService.getData(data_usecase, type, vendor_id);
+        System.out.println(dateRangeMap);
+        LocalDateTime start_date = dateRangeMap.get("start_date");
+        LocalDateTime end_date = dateRangeMap.get("end_date");
+
+        List<List<Object>> data = dataDashboardService.getData(data_usecase, type, vendor_id, start_date, end_date);
         return ResponseEntity.ok(data);
     }
 
     @GetMapping("/getPlatformData/{data_usecase}")
-    public ResponseEntity<List<List<Object>>> getPlatformData(@PathVariable String data_usecase) throws NotFoundException {
+    public ResponseEntity<List<List<Object>>> getPlatformData(@PathVariable String data_usecase,
+                                                              @RequestBody Map<String, LocalDateTime> dateRangeMap) throws NotFoundException {
 
-        List<List<Object>> data = dataDashboardService.getPlatformData(data_usecase);
+        LocalDateTime start_date = dateRangeMap.get("start_date");
+        LocalDateTime end_date = dateRangeMap.get("end_date");
+
+        List<List<Object>> data = dataDashboardService.getPlatformData(data_usecase, start_date, end_date);
         return ResponseEntity.ok(data);
     }
 
