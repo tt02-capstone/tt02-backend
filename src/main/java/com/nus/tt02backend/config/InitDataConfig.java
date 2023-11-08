@@ -231,127 +231,95 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         if (attractionRepository.count() == 0) {
-            Attraction attraction = new Attraction();
-            attraction.setName("Mega Adventure Singapore");
-            attraction.setDescription("Mega Adventure Park Singapore is located on the picturesque Sentosa Island, host to " +
-                    "Singapore’s main attractions. The park operates world famous MegaZip flying fox, spanning 450m, flying at " +
-                    "60 km/hour");
-            attraction.setAddress("10A Siloso Bch Walk, 099008");
-            attraction.setOpening_hours("11am - 6pm");
-            attraction.setAge_group("Suitable for all ages");
-            attraction.setContact_num("62353535");
-            attraction.setIs_published(true);
-            attraction.setSuggested_duration(4);
-            attraction.setAvg_rating_tier(0.0);
-            attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
-            attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
-            attraction.setAttraction_image_list(new ArrayList<>());
-            attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
-            attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega2.jpeg");
-            attraction.setTour_type_list(new ArrayList<>());
-
-            Price childPrice = new Price();
-            childPrice.setLocal_amount(new BigDecimal(30));
-            childPrice.setTourist_amount(new BigDecimal(40));
-            childPrice.setTicket_type(TicketEnum.CHILD);
-
-            Price adultPrice = new Price();
-            adultPrice.setLocal_amount(new BigDecimal(40));
-            adultPrice.setTourist_amount(new BigDecimal(50));
-            adultPrice.setTicket_type(TicketEnum.ADULT);
-
-            List<Price> priceList = new ArrayList<>();
-            priceList.add(childPrice);
-            priceList.add(adultPrice);
-            PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
-
-            attraction.setPrice_list(priceList);
-            attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
-
-            String date = "2023-11-14";
-
-            TicketPerDay t1 = new TicketPerDay();
-            t1.setTicket_date(LocalDate.parse(date));
-            t1.setTicket_count(5);
-            t1.setTicket_type(TicketEnum.ADULT);
-            t1 = ticketPerDayRepository.save(t1);
-
-            TicketPerDay t2 = new TicketPerDay();
-            t2.setTicket_date(LocalDate.parse(date));
-            t2.setTicket_count(5);
-            t2.setTicket_type(TicketEnum.CHILD);
-            t2 = ticketPerDayRepository.save(t2);
-
-            TicketPerDay t3 = new TicketPerDay();
-            t3.setTicket_date(LocalDate.parse(date));
-            t3.setTicket_count(5);
-            t3.setTicket_type(TicketEnum.ADULT);
-            t3 = ticketPerDayRepository.save(t3);
-
-            TicketPerDay t4 = new TicketPerDay();
-            t4.setTicket_date(LocalDate.parse(date));
-            t4.setTicket_count(5);
-            t4.setTicket_type(TicketEnum.CHILD);
-            t4 = ticketPerDayRepository.save(t4);
-
-            attraction.setTicket_per_day_list(new ArrayList<>());
-            attraction.getTicket_per_day_list().add(t1);
-            attraction.getTicket_per_day_list().add(t2);
-            attraction.getTicket_per_day_list().add(t3);
-            attraction.getTicket_per_day_list().add(t4);
-
-            attraction.setListing_type(ListingTypeEnum.ATTRACTION);
-
-            attraction = attractionRepository.save(attraction);
-
-            List<Attraction> currentList = new ArrayList<>();
-            currentList.add(attraction);
-            attractions.add(attraction);
-            vendor1.setAttraction_list(currentList);
-            vendorRepository.save(vendor1);
-
-            currentList = createSecondAttraction(currentList, vendor1, date);
-            currentList = createThirdAttraction(currentList, vendor1, date);
-            currentList = createFourthAttraction(currentList, vendor1, date);
-            currentList = createFifthAttraction(currentList, vendor1, date);
+            generateAttraction();
+//            Attraction attraction = new Attraction();
+//            attraction.setName("Mega Adventure Singapore");
+//            attraction.setDescription("Mega Adventure Park Singapore is located on the picturesque Sentosa Island, host to " +
+//                    "Singapore’s main attractions. The park operates world famous MegaZip flying fox, spanning 450m, flying at " +
+//                    "60 km/hour");
+//            attraction.setAddress("10A Siloso Bch Walk, 099008");
+//            attraction.setOpening_hours("11am - 6pm");
+//            attraction.setAge_group("Suitable for all ages");
+//            attraction.setContact_num("62353535");
+//            attraction.setIs_published(true);
+//            attraction.setSuggested_duration(4);
+//            attraction.setAvg_rating_tier(0.0);
+//            attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
+//            attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
+//            attraction.setAttraction_image_list(new ArrayList<>());
+//            attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
+//            attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega2.jpeg");
+//            attraction.setTour_type_list(new ArrayList<>());
+//
+//            Price childPrice = new Price();
+//            childPrice.setLocal_amount(new BigDecimal(30));
+//            childPrice.setTourist_amount(new BigDecimal(40));
+//            childPrice.setTicket_type(TicketEnum.CHILD);
+//
+//            Price adultPrice = new Price();
+//            adultPrice.setLocal_amount(new BigDecimal(40));
+//            adultPrice.setTourist_amount(new BigDecimal(50));
+//            adultPrice.setTicket_type(TicketEnum.ADULT);
+//
+//            List<Price> priceList = new ArrayList<>();
+//            priceList.add(childPrice);
+//            priceList.add(adultPrice);
+//            PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
+//
+//            attraction.setPrice_list(priceList);
+//            attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
+//
+//            String date = "2023-11-14";
+//
+//            TicketPerDay t1 = new TicketPerDay();
+//            t1.setTicket_date(LocalDate.parse(date));
+//            t1.setTicket_count(5);
+//            t1.setTicket_type(TicketEnum.ADULT);
+//            t1 = ticketPerDayRepository.save(t1);
+//
+//            TicketPerDay t2 = new TicketPerDay();
+//            t2.setTicket_date(LocalDate.parse(date));
+//            t2.setTicket_count(5);
+//            t2.setTicket_type(TicketEnum.CHILD);
+//            t2 = ticketPerDayRepository.save(t2);
+//
+//            TicketPerDay t3 = new TicketPerDay();
+//            t3.setTicket_date(LocalDate.parse(date));
+//            t3.setTicket_count(5);
+//            t3.setTicket_type(TicketEnum.ADULT);
+//            t3 = ticketPerDayRepository.save(t3);
+//
+//            TicketPerDay t4 = new TicketPerDay();
+//            t4.setTicket_date(LocalDate.parse(date));
+//            t4.setTicket_count(5);
+//            t4.setTicket_type(TicketEnum.CHILD);
+//            t4 = ticketPerDayRepository.save(t4);
+//
+//            attraction.setTicket_per_day_list(new ArrayList<>());
+//            attraction.getTicket_per_day_list().add(t1);
+//            attraction.getTicket_per_day_list().add(t2);
+//            attraction.getTicket_per_day_list().add(t3);
+//            attraction.getTicket_per_day_list().add(t4);
+//
+//            attraction.setListing_type(ListingTypeEnum.ATTRACTION);
+//
+//            attraction = attractionRepository.save(attraction);
+//
+//            List<Attraction> currentList = new ArrayList<>();
+//            currentList.add(attraction);
+//            attractions.add(attraction);
+//            vendor1.setAttraction_list(currentList);
+//            vendorRepository.save(vendor1);
+//
+//            currentList = createSecondAttraction(currentList, vendor1, date);
+//            currentList = createThirdAttraction(currentList, vendor1, date);
+//            currentList = createFourthAttraction(currentList, vendor1, date);
+//            currentList = createFifthAttraction(currentList, vendor1, date);
         }
 
         if (dealRepository.count() == 0) {
-            Deal d1 = new Deal();
-            d1.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
-            d1.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
-            d1.setDiscount_percent(10);
-            d1.setDeal_type(DealCategoryEnum.BLACK_FRIDAY);
-            d1.setPromo_code("TOURING");
-            d1.setIs_govt_voucher(false);
-            d1.setIs_published(true);
-            List<String> imgList = new ArrayList<>();
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_backfriday.jpeg");
-            d1.setDeal_image_list(imgList);
+            generateDeals();
 
-            d1 = dealRepository.save(d1);
-            List<Deal> dList = new ArrayList<>();
-            dList.add(d1);
-            vendor1.setDeals_list(dList);
-            vendorRepository.save(vendor1);
-
-            Deal d2 = new Deal();
-            d2.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
-            d2.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
-            d2.setDiscount_percent(20);
-            d2.setDeal_type(DealCategoryEnum.GOVERNMENT);
-            d2.setPromo_code("WELCOME");
-            d2.setIs_govt_voucher(true);
-            d2.setIs_published(true);
-            List<String> imgList2 = new ArrayList<>();
-            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.png");
-            d2.setDeal_image_list(imgList2);
-
-            d2 = dealRepository.save(d2);
-            List<Deal> dList2 = new ArrayList<>();
-            dList2.add(d2);
-            vendor2.setDeals_list(dList2);
-            vendorRepository.save(vendor2);
         }
 
 
@@ -437,7 +405,9 @@ public class InitDataConfig implements CommandLineRunner {
             generateTelecoms();
         }
 
-//        if (tourTypeRepository.count() == 0) {
+        if (tourTypeRepository.count() == 0) {
+            generateTour();
+
 //            TourType tourType = new TourType();
 //            tourType.setName("Mega Adventure Tour");
 //            List<String> imageList = new ArrayList<>();
@@ -487,7 +457,7 @@ public class InitDataConfig implements CommandLineRunner {
 //            tourTypeRepository.save(tourType);
 //
 //            createSecondTourType(local);
-//        }
+        }
 
 //        if (categoryRepository.count() == 0) {
 //            for (BookingTypeEnum value : BookingTypeEnum.values()) {
@@ -791,6 +761,92 @@ public class InitDataConfig implements CommandLineRunner {
         vendorRepository.save(vendor);
     }
 
+    @Transactional
+    void generateAttraction() {
+        Attraction attraction = new Attraction();
+        attraction.setName("Mega Adventure Singapore");
+        attraction.setDescription("Mega Adventure Park Singapore is located on the picturesque Sentosa Island, host to " +
+                "Singapore’s main attractions. The park operates world famous MegaZip flying fox, spanning 450m, flying at " +
+                "60 km/hour");
+        attraction.setAddress("10A Siloso Bch Walk, 099008");
+        attraction.setOpening_hours("11am - 6pm");
+        attraction.setAge_group("Suitable for all ages");
+        attraction.setContact_num("62353535");
+        attraction.setIs_published(true);
+        attraction.setSuggested_duration(4);
+        attraction.setAvg_rating_tier(0.0);
+        attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
+        attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
+        attraction.setAttraction_image_list(new ArrayList<>());
+        attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega1.jpeg");
+        attraction.getAttraction_image_list().add("http://tt02.s3-ap-southeast-1.amazonaws.com/attraction/init/mega2.jpeg");
+        attraction.setTour_type_list(new ArrayList<>());
+
+        Price childPrice = new Price();
+        childPrice.setLocal_amount(new BigDecimal(30));
+        childPrice.setTourist_amount(new BigDecimal(40));
+        childPrice.setTicket_type(TicketEnum.CHILD);
+
+        Price adultPrice = new Price();
+        adultPrice.setLocal_amount(new BigDecimal(40));
+        adultPrice.setTourist_amount(new BigDecimal(50));
+        adultPrice.setTicket_type(TicketEnum.ADULT);
+
+        List<Price> priceList = new ArrayList<>();
+        priceList.add(childPrice);
+        priceList.add(adultPrice);
+        PriceTierEnum priceTier = attractionService.priceTierEstimation(priceList);
+
+        attraction.setPrice_list(priceList);
+        attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
+
+        String date = "2023-11-14";
+
+        TicketPerDay t1 = new TicketPerDay();
+        t1.setTicket_date(LocalDate.parse(date));
+        t1.setTicket_count(5);
+        t1.setTicket_type(TicketEnum.ADULT);
+        t1 = ticketPerDayRepository.save(t1);
+
+        TicketPerDay t2 = new TicketPerDay();
+        t2.setTicket_date(LocalDate.parse(date));
+        t2.setTicket_count(5);
+        t2.setTicket_type(TicketEnum.CHILD);
+        t2 = ticketPerDayRepository.save(t2);
+
+        TicketPerDay t3 = new TicketPerDay();
+        t3.setTicket_date(LocalDate.parse(date));
+        t3.setTicket_count(5);
+        t3.setTicket_type(TicketEnum.ADULT);
+        t3 = ticketPerDayRepository.save(t3);
+
+        TicketPerDay t4 = new TicketPerDay();
+        t4.setTicket_date(LocalDate.parse(date));
+        t4.setTicket_count(5);
+        t4.setTicket_type(TicketEnum.CHILD);
+        t4 = ticketPerDayRepository.save(t4);
+
+        attraction.setTicket_per_day_list(new ArrayList<>());
+        attraction.getTicket_per_day_list().add(t1);
+        attraction.getTicket_per_day_list().add(t2);
+        attraction.getTicket_per_day_list().add(t3);
+        attraction.getTicket_per_day_list().add(t4);
+
+        attraction.setListing_type(ListingTypeEnum.ATTRACTION);
+
+        attraction = attractionRepository.save(attraction);
+
+        List<Attraction> currentList = new ArrayList<>();
+        currentList.add(attraction);
+        Vendor vendor1 = vendorRepository.findById(1L).get();
+
+        vendor1.setAttraction_list(currentList);
+        vendorRepository.save(vendor1);
+        currentList = createSecondAttraction(currentList, vendor1, date);
+        currentList = createThirdAttraction(currentList, vendor1, date);
+        currentList = createFourthAttraction(currentList, vendor1, date);
+        currentList = createFifthAttraction(currentList, vendor1, date);
+    }
     @Transactional
     public List<Attraction> createSecondAttraction(List<Attraction> currentList, Vendor vendor1, String date) {
         Attraction attraction = new Attraction();
@@ -1102,6 +1158,7 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
 
+    @Transactional
     public void createSecondTourType(Local local) {
         TourType secondTourType = new TourType();
         secondTourType.setName("USS Tour");
@@ -1152,6 +1209,112 @@ public class InitDataConfig implements CommandLineRunner {
         }
         tourTypeRepository.save(secondTourType);
     }
+
+    @Transactional
+    public void createThirdTourType(Local local) {
+        TourType secondTourType = new TourType();
+        secondTourType.setName("Gardens By the Bay Exploration Tour");
+        List<String> secondImageList = new ArrayList<>();
+        secondImageList.add("http://tt02.s3-ap-southeast-1.amazonaws.com/static/attraction/gardensbb1.jpeg");
+        secondTourType.setTour_image_list(secondImageList);
+        secondTourType.setDescription("Join me on the exploration tour to discover the best spots at Gardens By the Bay");
+        secondTourType.setPrice(new BigDecimal(20));
+        secondTourType.setRecommended_pax(12);
+        secondTourType.setEstimated_duration(2);
+        secondTourType.setSpecial_note("Bring water along! It can get very hot");
+        secondTourType.setIs_published(true);
+        secondTourType.setTour_list(new ArrayList<>());
+        secondTourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        secondTourType = tourTypeRepository.save(secondTourType);
+
+        local.getTour_type_list().add(secondTourType);
+        localRepository.save(local);
+
+        Attraction secondAttraction = attractionRepository.findById(3L).get();
+        List<TourType> secondTourTypes = new ArrayList<>();
+        secondTourTypes.add(secondTourType);
+        secondAttraction.setTour_type_list(secondTourTypes);
+        attractionRepository.save(secondAttraction);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = LocalDate.of(2023, 11, 20);
+        while (!currentDate.isAfter(endDate)) {
+            Tour tour1 = new Tour();
+            Tour tour2 = new Tour();
+            tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour1.setStart_time(currentDate.atTime(10, 0));
+            tour1.setEnd_time(currentDate.atTime(12, 0));
+            tour1.setRemaining_slot(10);
+
+            tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour2.setStart_time(currentDate.atTime(13, 0));
+            tour2.setEnd_time(currentDate.atTime(15, 0));
+            tour2.setRemaining_slot(10);
+
+            tour1 = tourRepository.save(tour1);
+            tour2 = tourRepository.save(tour2);
+
+            secondTourType.getTour_list().add(tour1);
+            secondTourType.getTour_list().add(tour2);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        tourTypeRepository.save(secondTourType);
+    }
+
+    @Transactional
+    public void createFourthTourType(Local local) {
+        TourType secondTourType = new TourType();
+        secondTourType.setName("Singapore Museum Deep Dive");
+        List<String> secondImageList = new ArrayList<>();
+        secondImageList.add("http://tt02.s3-ap-southeast-1.amazonaws.com/static/attraction/singapore_gallery1.jpeg");
+        secondTourType.setTour_image_list(secondImageList);
+        secondTourType.setDescription("Discover the best of Museum with me in just an hour! ps: I have a phd in Singapore History");
+        secondTourType.setPrice(new BigDecimal(25));
+        secondTourType.setRecommended_pax(10);
+        secondTourType.setEstimated_duration(1);
+        secondTourType.setSpecial_note("Wear comfortable shoes!");
+        secondTourType.setIs_published(true);
+        secondTourType.setTour_list(new ArrayList<>());
+        secondTourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        secondTourType = tourTypeRepository.save(secondTourType);
+
+        local.getTour_type_list().add(secondTourType);
+        localRepository.save(local);
+
+        Attraction secondAttraction = attractionRepository.findById(5L).get();
+        List<TourType> secondTourTypes = new ArrayList<>();
+        secondTourTypes.add(secondTourType);
+        secondAttraction.setTour_type_list(secondTourTypes);
+        attractionRepository.save(secondAttraction);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = LocalDate.of(2023, 11, 20);
+        while (!currentDate.isAfter(endDate)) {
+            Tour tour1 = new Tour();
+            Tour tour2 = new Tour();
+            tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour1.setStart_time(currentDate.atTime(10, 0));
+            tour1.setEnd_time(currentDate.atTime(12, 0));
+            tour1.setRemaining_slot(10);
+
+            tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour2.setStart_time(currentDate.atTime(13, 0));
+            tour2.setEnd_time(currentDate.atTime(15, 0));
+            tour2.setRemaining_slot(10);
+
+            tour1 = tourRepository.save(tour1);
+            tour2 = tourRepository.save(tour2);
+
+            secondTourType.getTour_list().add(tour1);
+            secondTourType.getTour_list().add(tour2);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        tourTypeRepository.save(secondTourType);
+    }
+
+
 
     Vendor setUpVendor2(Vendor vendor2) {
         vendor2.setBusiness_name("M1");
@@ -1489,6 +1652,62 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     @Transactional
+    void generateTour() {
+        TourType tourType = new TourType();
+        tourType.setName("Mega Adventure Tour");
+        List<String> imageList = new ArrayList<>();
+        imageList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/web/mega_tour.jpg");
+        tourType.setTour_image_list(imageList);
+        tourType.setDescription("Join me on the mega adventure tour where we will embark on thrilling outdoor activities");
+        tourType.setPrice(new BigDecimal(10));
+        tourType.setRecommended_pax(10);
+        tourType.setEstimated_duration(2);
+        tourType.setSpecial_note("Avoid wearing loose items like sunglasses");
+        tourType.setIs_published(true);
+        tourType.setTour_list(new ArrayList<>());
+        tourType.setPublishedUpdatedBy(UserTypeEnum.LOCAL);
+        tourType = tourTypeRepository.save(tourType);
+
+        Local local = localRepository.findById(2L).get();
+        System.out.println("Local " + local.getUser_id());
+        local.getTour_type_list().add(tourType);
+
+        Attraction attraction = attractionRepository.findById(1L).get();
+        List<TourType> tourTypes = new ArrayList<>();
+        tourTypes.add(tourType);
+        attraction.setTour_type_list(tourTypes);
+        attractionRepository.save(attraction);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate endDate = LocalDate.of(2023, 11, 20);
+        while (!currentDate.isAfter(endDate)) {
+            Tour tour1 = new Tour();
+            Tour tour2 = new Tour();
+            tour1.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour1.setStart_time(currentDate.atTime(10, 0));
+            tour1.setEnd_time(currentDate.atTime(12, 0));
+            tour1.setRemaining_slot(10);
+
+            tour2.setDate(currentDate.atStartOfDay().atZone(ZoneId.of("Asia/Singapore")).toLocalDateTime());
+            tour2.setStart_time(currentDate.atTime(13, 0));
+            tour2.setEnd_time(currentDate.atTime(15, 0));
+            tour2.setRemaining_slot(10);
+
+            tour1 = tourRepository.save(tour1);
+            tour2 = tourRepository.save(tour2);
+
+            tourType.getTour_list().add(tour1);
+            tourType.getTour_list().add(tour2);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        tourTypeRepository.save(tourType);
+
+        createSecondTourType(local);
+        createThirdTourType(local);
+        createFourthTourType(local);
+    }
+    @Transactional
     void generateTelecoms() throws NotFoundException {
         int numOfTelecoms = 7;
         Random random = new Random();
@@ -1550,6 +1769,108 @@ public class InitDataConfig implements CommandLineRunner {
         }
     }
 
+    private String generateRandomPromoCode(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        Random random = new Random();
+        StringBuilder promoCode = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+            promoCode.append(characters.charAt(index));
+        }
+        return promoCode.toString();
+    }
+
+
+    @Transactional
+    void generateDeals() {
+        int numOfDeals = 10;
+        Random random = new Random();
+
+        for (int i = 0; i < numOfDeals; i++) {
+            Deal d1 = new Deal();
+
+            LocalDateTime startDate = LocalDateTime.now().plusDays(random.nextInt(365));
+            d1.setStart_datetime(startDate);
+
+            // Generate random end date (within a reasonable range) after the start date
+            LocalDateTime endDate = startDate.plusDays(random.nextInt(30)); // You can adjust the range as needed
+            d1.setEnd_datetime(endDate);
+
+            int discountPercent = random.nextInt(50);
+            d1.setDiscount_percent(discountPercent);
+
+            DealCategoryEnum[] dealTypes = DealCategoryEnum.values();
+            DealCategoryEnum randomDealType = dealTypes[random.nextInt(dealTypes.length)];
+            d1.setDeal_type(randomDealType);
+
+            d1.setPromo_code(generateRandomPromoCode(7));
+
+            boolean isGovtVoucher = random.nextBoolean();
+            d1.setIs_govt_voucher(isGovtVoucher);
+
+            d1.setIs_published(true);
+            List<String> imgList = new ArrayList<>();
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.jpeg");
+            d1.setDeal_image_list(imgList);
+
+            d1 = dealRepository.save(d1);
+            List<Deal> dList = new ArrayList<>();
+            dList.add(d1);
+
+            List<Long> vendorList = vendorRepository.getAllVendorId();
+            Long randomIndex = random.nextLong(vendorList.size());
+            Long randomLong = vendorList.get(Math.toIntExact(randomIndex));
+            System.out.println(vendorList);
+
+            Vendor ven = vendorRepository.findById(randomLong).get();
+            System.out.println("Vendor id" + ven.getVendor_id());
+
+            if (ven.getDeals_list() == null || ven.getDeals_list().isEmpty()) {
+                ven.setDeals_list(dList);
+            } else {
+                ven.getDeals_list().addAll(dList);
+            }
+            System.out.println("Vendor 1" + ven.getDeals_list());
+            vendorRepository.save(ven);
+        }
+
+        //
+//            Deal d1 = new Deal();
+//            d1.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
+//            d1.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
+//            d1.setDiscount_percent(10);
+//            d1.setDeal_type(DealCategoryEnum.BLACK_FRIDAY);
+//            d1.setPromo_code("TOURING");
+//            d1.setIs_govt_voucher(false);
+//            d1.setIs_published(true);
+//            List<String> imgList = new ArrayList<>();
+//            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_backfriday.jpeg");
+//            d1.setDeal_image_list(imgList);
+//
+//            d1 = dealRepository.save(d1);
+//            List<Deal> dList = new ArrayList<>();
+//            dList.add(d1);
+//            vendor1.setDeals_list(dList);
+//            vendorRepository.save(vendor1);
+//
+//            Deal d2 = new Deal();
+//            d2.setStart_datetime(LocalDateTime.parse("2023-10-12T16:00:00"));
+//            d2.setEnd_datetime(LocalDateTime.parse("2024-10-13T16:00:00"));
+//            d2.setDiscount_percent(20);
+//            d2.setDeal_type(DealCategoryEnum.GOVERNMENT);
+//            d2.setPromo_code("WELCOME");
+//            d2.setIs_govt_voucher(true);
+//            d2.setIs_published(true);
+//            List<String> imgList2 = new ArrayList<>();
+//            imgList2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.png");
+//            d2.setDeal_image_list(imgList2);
+//
+//            d2 = dealRepository.save(d2);
+//            List<Deal> dList2 = new ArrayList<>();
+//            dList2.add(d2);
+//            vendor2.setDeals_list(dList2);
+//            vendorRepository.save(vendor2);
+    }
 
     @Transactional
     public void createBookingsAndPayments(Integer numberOfBookingsAndPayments) {
