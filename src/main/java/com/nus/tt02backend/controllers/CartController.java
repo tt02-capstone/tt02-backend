@@ -75,6 +75,12 @@ public class CartController {
         return ResponseEntity.ok(id);
     }
 
+    @PostMapping("/addItemToCart/{userId}/{itemId}")
+    public ResponseEntity<Long> addItemToCart(@PathVariable Long userId, @PathVariable Long itemId, @RequestBody CartBooking cartBooking) throws NotFoundException {
+        Long id = cartService.addItemToCart(userId, itemId, cartBooking);
+        return ResponseEntity.ok(id);
+    }
+
     @PostMapping("/addTourToCart/{userId}/{tourId}")
     public ResponseEntity<Long> addTourToCart(@PathVariable Long userId, @PathVariable Long tourId, @RequestBody CartBooking cartBooking) throws NotFoundException {
         Long id = cartService.addTourToCart(userId, tourId, cartBooking);
