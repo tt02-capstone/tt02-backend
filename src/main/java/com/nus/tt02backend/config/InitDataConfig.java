@@ -7,6 +7,7 @@ import com.nus.tt02backend.models.enums.*;
 import com.nus.tt02backend.repositories.*;
 import com.nus.tt02backend.services.AttractionService;
 import com.nus.tt02backend.services.PaymentService;
+import com.nus.tt02backend.services.TelecomService;
 import com.nus.tt02backend.services.VendorStaffService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentMethod;
@@ -58,6 +59,10 @@ public class InitDataConfig implements CommandLineRunner {
     private final ReplyRepository replyRepository;
     private final PostRepository postRepository;
     private final BadgeRepository badgeRepository;
+
+
+    @Autowired
+    TelecomService telecomService;
 
     @Autowired
     PaymentService paymentService;
@@ -425,139 +430,11 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         if (accommodationRepository.count() == 0) {
-            Accommodation a1 = new Accommodation();
-            a1.setName("Resorts World Sentosa");
-            List<String> list = new ArrayList<>();
-            list.add("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/rwshotel1.jpeg");
-            list.add("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/rwshotel2.jpeg");
-            a1.setAccommodation_image_list(list);
-            a1.setDescription("Singapore's best place! World-class attractions Universal Studios Singapore, S.E.A. Aquarium, Adventure Cove Waterpark; 6 unique hotels, finest dining.");
-            a1.setAddress("8 Sentosa Gateway, 098269");
-            a1.setContact_num("6363 1212");
-            a1.setCheck_in_time(LocalDateTime.parse("2023-10-13T16:00:00"));
-            a1.setCheck_out_time(LocalDateTime.parse("2023-10-13T12:00:00"));
-            a1.setType(AccommodationTypeEnum.HOTEL);
-            a1.setGeneric_location(GenericLocationEnum.SENTOSA);
-            a1.setIs_published(true);
-            a1.setEstimated_price_tier(PriceTierEnum.TIER_5);
-            accommodationRepository.save(a1);
-
-            if (vendor1.getAccommodation_list() == null) vendor1.setAccommodation_list(new ArrayList<>());
-            vendor1.getAccommodation_list().add(a1);
-            vendorRepository.save(vendor1);
-
-            Accommodation a2 = new Accommodation();
-            a2.setName("Mangrove Sentosa");
-            List<String> list2 = new ArrayList<>();
-            list2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/airbnb.jpeg");
-            list2.add("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/airbnb2.jpeg");
-            a2.setAccommodation_image_list(list2);
-            a2.setDescription("Mangrove Sentosa is a 15-story building with 177 separate units and Stay rooms for short-term usage. The first story consists of a welcome lounge, the community desk and a cafe. The two basement stories are filled with an assortment of communal spaces.");
-            a2.setAddress("20 Sentosa Ave, Singapore 453532");
-            a2.setContact_num("6123 4567");
-            a2.setCheck_in_time(LocalDateTime.parse("2023-10-13T16:00:00"));
-            a2.setCheck_out_time(LocalDateTime.parse("2023-10-13T13:00:00"));
-            a2.setType(AccommodationTypeEnum.AIRBNB);
-            a2.setGeneric_location(GenericLocationEnum.SENTOSA);
-            a2.setIs_published(true);
-            a2.setEstimated_price_tier(PriceTierEnum.TIER_1);
-            accommodationRepository.save(a2);
-
-            if (vendor3.getAccommodation_list() == null) vendor3.setAccommodation_list(new ArrayList<>());
-            vendor3.getAccommodation_list().add(a2);
-            vendorRepository.save(vendor3);
-
-            Room r1 = new Room();
-            r1.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/rwsroom1.png");
-            r1.setAmenities_description("A two-storey townhouse offering a land view from an outdoor patio and an underwater view of 40,000 fishes below.");
-            r1.setNum_of_pax(3);
-            r1.setPrice(new BigDecimal(800));
-            r1.setQuantity(2);
-            r1.setRoom_type(RoomTypeEnum.DELUXE_SUITE);
-            roomRepository.save(r1);
-
-            Room r2 = new Room();
-            r2.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/rwsroom2.png");
-            r2.setAmenities_description("These deluxe rooms extend to the outdoors leaving you immediately at one with nature.");
-            r2.setNum_of_pax(2);
-            r2.setPrice(new BigDecimal(250));
-            r2.setQuantity(2);
-            r2.setRoom_type(RoomTypeEnum.STANDARD);
-            roomRepository.save(r2);
-
-            Room r3 = new Room();
-            r3.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/airbnbroom1.jpeg");
-            r3.setAmenities_description("Single bed, Private bath, Cleaning once a week");
-            r3.setNum_of_pax(1);
-            r3.setPrice(new BigDecimal(70));
-            r3.setQuantity(10);
-            r3.setRoom_type(RoomTypeEnum.STANDARD);
-            roomRepository.save(r3);
-
-            Room r4 = new Room();
-            r4.setRoom_image("https://tt02.s3.ap-southeast-1.amazonaws.com/accommodation/room/airbnbroom2.jpeg");
-            r4.setAmenities_description("Bunk bed, Private bath, Cleaning once a week!");
-            r4.setNum_of_pax(2);
-            r4.setPrice(new BigDecimal(50));
-            r4.setQuantity(10);
-            r4.setRoom_type(RoomTypeEnum.DOUBLE);
-            roomRepository.save(r4);
-
-            List<Room> roomList1 = new ArrayList<>();
-            roomList1.add(r1);
-            roomList1.add(r2);
-            a1.setRoom_list(roomList1);
-            accommodationRepository.save(a1);
-            accommodations.add(a1);
-
-            List<Room> roomList2 = new ArrayList<>();
-            roomList2.add(r3);
-            roomList2.add(r4);
-            a2.setRoom_list(roomList2);
-            accommodationRepository.save(a2);
-            accommodations.add(a2);
+            generateAccommodation();
         }
 
         if (telecomRepository.count() == 0) {
-            Telecom t1 = new Telecom();
-            t1.setName("M1");
-            t1.setDescription("M1 7 Days 50GB plan");
-            t1.setPrice(new BigDecimal(50));
-            t1.setType(TelecomTypeEnum.PHYSICALSIM);
-            t1.setIs_published(true);
-            t1.setEstimated_price_tier(PriceTierEnum.TIER_2);
-            t1.setNum_of_days_valid(7);
-            t1.setData_limit(50);
-            t1.setData_limit_category(GBLimitEnum.VALUE_50);
-            t1.setPlan_duration_category(NumberOfValidDaysEnum.SEVEN_DAY);
-            t1.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_7_day.JPG");
-
-            t1 = telecomRepository.save(t1);
-            telecoms.add(t1);
-            List<Telecom> tList = new ArrayList<>();
-            tList.add(t1);
-            vendor2.setTelecom_list(tList);
-            vendorRepository.save(vendor2);
-
-            Telecom t2 = new Telecom();
-            t2.setName("Singtel");
-            t2.setDescription("Singtel 14 Days 80GB plan");
-            t2.setPrice(new BigDecimal(60));
-            t2.setType(TelecomTypeEnum.PHYSICALSIM);
-            t2.setIs_published(true);
-            t2.setEstimated_price_tier(PriceTierEnum.TIER_3);
-            t2.setNum_of_days_valid(14);
-            t2.setData_limit(80);
-            t2.setPlan_duration_category(NumberOfValidDaysEnum.FOURTEEN_DAY);
-            t2.setData_limit_category(GBLimitEnum.VALUE_100);
-            t2.setImage("http://tt02.s3-ap-southeast-1.amazonaws.com/static/telecom/telecom_14_day.JPG");
-
-            t2 = telecomRepository.save(t2);
-            telecoms.add(t2);
-            List<Telecom> tList2 = new ArrayList<>();
-            tList2.add(t2);
-            vendor6.setTelecom_list(tList2);
-            vendorRepository.save(vendor6);
+            generateTelecoms();
         }
 
 //        if (tourTypeRepository.count() == 0) {
@@ -1610,6 +1487,69 @@ public class InitDataConfig implements CommandLineRunner {
         a2.setRoom_list(roomList2);
         accommodationRepository.save(a2);
     }
+
+    @Transactional
+    void generateTelecoms() throws NotFoundException {
+        int numOfTelecoms = 7;
+        Random random = new Random();
+        List<String> telecomCompaniesInSG = new ArrayList<>();
+
+        // Add telecom companies to the list
+        telecomCompaniesInSG.add("Singtel");
+        telecomCompaniesInSG.add("StarHub");
+        telecomCompaniesInSG.add("M1");
+        telecomCompaniesInSG.add("Circles.Life");
+
+        for (int i = 0; i < numOfTelecoms; i++) {
+            Integer randomCompany = random.nextInt(telecomCompaniesInSG.size());
+
+            Telecom t1 = new Telecom();
+            String telecomName = telecomCompaniesInSG.get(randomCompany);
+            t1.setName(telecomName);
+
+            Integer randomPrice = random.nextInt(50, 1000);
+            t1.setPrice(new BigDecimal(randomPrice));
+            t1.setEstimated_price_tier(telecomService.generatePriceTier(new BigDecimal(randomPrice)));
+
+            TelecomTypeEnum[] telecomTypeEnums = TelecomTypeEnum.values();
+            t1.setType(telecomTypeEnums[random.nextInt(telecomTypeEnums.length)]);
+
+            Integer no_of_days_valid = random.nextInt(1, 180);
+            Integer data_limit = random.nextInt(1, 1000);
+            t1.setData_limit(data_limit);
+            t1.setNum_of_days_valid(no_of_days_valid);
+            t1.setPlan_duration_category(telecomService.generateNumValidDays(no_of_days_valid));
+            t1.setImage(telecomService.generateImageURL(t1.getPlan_duration_category()));
+            t1.setData_limit_category(telecomService.generateGBLimitEnum(data_limit));
+            t1.setDescription(telecomCompaniesInSG.get(randomCompany) + " " + t1.getPlan_duration_category().getValue() + " " +  t1.getData_limit_category().getValue());
+
+            t1.setIs_published(true);
+
+            t1 = telecomRepository.save(t1);
+            Optional<Vendor> telecomVendorOpt = vendorRepository.findVendorOptionalByTelecomName(telecomName);
+
+            if (telecomVendorOpt.isEmpty()) {
+                List<Long> vendorList = vendorRepository.getAllVendorId();
+                Long randomIndex = random.nextLong(vendorList.size());
+                Long randomLong = vendorList.get(Math.toIntExact(randomIndex));
+                telecomVendorOpt = vendorRepository.findById(randomLong);
+            } else { //Category has name unique so M1 cannot have 2 mappings etc
+                System.out.println();
+                continue;
+            }
+
+            List<Telecom> tList = new ArrayList<>();
+            tList.add(t1);
+            Vendor telecomVendor = telecomVendorOpt.get();
+            if ( telecomVendor.getTelecom_list() == null || telecomVendor.getTelecom_list().isEmpty()  ) {
+                telecomVendor.setTelecom_list(tList);
+            } else {
+                telecomVendor.getTelecom_list().addAll(tList);
+            }
+            vendorRepository.save(telecomVendor);
+        }
+    }
+
 
     @Transactional
     public void createBookingsAndPayments(Integer numberOfBookingsAndPayments) {
