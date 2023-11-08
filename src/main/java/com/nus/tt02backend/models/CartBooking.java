@@ -55,6 +55,10 @@ public class CartBooking {
     @JoinColumn(name = "attraction_id")
     private Attraction attraction;
 
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private Item item;
+
     @OneToMany(fetch = FetchType.LAZY)
     private List<CartItem> cart_item_list;
 }
