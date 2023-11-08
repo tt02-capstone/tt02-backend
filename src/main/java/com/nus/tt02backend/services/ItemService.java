@@ -20,6 +20,12 @@ public class ItemService {
     ItemRepository itemRepository;
     @Autowired
     VendorRepository vendorRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    TouristRepository touristRepository;
+    @Autowired
+    LocalRepository localRepository;
 
     public Item createItem(Long vendorId, Item itemToCreate) throws BadRequestException {
         Optional<Vendor> vendorOptional = vendorRepository.findById(vendorId);
@@ -129,5 +135,44 @@ public class ItemService {
     public Long getLastItemId() {
         Long lastItemId = itemRepository.findMaxItemId();
         return (lastItemId != null) ? lastItemId : 0L;
+    }
+
+    public List<Item> toggleSaveItem(Long userId, Long itemId) throws NotFoundException {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<Item> itemOptional = itemRepository.findById(itemId);
+
+        if (userOptional.isPresent() && itemOptional.isPresent()) {
+            User user = userOptional.get();
+            Item item = itemOptional.get();
+
+            if (user instanceof Tourist) {
+                Tourist tourist = (Tourist) user;
+                if (tourist.getItem_list() == null) tourist.setItem_list(new ArrayList<>());
+
+                if (tourist.getItem_list().contains(item)) { // remove from saved listing
+                    tourist.getItem_list().remove(item);
+                } else {
+                    tourist.getItem_list().add(item);
+                }
+                touristRepository.save(tourist);
+                return tourist.getItem_list();
+            } else if (user instanceof Local) {
+                Local local = (Local) user;
+                if (local.getItem_list() == null) local.setItem_list(new ArrayList<>());
+
+                if (local.getItem_list().contains(item)) { // remove from saved listing
+                    local.getItem_list().remove(item);
+                } else {
+                    local.getItem_list().add(item);
+                }
+                localRepository.save(local);
+                return local.getItem_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User or item is not found!");
+        }
     }
 }
