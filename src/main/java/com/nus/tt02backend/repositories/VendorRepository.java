@@ -39,4 +39,7 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
 
     @Query("SELECT v FROM Vendor v WHERE v.business_name = ?1")
     Vendor findVendorByBusinessName(String businessName);
+
+    @Query("SELECT v FROM Vendor v WHERE v.stripe_account_id = ?1")
+    Vendor findByStripeId(String stripeId);
 }
