@@ -58,6 +58,8 @@ public class InitDataConfig implements CommandLineRunner {
     private final ReplyRepository replyRepository;
     private final PostRepository postRepository;
     private final BadgeRepository badgeRepository;
+    private final ItineraryRepository itineraryRepository;
+    private final DIYEventRepository diyEventRepository;
 
     @Autowired
     PaymentService paymentService;
@@ -236,7 +238,7 @@ public class InitDataConfig implements CommandLineRunner {
             attraction.setAge_group("Suitable for all ages");
             attraction.setContact_num("62353535");
             attraction.setIs_published(true);
-            attraction.setSuggested_duration(4);
+            attraction.setSuggested_duration(3);
             attraction.setAvg_rating_tier(0.0);
             attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
             attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
@@ -353,7 +355,7 @@ public class InitDataConfig implements CommandLineRunner {
             r1.setOpening_hours("6.30am - 10pm");
             r1.setContact_num("68087777");
             r1.setIs_published(true);
-            r1.setSuggested_duration(3);
+            r1.setSuggested_duration(2);
             r1.setRestaurant_type(RestaurantEnum.WESTERN);
             r1.setGeneric_location(GenericLocationEnum.SENTOSA);
             r1.setEstimated_price_tier(PriceTierEnum.TIER_5);
@@ -788,6 +790,32 @@ public class InitDataConfig implements CommandLineRunner {
             bList.add(b);
             local.setBadge_list(bList);
             localRepository.save(local);
+
+            Itinerary i = new Itinerary();
+            i.setStart_date(LocalDateTime.parse("2023-11-24T00:00:00"));
+            i.setEnd_date(LocalDateTime.parse("2023-11-29T23:59:59"));
+            i.setNumber_of_pax(2);
+            i.setRemarks("");
+            i.setMaster_id(local.getUser_id());
+            i.setAccepted_people_list(new ArrayList<>());
+            i.setInvited_people_list(new ArrayList<>());
+
+            List<DIYEvent> diyEventList = new ArrayList<>();
+            DIYEvent d1 = new DIYEvent();
+            d1.setName("Lunch with Aunt");
+            d1.setStart_datetime(LocalDateTime.parse("2023-11-24T11:00:00"));
+            d1.setEnd_datetime(LocalDateTime.parse("2023-11-24T13:00:00"));
+            d1.setLocation("Min Jiang Dempsey");
+            d1.setRemarks("Remember to bring gifts along");
+            diyEventRepository.save(d1);
+
+            diyEventList.add(d1);
+            i.setDiy_event_list(diyEventList);
+            itineraryRepository.save(i);
+
+            local.setItinerary(i);
+            localRepository.save(local);
+
         }
 
     }
@@ -800,7 +828,7 @@ public class InitDataConfig implements CommandLineRunner {
         r1.setOpening_hours("11am - 11pm");
         r1.setContact_num("63711900");
         r1.setIs_published(true);
-        r1.setSuggested_duration(3);
+        r1.setSuggested_duration(2);
         r1.setRestaurant_type(RestaurantEnum.CHINESE);
         r1.setGeneric_location(GenericLocationEnum.SENTOSA);
         r1.setEstimated_price_tier(PriceTierEnum.TIER_3);
@@ -920,7 +948,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setAge_group("Suitable for all ages");
         attraction.setContact_num("65778888");
         attraction.setIs_published(true);
-        attraction.setSuggested_duration(5);
+        attraction.setSuggested_duration(3);
         attraction.setAvg_rating_tier(0.0);
         attraction.setAttraction_category(AttractionCategoryEnum.ADVENTURE);
         attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
@@ -947,25 +975,25 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
         TicketPerDay t1 = new TicketPerDay();
-        t1.setTicket_date(LocalDate.parse("2023-10-27"));
+        t1.setTicket_date(LocalDate.parse("2023-11-20"));
         t1.setTicket_count(5);
         t1.setTicket_type(TicketEnum.ADULT);
         t1 = ticketPerDayRepository.save(t1);
 
         TicketPerDay t2 = new TicketPerDay();
-        t2.setTicket_date(LocalDate.parse("2023-10-27"));
+        t2.setTicket_date(LocalDate.parse("2023-11-20"));
         t2.setTicket_count(5);
         t2.setTicket_type(TicketEnum.CHILD);
         t2 = ticketPerDayRepository.save(t2);
 
         TicketPerDay t3 = new TicketPerDay();
-        t3.setTicket_date(LocalDate.parse("2023-10-27"));
+        t3.setTicket_date(LocalDate.parse("2023-11-21"));
         t3.setTicket_count(5);
         t3.setTicket_type(TicketEnum.ADULT);
         t3 = ticketPerDayRepository.save(t3);
 
         TicketPerDay t4 = new TicketPerDay();
-        t4.setTicket_date(LocalDate.parse("2023-10-27"));
+        t4.setTicket_date(LocalDate.parse("2023-11-21"));
         t4.setTicket_count(5);
         t4.setTicket_type(TicketEnum.CHILD);
         t4 = ticketPerDayRepository.save(t4);

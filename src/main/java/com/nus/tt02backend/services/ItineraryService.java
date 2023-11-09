@@ -736,6 +736,7 @@ public class ItineraryService {
             List<Long> invitedUsers = itinerary.getInvited_people_list();
             for (Long user : invitedUsers) {
                 if (Objects.equals(user, userId)) {
+                    itinerary.setDiy_event_list(null);
                     itinerariesInvitedTo.add(itinerary);
                 }
             }
