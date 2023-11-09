@@ -4,6 +4,7 @@ import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 
 import com.nus.tt02backend.services.DataDashboardService;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.net.Webhook;
@@ -34,37 +35,16 @@ public class DataDashboardController {
 
 
 
-    private final String endpointSecret = "your-webhook-signing-secret-here";
 
-    @PostMapping("/stripe-webhook")
-    public ResponseEntity<String> handleStripeWebhook(HttpServletRequest request) {
 
-        StringBuilder payload = new StringBuilder();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(request.getInputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                payload.append(line);
-            }
-        } catch (IOException e) {
-            return new ResponseEntity<>("Error reading request body", HttpStatus.BAD_REQUEST);
-        }
+    @PostMapping("/bill")
+    public ResponseEntity<String> bill(HttpServletRequest request) throws BadRequestException {
 
-        String sigHeader = request.getHeader("Stripe-Signature");
-        Event event = null;
 
-        try {
-            event = Webhook.constructEvent(payload.toString(), sigHeader, endpointSecret);
-        } catch (StripeException e) {
-            return new ResponseEntity<>("Invalid signature", HttpStatus.BAD_REQUEST);
-        }
-
-        // Handle the event
-        if ("invoice.created".equals(event.getType())) {
-            // Your logic here
-        }
-
-        return new ResponseEntity<>("Received", HttpStatus.OK);
+        String status = dataDashboardService.bill(request);
+        return ResponseEntity.ok(status);
     }
+
 
     @GetMapping("/getSubscriptionStatus/{user_id}/{user_type}")
     public ResponseEntity<String> getSubscriptionStatus(@PathVariable String user_id, @PathVariable String user_type) throws StripeException, NotFoundException {
