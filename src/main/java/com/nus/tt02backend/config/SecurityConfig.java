@@ -78,6 +78,7 @@ public class SecurityConfig {
                 "/admin/passwordResetStageThree/**",
                 "/vendor/createVendor",
                 "/vendorStaff/createVendorStaff",
+                "/data/bill",
                 "/notification/**", // to remove
                 "/itinerary/**", // to remove
                 "/diyEvent/**", // to remove

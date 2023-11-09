@@ -3,18 +3,23 @@ package com.nus.tt02backend.services;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
-import com.nus.tt02backend.models.Booking;
-import com.nus.tt02backend.models.Local;
-import com.nus.tt02backend.models.Vendor;
+import com.nus.tt02backend.models.*;
 import com.nus.tt02backend.repositories.LocalRepository;
 import com.nus.tt02backend.repositories.VendorRepository;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
+import com.stripe.model.Price;
+import com.stripe.model.Subscription;
 import com.stripe.net.Webhook;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -25,8 +30,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-
-import com.nus.tt02backend.models.Accommodation;
 
 import com.nus.tt02backend.repositories.*;
 
@@ -45,6 +48,12 @@ public class DataDashboardService {
 
     @Autowired
     VendorRepository vendorRepository;
+
+    @Autowired
+    JavaMailSender javaMailSender;
+
+
+    private final String endpointSecret = "whsec_19210bb5627b1217d600750b798aa67de0d91bdbd5d0ae50efcff3801e3026b6";
 
     public String getStripe_Id(String user_id, String user_type) throws NotFoundException {
         if (Objects.equals(user_type, "VENDOR")) {
@@ -69,6 +78,120 @@ public class DataDashboardService {
             }
         }
         throw new NotFoundException("User Type Not Found");
+    }
+
+    public String bill(HttpServletRequest request) throws BadRequestException {
+        Vendor vendor = null;
+        try (BufferedReader reader = request.getReader()) {
+            // Read the request body to get the payload
+            StringBuilder payload = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                payload.append(line);
+            }
+
+            // Retrieve the signature from the headers
+            String sigHeader = request.getHeader("Stripe-Signature");
+
+            // Verify and construct the event
+            Event event = null;
+            try {
+                event = Webhook.constructEvent(
+                        payload.toString(),
+                        sigHeader,
+                        endpointSecret
+                );
+            } catch (SignatureVerificationException e) {
+                System.out.println("⚠️  Webhook error while validating signature.");
+                throw new BadRequestException("Invalid signature.");
+
+            }
+
+
+            // Handle the event
+            if (event.getType().equals("invoice.created")) {// Your code to handle the invoice.upcoming event
+                System.out.println("Received");
+
+                Invoice invoice = (Invoice) event.getData().getObject();
+                if ("open".equals(invoice.getStatus())) {
+                    // If the payment for the invoice is handled internally,
+                    // mark the invoice as paid out of band
+                    Map<String, Object> params = new HashMap<>();
+                    vendor = vendorRepository.findByStripeId(invoice.getCustomer());
+                    BigDecimal payment_amount = BigDecimal.valueOf(invoice.getAmountDue()).divide(BigDecimal.valueOf(100));
+                    BigDecimal currentWallet = vendor.getWallet_balance();
+                    if (currentWallet.compareTo(payment_amount) >= 0) {
+                        vendor.setWallet_balance(currentWallet.subtract(payment_amount));
+
+                    } else {
+                        BigDecimal remainder = payment_amount.subtract(currentWallet);
+                        if (currentWallet.compareTo(BigDecimal.ZERO) >0 ) {
+                            vendor.setWallet_balance(BigDecimal.ZERO);
+
+                        }
+
+                        Map<String, Object> automaticPaymentMethods = new HashMap<>();
+                        automaticPaymentMethods.put("enabled", true);
+
+                        Map<String, Object> paymentParams = new HashMap<>();
+                        paymentParams.put("amount", remainder.multiply(new BigDecimal("100")).intValueExact());
+                        paymentParams.put("currency", "usd");
+                        paymentParams.put("confirm", true);
+
+
+                        paymentParams.put("customer", invoice.getCustomer());
+                        paymentParams.put("return_url", "yourappname://stripe/callback");
+
+                        PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
+
+
+                    }
+                    vendorRepository.save(vendor);
+                    params.put("paid_out_of_band", true);
+                    invoice = invoice.pay(params);
+                }
+
+            } else {
+
+                throw new BadRequestException("Unhandled event type");
+            }
+
+            // Return a 200 response to acknowledge receipt of the event
+            return "Received.";
+
+        } catch (IOException e) {
+            throw new BadRequestException("An error occurred while processing the request.");
+
+        } catch (StripeException e) {
+            String subject = "[WithinSG] Error Processing Subscription Payment";
+            String content = "<p>Dear " + vendor.getPoc_name() + ",</p>" +
+                    "<p>Thank you for registering for a vendor account with WithinSG. " +
+                    "We are glad that you have chosen us as your service provider!</p>" +
+
+                    "<p>We have received your application and it is in the midst of processing. " +
+                    "Please verify your email address by clicking on the button below.</p>" +
+                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
+                    "Verify Email</button></a>" +
+                    "<p>An email will be sent to you once your account has been activated.</p>" +
+                    "<p>Kind Regards,<br> WithinSG</p>";
+
+            try {
+                List<VendorStaff> staffs = vendor.getVendor_staff_list();
+                String email = staffs.get(0).getEmail();
+                MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+                MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+                mimeMessageHelper.setTo(email);
+                mimeMessageHelper.setSubject(subject);
+                mimeMessageHelper.setText(content, true);
+                javaMailSender.send(mimeMessage);
+            } catch (MessagingException r) {
+                throw new BadRequestException("An error occurred while processing the payment.");
+            }
+
+
+            return "Received.";
+
+        }
     }
 
     public BigDecimal updateWallet(String user_id, String user_type, BigDecimal amount) throws NotFoundException {
@@ -104,7 +227,7 @@ public class DataDashboardService {
         throw new NotFoundException("User Type Not Found");
     }
 
-    private final String endpointSecret = "your-webhook-signing-secret-here";
+
     public ResponseEntity<String> handleStripeWebhook(HttpServletRequest request) {
         StringBuilder payload = new StringBuilder();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(request.getInputStream()))) {
@@ -679,7 +802,17 @@ public class DataDashboardService {
 
                 System.out.println(result);
 
+                List<Object> placeholderList = new ArrayList<>();
+
+                placeholderList.add(result);
+
+                dateCountryRevenueList.add(placeholderList);
+
+
+                System.out.println(dateCountryRevenueList);
+
                 return dateCountryRevenueList;
+
 
             } else {
                 throw new NotFoundException("Vendor not found");
@@ -739,6 +872,15 @@ public class DataDashboardService {
                 result.put("Status", statusRevenues);
 
                 System.out.println(result);
+
+                List<Object> placeholderList = new ArrayList<>();
+
+                placeholderList.add(result);
+
+                dateCountryRevenueList.add(placeholderList);
+
+
+                System.out.println(dateCountryRevenueList);
 
                 return dateCountryRevenueList;
 
@@ -934,6 +1076,12 @@ public class DataDashboardService {
 
             System.out.println(result);
 
+            List<Object> placeholderList = new ArrayList<>();
+
+            placeholderList.add(result);
+
+            dateCountryRevenueList.add(placeholderList);
+
             return dateCountryRevenueList;
 
         } else if (Objects.equals(data_usecase, "Platform Revenue Breakdown by Category, Nationality, Status")) {
@@ -975,6 +1123,15 @@ public class DataDashboardService {
             result.put("Status", statusRevenues);
 
             System.out.println(result);
+
+            List<Object> placeholderList = new ArrayList<>();
+
+            placeholderList.add(result);
+
+            dateCountryRevenueList.add(placeholderList);
+
+
+            System.out.println(dateCountryRevenueList);
 
             return dateCountryRevenueList;
         }
