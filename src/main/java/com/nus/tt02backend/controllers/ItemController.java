@@ -73,7 +73,6 @@ public class ItemController {
         }
     }
 
-
     @GetMapping("/getItemVendor/{itemId}")
     public ResponseEntity<Vendor> getItemVendor(@PathVariable Long itemId) {
         Vendor v = itemService.getItemVendor(itemId);
@@ -84,5 +83,11 @@ public class ItemController {
     public ResponseEntity<List<Item>> toggleSaveItem(@PathVariable Long userId, @PathVariable Long itemId) throws NotFoundException {
         List<Item> itemList = itemService.toggleSaveItem(userId, itemId);
         return ResponseEntity.ok(itemList);
+    }
+
+    @GetMapping("/getUserSavedItems/{userId}")
+    public ResponseEntity<List<Item>> getUserSavedItems(@PathVariable Long userId) throws NotFoundException {
+        List<Item> item_list = itemService.getUserSavedItems(userId);
+        return ResponseEntity.ok(item_list);
     }
 }
