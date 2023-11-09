@@ -82,4 +82,6 @@ public class Booking {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<QrCode> qr_code_list;
+
+    private Boolean isCollected;
 }
