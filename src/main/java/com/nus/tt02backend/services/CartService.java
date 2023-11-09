@@ -792,7 +792,7 @@ public class CartService {
     }
 
 
-    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id, Float totalPrice, List<Long> booking_ids, List<BigDecimal> priceList)
+    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id, Float totalPrice, List<Long> booking_ids, List<BigDecimal> priceList, String selectedDeliveryType)
             throws StripeException, BadRequestException, NotFoundException {
 
         // Should fetch via User if possible
@@ -912,7 +912,7 @@ public class CartService {
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
-                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
+                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType);
                 createdBooking.setBooked_user(UserTypeEnum.LOCAL);
                 createdBookings.add(createdBooking);
                 createdBookingIds.add(createdBooking.getBooking_id());
@@ -922,7 +922,7 @@ public class CartService {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
-                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id);
+                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType);
                 createdBooking.setBooked_user(UserTypeEnum.TOURIST);
                 createdBookings.add(createdBooking);
                 createdBookingIds.add(createdBooking.getBooking_id());
@@ -935,11 +935,11 @@ public class CartService {
         return createdBookingIds;
     }
 
-    private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id)
+    private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id, String selectedDeliveryType)
             throws StripeException, NotFoundException, BadRequestException {
 
         List<BookingItem> bookingItems = createBookingItems(bookingToCheckout);
-        Booking newBooking = createBooking(user, bookingToCheckout, bookingItems);
+        Booking newBooking = createBooking(user, bookingToCheckout, bookingItems, selectedDeliveryType);
         Payment newPayment = createPayment(newBooking, totalAmountPayable, payment_method_id);
         newBooking.setPayment(newPayment);
         newPayment.setBooking(newBooking);
@@ -970,7 +970,7 @@ public class CartService {
         return bookingItems;
     }
 
-    private <T> Booking createBooking(T user, CartBooking bookingToCheckout, List<BookingItem> bookingItems) throws BadRequestException {
+    private <T> Booking createBooking(T user, CartBooking bookingToCheckout, List<BookingItem> bookingItems, String selectedDeliveryType) throws BadRequestException {
         Booking newBooking = new Booking();
 
         // Populate booking fields that are common for both Local and Tourist
@@ -993,6 +993,13 @@ public class CartService {
             newBooking.setRoom(bookingToCheckout.getRoom());
         }   else if (Objects.equals(activity_type, "TOUR")) {
             newBooking.setTour(bookingToCheckout.getTour());
+        } else if (Objects.equals(activity_type, "ITEM")) { // for delivery use cases
+            if (selectedDeliveryType.equals("PICKUP")) {
+                newBooking.setStatus(BookingStatusEnum.PENDING_VENDOR_PICKUP);
+            } else {
+                newBooking.setStatus(BookingStatusEnum.PENDING_VENDOR_DELIVERY);
+            }
+            newBooking.setItem(bookingToCheckout.getItem());
         }
 
         newBooking.setBooking_item_list(bookingItems);

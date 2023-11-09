@@ -49,6 +49,9 @@ public class Vendor {
     @Column(nullable = false, length = 4096)
     private String service_description;
 
+    @Column(length = 400)
+    private String business_address;
+
     @Column
     private String stripe_account_id;
 

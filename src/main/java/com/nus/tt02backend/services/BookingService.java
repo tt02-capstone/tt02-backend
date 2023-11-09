@@ -158,7 +158,7 @@ public class BookingService {
         }
 
         for (Booking booking : bookings) {
-            if (booking.getStatus() != BookingStatusEnum.CANCELLED) {
+            if (booking.getStatus() != BookingStatusEnum.CANCELLED && booking.getType() != BookingTypeEnum.ITEM) {
                 if (booking.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
                     booking.setStatus(BookingStatusEnum.ONGOING);
                 } else if (booking.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
@@ -222,7 +222,7 @@ public class BookingService {
             if (bookingOptional.isPresent()) {
                 Booking booking = bookingOptional.get();
 
-                if (!booking.getType().equals(BookingTypeEnum.TELECOM) &&
+                if (!booking.getType().equals(BookingTypeEnum.TELECOM ) && !booking.getType().equals(BookingTypeEnum.ITEM) &&
                         booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
                     for (BookingItem bookingItem : booking.getBooking_item_list()) {
                         long[] voucherCodes = generateVoucherCodes(booking.getBooking_id(), bookingItem.getQuantity());

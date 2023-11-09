@@ -201,6 +201,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendor1.setApplication_status(ApplicationStatusEnum.APPROVED);
             vendor1.setVendor_type(VendorEnum.ATTRACTION);
             vendor1.setService_description("Sentosa, a place where children dreams come true!");
+            vendor1.setBusiness_address("8 Sentosa Gateway, 098269");
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "attraction@gmail.com");
@@ -238,9 +239,7 @@ public class InitDataConfig implements CommandLineRunner {
 
         if (dealRepository.count() == 0) {
             generateDeals();
-
         }
-
 
         if (restaurantRepository.count() == 0) {
             generateRestaurants();
@@ -317,7 +316,7 @@ public class InitDataConfig implements CommandLineRunner {
         pList.add(p1);
         pList.add(p2);
 
-        CategoryItem cat = categoryItemRepository.getCategoryItemsById(9L);
+        CategoryItem cat = categoryItemRepository.getCategoryItemsByName("The Kitchen Table");
         cat.setPost_list(pList);
         categoryItemRepository.save(cat); // save to the first restaurant category
 
