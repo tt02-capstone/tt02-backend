@@ -119,13 +119,13 @@ public class DataDashboardService {
                     Map<String, Object> params = new HashMap<>();
                     vendor = vendorRepository.findByStripeId(invoice.getCustomer());
                     BigDecimal payment_amount = BigDecimal.valueOf(invoice.getAmountDue()).divide(BigDecimal.valueOf(100));
-                    BigDecimal currentWallet = vendor.getWallet_balance();
-                    if (currentWallet.compareTo(payment_amount) >= 0) {
-                        vendor.setWallet_balance(currentWallet.subtract(payment_amount));
+                    BigDecimal currentWalletBalance  = vendor.getWallet_balance();
+                    if (currentWalletBalance.compareTo(payment_amount) >= 0) {
+                        vendor.setWallet_balance(currentWalletBalance.subtract(payment_amount));
 
                     } else {
-                        BigDecimal remainder = payment_amount.subtract(currentWallet);
-                        if (currentWallet.compareTo(BigDecimal.ZERO) >0 ) {
+                        BigDecimal remainder = payment_amount.subtract(currentWalletBalance);
+                        if (currentWalletBalance.compareTo(BigDecimal.ZERO) >0 ) {
                             vendor.setWallet_balance(BigDecimal.ZERO);
 
                         }
@@ -663,11 +663,7 @@ public class DataDashboardService {
 
                 List<Accommodation> accommodations = vendor.getAccommodation_list();
 
-                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
-
-                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
-
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
 
@@ -715,7 +711,7 @@ public class DataDashboardService {
 
                 LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
                 List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -763,7 +759,7 @@ public class DataDashboardService {
 
                 LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
                 List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -827,11 +823,8 @@ public class DataDashboardService {
 
                 List<Accommodation> accommodations = vendor.getAccommodation_list();
 
-                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
 
-                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
-
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
                 List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -904,7 +897,7 @@ public class DataDashboardService {
 
                 LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(startDate, endDate, 1L, "ACCOMMODATION");
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
 
 // Create a map to store the booking count, revenue, and country for each date
                 Map<LocalDate, List<Object>> bookingDataByDate = new HashMap<>();
@@ -976,7 +969,7 @@ public class DataDashboardService {
 
         LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
 
-        List<Booking> bookings = bookingRepository.getPlatformBookingsOverTime(startDate, endDate);
+        List<Booking> bookings = bookingRepository.getPlatformBookingsOverTime(start_date, end_date);
 
         if (Objects.equals(data_usecase, "Platform Bookings Over Time")) {
 
