@@ -934,6 +934,12 @@ public class DataDashboardService {
 
             System.out.println(result);
 
+            List<Object> placeholderList = new ArrayList<>();
+
+            placeholderList.add(result);
+
+            dateCountryRevenueList.add(placeholderList);
+
             return dateCountryRevenueList;
 
         } else if (Objects.equals(data_usecase, "Platform Revenue Breakdown by Category, Nationality, Status")) {

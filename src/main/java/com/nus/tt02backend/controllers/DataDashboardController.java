@@ -130,7 +130,7 @@ public class DataDashboardController {
         return ResponseEntity.ok(data);
     }
 
-    @GetMapping("/getPlatformData/{data_usecase}")
+    @PostMapping("/getPlatformData/{data_usecase}")
     public ResponseEntity<List<List<Object>>> getPlatformData(@PathVariable String data_usecase,
                                                               @RequestBody Map<String, LocalDateTime> dateRangeMap) throws NotFoundException {
 

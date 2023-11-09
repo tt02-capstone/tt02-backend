@@ -1,6 +1,8 @@
 package com.nus.tt02backend.controllers;
 
 import com.nus.tt02backend.exceptions.BadRequestException;
+import com.nus.tt02backend.exceptions.NotFoundException;
+import com.nus.tt02backend.models.Accommodation;
 import com.nus.tt02backend.models.Category;
 import com.nus.tt02backend.models.Item;
 import com.nus.tt02backend.models.Vendor;
@@ -71,9 +73,16 @@ public class ItemController {
         }
     }
 
+
     @GetMapping("/getItemVendor/{itemId}")
     public ResponseEntity<Vendor> getItemVendor(@PathVariable Long itemId) {
         Vendor v = itemService.getItemVendor(itemId);
         return ResponseEntity.ok(v);
+    }
+
+    @PutMapping("/toggleSaveItem/{userId}/{itemId}")
+    public ResponseEntity<List<Item>> toggleSaveItem(@PathVariable Long userId, @PathVariable Long itemId) throws NotFoundException {
+        List<Item> itemList = itemService.toggleSaveItem(userId, itemId);
+        return ResponseEntity.ok(itemList);
     }
 }
