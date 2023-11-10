@@ -999,6 +999,7 @@ public class CartService {
             } else {
                 newBooking.setStatus(BookingStatusEnum.PENDING_VENDOR_DELIVERY);
             }
+            newBooking.setIsCollected(false);
             newBooking.setItem(bookingToCheckout.getItem());
         }
 

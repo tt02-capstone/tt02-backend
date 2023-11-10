@@ -572,6 +572,12 @@ public class BookingService {
 
         booking.setStatus(bookingStatusEnum);
         booking.setLast_update(LocalDateTime.now());
+        if ( bookingStatusEnum == BookingStatusEnum.DELIVERED || bookingStatusEnum == BookingStatusEnum.PICKED_UP ) {
+            booking.setIsCollected(true);
+        } else {
+            booking.setIsCollected(false);
+        }
+
         bookingRepository.save(booking);
 
         return booking.getBooking_id();
