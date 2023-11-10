@@ -58,21 +58,17 @@ public class PaymentService {
     public String createStripeAccount(String account_type, Map<String,Object> parameters) {
 
         try {
-            if (Objects.equals(account_type, "CUSTOMER")) {
-                Customer customer = Customer.create(parameters);
 
-                return customer.getId();
-            } else if (Objects.equals(account_type, "VENDOR")) {
-                Account account = Account.create(parameters);
+            Customer customer = Customer.create(parameters);
 
-                return account.getId();
-            }
+            return customer.getId();
+
 
         } catch (Exception e) {
             // handle error
             return null;
         }
-        return null;
+
     }
 
 
