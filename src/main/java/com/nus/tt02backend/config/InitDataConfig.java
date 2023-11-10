@@ -1455,24 +1455,30 @@ public class InitDataConfig implements CommandLineRunner {
 
     @Transactional
     public void createTourists(Integer numberOfTourists) {
+        String[] names = {
+                "Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Henry", "Ivy", "Jack",
+                "Katherine", "Liam", "Mia", "Noah", "Olivia", "Penelope", "Quinn", "Ryan", "Sophia", "Thomas",
+                "Uma", "Victor", "Wendy", "Xavier", "Yara", "Zachary", "Amelia", "Benjamin", "Catherine", "Daniel",
+                "Emily", "Felix", "Gabriella", "Harrison", "Isabella", "James", "Kylie", "Logan", "Madison", "Nathan",
+                "Oscar", "Peyton", "Quincy", "Riley", "Samantha", "Tristan", "Ursula", "Vincent", "Willow", "Xander",
+                "Yasmine", "Zane", "Abigail", "Bryce", "Chloe", "Dylan", "Ella", "Fiona", "Gavin", "Hannah", "Isaac",
+                "Jessica", "Kyle", "Lily", "Mason", "Natalie", "Oliver", "Paige", "Quentin", "Rebecca", "Seth",
+                "Taylor", "Ulysses", "Violet", "Wyatt", "Xena", "Yannick", "Zara", "Aaron", "Bella", "Caleb", "Daisy",
+                "Elijah", "Faith", "Gideon", "Holly", "Isaiah", "Jasmine", "Kaden", "Leah", "Megan", "Nolan", "Olive",
+                "Peter", "Quincy", "Rachel", "Samuel", "Tessa", "Upton", "Victoria", "Wyatt", "Ximena", "Yvonne", "Zachary"
+        };
 
         for (int i = 0; i < numberOfTourists; i++) { // X is the number of tourists you want to generate
             Tourist tourist = new Tourist();
             Random rand = new Random();
-
-            // Generate a random email
-            String email = UUID.randomUUID().toString() + "@gmail.com";
-
-            // Generate a random name
-            String name = "Name" + rand.nextInt(1000);
 
             // Generate a random country code
             String[] countryCodes = {"+86", "+62", "+91", "+60", "+61"};
             String countryCode = countryCodes[rand.nextInt(countryCodes.length)];
 
             // Set attributes
-            tourist.setEmail(email);
-            tourist.setName(name);
+            tourist.setEmail(names[i] + i + "@gmail.com");
+            tourist.setName(names[i]);
             tourist.setPassword(passwordEncoder.encode("password1!"));
             tourist.setUser_type(UserTypeEnum.TOURIST);
             tourist.setIs_blocked(false);
