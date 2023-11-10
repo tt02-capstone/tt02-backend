@@ -5,6 +5,7 @@ import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Attraction;
 import com.nus.tt02backend.models.Booking;
 import com.nus.tt02backend.models.Payment;
+import com.nus.tt02backend.models.enums.BookingStatusEnum;
 import com.nus.tt02backend.services.BookingService;
 import com.stripe.exception.StripeException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +46,21 @@ public class BookingController {
         return ResponseEntity.ok(responseMessage);
     }
 
+    @PutMapping("/updateBookingItemStatus/{bookingId}")
+    public ResponseEntity<Long> updateBookingItemStatus(@PathVariable Long bookingId, @RequestParam BookingStatusEnum status) throws NotFoundException, BadRequestException, StripeException {
+        Long bookingNum = bookingService.updateBookingItemStatus(status, bookingId);
+        return ResponseEntity.ok(bookingNum);
+    }
     @GetMapping("/getAllPaymentsByUser/{userId}")
     public ResponseEntity<List<Payment>> getAllPaymentsByUser(@PathVariable Long userId) throws NotFoundException, BadRequestException {
         List<Payment> paymentList = bookingService.getAllPaymentsByUser(userId);
         return ResponseEntity.ok(paymentList);
+    }
+
+    @GetMapping("/getAllItemBookingsByVendor/{vendorId}")
+    public ResponseEntity<List<Booking>> getAllItemBookingsByVendor(@PathVariable Long vendorId) throws NotFoundException, BadRequestException {
+        List<Booking> itemList = bookingService.getAllItemBookingsByVendor(vendorId);
+        return ResponseEntity.ok(itemList);
     }
 
     @PostMapping("/createTourBooking/{tourId}")

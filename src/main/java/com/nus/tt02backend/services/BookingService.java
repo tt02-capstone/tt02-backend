@@ -20,6 +20,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+
+import java.awt.print.Book;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.awt.*;
@@ -83,6 +85,10 @@ public class BookingService {
 
     @Autowired
     TourTypeRepository  tourTypeRepository;
+
+
+    @Autowired
+    ItemRepository itemRepository;
 
     public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
         try {
@@ -406,8 +412,60 @@ public class BookingService {
 
         return payments;
     }
-    
+
+    public List<Booking> getAllItemBookingsByVendor(Long vendorStaffId) throws NotFoundException {
+
+        VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
+        Vendor vendor = vendorStaff.getVendor();
+
+        List<Booking> bookingsToReturn = new ArrayList<Booking>();
+        List<Booking> bookingList = bookingRepository.getAllBookingsbyType(BookingTypeEnum.ITEM);
+
+        for (Booking b : bookingList) {
+            if (!vendor.getItem_list().isEmpty()) {
+                for (Item item : vendor.getItem_list()) {
+                    if (b.getItem() != null && Objects.equals(b.getItem().getItem_id(), item.getItem_id())) {
+                        bookingsToReturn.add(b);
+                    }
+
+                }
+            }
+
+        }
+
+        // setting of 2 way relationship to null
+        for (Booking b : bookingsToReturn) {
+            if (b.getLocal_user() != null) {
+                Local local = b.getLocal_user();
+                local.setSupport_ticket_list(null);
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                local.setCart_list(null);
+                local.setTour_type_list(null);
+                local.setItinerary(null);
+                local.setItem_list(null);
+
+            } else if (b.getTourist_user() != null) {
+                Tourist tourist = b.getTourist_user();
+                tourist.setSupport_ticket_list(null);
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                tourist.setCart_list(null);
+                tourist.setTour_type_list(null);
+                tourist.setItinerary(null);
+                tourist.setItem_list(null);
+            }
+            b.getPayment().setBooking(null);
+        }
+
+        return bookingsToReturn;
+    }
+
     public List<Booking> getAllBookingsByVendor(Long vendorStaffId) throws NotFoundException {
+        createItemBooking();
+
         VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
         Vendor vendor = vendorStaff.getVendor();
 
@@ -451,6 +509,15 @@ public class BookingService {
 
                 }
             }
+
+            if (!vendor.getItem_list().isEmpty()) {
+                for (Item item : vendor.getItem_list()) {
+                    if (b.getItem() != null && Objects.equals(b.getItem().getItem_id(), item.getItem_id())) {
+                        bookingsToReturn.add(b);
+                    }
+
+                }
+            }
         }
 
         // setting of 2 way relationship to null
@@ -464,6 +531,7 @@ public class BookingService {
                 local.setCart_list(null);
                 local.setTour_type_list(null);
                 local.setItinerary(null);
+                local.setItem_list(null);
 
             } else if (b.getTourist_user() != null) {
                 Tourist tourist = b.getTourist_user();
@@ -474,6 +542,7 @@ public class BookingService {
                 tourist.setCart_list(null);
                 tourist.setTour_type_list(null);
                 tourist.setItinerary(null);
+                tourist.setItem_list(null);
             }
             b.getPayment().setBooking(null);
         }
@@ -492,6 +561,50 @@ public class BookingService {
             }
         }
         return b;
+    }
+
+    public Long updateBookingItemStatus(BookingStatusEnum bookingStatusEnum, Long bookingId) throws NotFoundException { // need to eventually add payment
+        Booking booking = bookingRepository.getBookingByBookingId(bookingId);
+
+        if (booking == null) {
+            throw new NotFoundException("Booking not found");
+        }
+
+        booking.setStatus(bookingStatusEnum);
+        booking.setLast_update(LocalDateTime.now());
+        bookingRepository.save(booking);
+
+        return booking.getBooking_id();
+    }
+    public Long createItemBooking() { // need to eventually add payment
+
+        Booking newBooking = new Booking();
+        newBooking.setStart_datetime(LocalDateTime.of(LocalDate.now().getYear(), 11, 14, 1,1));
+        newBooking.setEnd_datetime(LocalDateTime.of(LocalDate.now().getYear(), 12, 14, 1,1));
+        newBooking.setLast_update(LocalDateTime.now());
+        newBooking.setStatus(BookingStatusEnum.PENDING_VENDOR_DELIVERY);
+        newBooking.setType(BookingTypeEnum.ITEM);
+        newBooking.setItem(itemRepository.findById(1L).get());
+        newBooking.setIsCollected(false);
+        newBooking.setTourist_user(touristRepository.getTouristByUserId(6L));
+
+        Payment payment = new Payment();
+        payment.setPayment_amount(new BigDecimal(123));
+        payment.setComission_percentage(new BigDecimal(10));
+        payment.setIs_paid(true);
+        UUID uuid = UUID.randomUUID();
+        payment.setPayment_id(uuid.toString()); // Randomly generated string
+        paymentRepository.save(payment);
+
+        newBooking.setPayment(payment);
+        bookingRepository.save(newBooking);
+
+
+        payment.setBooking(newBooking);
+        paymentRepository.save(payment);
+
+        return newBooking.getBooking_id();
+
     }
 
     public Long createTourBooking(Long tourId, Booking newBooking) throws NotFoundException { // need to eventually add payment

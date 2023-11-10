@@ -22,6 +22,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long>  {
     @Query("SELECT b FROM Booking b WHERE b.type=?1")
     List<Booking> getAllTourBookings(BookingTypeEnum bookingType);
 
+    @Query("SELECT b FROM Booking b WHERE b.type=?1")
+    List<Booking> getAllBookingsbyType(BookingTypeEnum bookingType);
 
     @Query("SELECT b " +
             "FROM Booking b " +
