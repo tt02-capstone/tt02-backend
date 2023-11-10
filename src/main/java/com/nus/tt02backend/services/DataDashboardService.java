@@ -1043,8 +1043,10 @@ public class DataDashboardService {
             for (Booking booking : bookings) {
 
                 String countryCode = null;
-                String roomType = String.valueOf(booking.getRoom().getRoom_type());
-                categoryCounts.put(roomType, categoryCounts.getOrDefault(roomType, 0) + 1);
+                String category = String.valueOf(booking.getType());
+
+
+                categoryCounts.put(category, categoryCounts.getOrDefault(category, 0) + 1);
 
                 if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
                     countryCode = booking.getTourist_user().getCountry_code();
@@ -1091,8 +1093,9 @@ public class DataDashboardService {
                 BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
 
                 String countryCode = null;
-                String roomType = String.valueOf(booking.getRoom().getRoom_type());
-                categoryRevenues.put(roomType, categoryRevenues.getOrDefault(roomType, BigDecimal.valueOf(0)).add(revenue));
+                String category = String.valueOf(booking.getType());
+
+                categoryRevenues.put(category, categoryRevenues.getOrDefault(category, BigDecimal.valueOf(0)).add(revenue));
 
                 if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
                     countryCode = booking.getTourist_user().getCountry_code();
@@ -1127,6 +1130,64 @@ public class DataDashboardService {
             System.out.println(dateCountryRevenueList);
 
             return dateCountryRevenueList;
+        } else if (Objects.equals(data_usecase, "Customer Retention (Number of Repeat Bookings Over Time)")) {
+
+
+
+
+
+
+
+// Create a map to store the booking count, revenue, and country for each date
+            Map<LocalDate, List<Object>> bookingDataByDate = new HashMap<>();
+
+            for (Booking booking : bookings) {
+                LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
+                BigDecimal revenue = booking.getPayment().getPayment_amount();
+                String countryCode = null;
+
+                // Determine which user type (tourist or local) is not null and get the country code
+                if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                    countryCode = booking.getTourist_user().getCountry_code();
+                } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                    countryCode = booking.getLocal_user().getCountry_code();
+                }
+
+                String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                // Check if the booking date is already in the map
+                if (bookingDataByDate.containsKey(bookingDate)) {
+                    List<Object> existingData = bookingDataByDate.get(bookingDate);
+                    int currentCount = (int) existingData.get(0);
+                    BigDecimal currentRevenue = (BigDecimal) existingData.get(1);
+
+                    // Update the count and revenue
+                    existingData.set(0, currentCount + 1);
+                    existingData.set(1, currentRevenue.add(revenue));
+                } else {
+                    // Initialize the list with count, revenue, and country
+                    List<Object> newData = new ArrayList<>();
+                    newData.add(1); // Count for the first booking on this date
+                    newData.add(revenue);
+                    newData.add(country);
+                    bookingDataByDate.put(bookingDate, newData);
+                }
+            }
+
+// Convert the map to a list of [Date, Count, Revenue, Country] for sending to the frontend
+            List<List<Object>> dateBookingDataList = new ArrayList<>();
+            for (Map.Entry<LocalDate, List<Object>> entry : bookingDataByDate.entrySet()) {
+                LocalDate date = entry.getKey();
+                List<Object> data = entry.getValue();
+                dateBookingDataList.add(Arrays.asList(date, data.get(0), data.get(1), data.get(2)));
+            }
+
+            System.out.println(dateBookingDataList);
+
+            return dateBookingDataList;
+
+
+
         }
 
 //        } else if (Objects.equals(data_usecase, "Vendor Retention (Number of Repeat Bookings Over Time)")) {
