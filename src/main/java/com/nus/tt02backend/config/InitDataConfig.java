@@ -266,7 +266,7 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         if (bookingRepository.count() == 0) {
-            createBookingsAndPayments(5);
+            createBookingsAndPayments(1000);
         }
 
         if (postRepository.count() == 0) {
