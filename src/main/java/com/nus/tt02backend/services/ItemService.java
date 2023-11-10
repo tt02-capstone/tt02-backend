@@ -3,6 +3,7 @@ package com.nus.tt02backend.services;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
+import com.nus.tt02backend.models.enums.UserTypeEnum;
 import com.nus.tt02backend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -137,6 +138,13 @@ public class ItemService {
         return (lastItemId != null) ? lastItemId : 0L;
     }
 
+
+    public Vendor getItemVendor(Long itemId) {
+        Vendor v = vendorRepository.findVendorByItemId(itemId);
+        v.setVendor_staff_list(null);
+        return v;
+    }
+
     public List<Item> toggleSaveItem(Long userId, Long itemId) throws NotFoundException {
 
         Optional<User> userOptional = userRepository.findById(userId);
@@ -173,6 +181,26 @@ public class ItemService {
             }
         } else {
             throw new NotFoundException("User or item is not found!");
+        }
+    }
+
+    public List<Item> getUserSavedItems(Long userId) throws NotFoundException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (user instanceof Tourist) {
+                Tourist t = (Tourist) user;
+                if (t.getItem_list() == null) return new ArrayList<>();
+                return t.getItem_list();
+            } else if (user instanceof Local) {
+                Local l = (Local) user;
+                if (l.getItem_list() == null) return new ArrayList<>();
+                return l.getItem_list();
+            } else {
+                throw new NotFoundException("User is not tourist or local!");
+            }
+        } else {
+            throw new NotFoundException("User not found!");
         }
     }
 }

@@ -59,6 +59,8 @@ public class InitDataConfig implements CommandLineRunner {
     private final ReplyRepository replyRepository;
     private final PostRepository postRepository;
     private final BadgeRepository badgeRepository;
+    private final ItineraryRepository itineraryRepository;
+    private final DIYEventRepository diyEventRepository;
 
 
     @Autowired
@@ -199,6 +201,7 @@ public class InitDataConfig implements CommandLineRunner {
             vendor1.setApplication_status(ApplicationStatusEnum.APPROVED);
             vendor1.setVendor_type(VendorEnum.ATTRACTION);
             vendor1.setService_description("Sentosa, a place where children dreams come true!");
+            vendor1.setBusiness_address("8 Sentosa Gateway, 098269");
 
             Map<String, Object> customer_parameters = new HashMap<>();
             customer_parameters.put("email", "attraction@gmail.com");
@@ -236,9 +239,7 @@ public class InitDataConfig implements CommandLineRunner {
 
         if (dealRepository.count() == 0) {
             generateDeals();
-
         }
-
 
         if (restaurantRepository.count() == 0) {
             generateRestaurants();
@@ -270,6 +271,10 @@ public class InitDataConfig implements CommandLineRunner {
 
         if (postRepository.count() == 0) {
             generatePosts(local);
+        }
+
+        if (itineraryRepository.count() == 0) {
+            generateItinerary(local);
         }
 
     }
@@ -311,7 +316,7 @@ public class InitDataConfig implements CommandLineRunner {
         pList.add(p1);
         pList.add(p2);
 
-        CategoryItem cat = categoryItemRepository.getCategoryItemsById(9L);
+        CategoryItem cat = categoryItemRepository.getCategoryItemsByName("The Kitchen Table");
         cat.setPost_list(pList);
         categoryItemRepository.save(cat); // save to the first restaurant category
 
@@ -470,7 +475,7 @@ public class InitDataConfig implements CommandLineRunner {
         r1.setOpening_hours("11am - 11pm");
         r1.setContact_num("63711900");
         r1.setIs_published(true);
-        r1.setSuggested_duration(3);
+        r1.setSuggested_duration(2);
         r1.setRestaurant_type(RestaurantEnum.CHINESE);
         r1.setGeneric_location(GenericLocationEnum.SENTOSA);
         r1.setEstimated_price_tier(PriceTierEnum.TIER_3);
@@ -580,7 +585,7 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     @Transactional
-    void generateRestaurants() {
+    public void generateRestaurants() {
         Restaurant r1 = new Restaurant();
         r1.setName("The Kitchen Table");
         r1.setDescription("The Kitchen Table brings to life a culmination of culinary finesse. Step through our doors and satisfy your appetite anytime of the day! ");
@@ -658,7 +663,7 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     @Transactional
-    void generateAttraction() {
+    public void generateAttraction() {
         Attraction attraction = new Attraction();
         attraction.setName("Mega Adventure Singapore");
         attraction.setDescription("Mega Adventure Park Singapore is located on the picturesque Sentosa Island, host to " +
@@ -669,7 +674,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setAge_group("Suitable for all ages");
         attraction.setContact_num("62353535");
         attraction.setIs_published(true);
-        attraction.setSuggested_duration(4);
+        attraction.setSuggested_duration(3);
         attraction.setAvg_rating_tier(0.0);
         attraction.setAttraction_category(AttractionCategoryEnum.ENTERTAINMENT);
         attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
@@ -696,7 +701,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setPrice_list(priceList);
         attraction.setEstimated_price_tier(priceTier); // set the pricing tier here
 
-        String date = "2023-11-14";
+        String date = "2023-11-20";
 
         TicketPerDay t1 = new TicketPerDay();
         t1.setTicket_date(LocalDate.parse(date));
@@ -757,7 +762,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setAge_group("Suitable for all ages");
         attraction.setContact_num("65778888");
         attraction.setIs_published(true);
-        attraction.setSuggested_duration(5);
+        attraction.setSuggested_duration(3);
         attraction.setAvg_rating_tier(0.0);
         attraction.setAttraction_category(AttractionCategoryEnum.ADVENTURE);
         attraction.setGeneric_location(GenericLocationEnum.SENTOSA);
@@ -839,7 +844,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setAge_group("Suitable for all ages");
         attraction.setContact_num("8474334");
         attraction.setIs_published(true);
-        attraction.setSuggested_duration(6);
+        attraction.setSuggested_duration(5);
         attraction.setAvg_rating_tier(0.0);
         attraction.setAttraction_category(AttractionCategoryEnum.NATURE);
         attraction.setGeneric_location(GenericLocationEnum.MARINA_BAY);
@@ -997,7 +1002,7 @@ public class InitDataConfig implements CommandLineRunner {
         attraction.setAge_group("Suitable for all ages above 7");
         attraction.setContact_num("89999999");
         attraction.setIs_published(true);
-        attraction.setSuggested_duration(5);
+        attraction.setSuggested_duration(4);
         attraction.setAvg_rating_tier(0.0);
         attraction.setAttraction_category(AttractionCategoryEnum.CULTURAL);
         attraction.setGeneric_location(GenericLocationEnum.RAFFLES_PLACE);
@@ -1061,6 +1066,31 @@ public class InitDataConfig implements CommandLineRunner {
         vendor1.setAttraction_list(currentList);
         vendorRepository.save(vendor1);
         return currentList;
+    }
+
+    @Transactional
+    public void generateItinerary(Local local){
+        Itinerary i = new Itinerary();
+        i.setStart_date(LocalDateTime.parse("2023-11-20T00:00:00"));
+        i.setEnd_date(LocalDateTime.parse("2023-11-24T23:59:00"));
+        i.setNumber_of_pax(2);
+        i.setRemarks("");
+        i.setInvited_people_list(new ArrayList<>());
+        i.setAccepted_people_list(new ArrayList<>());
+        i.setMaster_id(local.getUser_id());
+
+        List<DIYEvent> diyEventList = new ArrayList<>();
+        DIYEvent d1 = new DIYEvent();
+        d1.setName("Dinner with Aunt");
+        d1.setStart_datetime(LocalDateTime.parse("2023-11-20T19:00:00"));
+        d1.setEnd_datetime(LocalDateTime.parse("2023-11-20T21:00:00"));
+        d1.setLocation("Min Jiang Dempsey");
+        d1.setRemarks("Remember to bring gift");
+        diyEventRepository.save(d1);
+
+        diyEventList.add(d1);
+        i.setDiy_event_list(diyEventList);
+        itineraryRepository.save(i);
     }
 
 
@@ -1464,7 +1494,7 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     @Transactional
-    void generateAccommodation() {
+    public void generateAccommodation() {
         Accommodation a1 = new Accommodation();
         a1.setName("Resorts World Sentosa");
         List<String> list = new ArrayList<>();
@@ -1560,7 +1590,7 @@ public class InitDataConfig implements CommandLineRunner {
     }
 
     @Transactional
-    void generateTour() {
+    public void generateTour() {
         TourType tourType = new TourType();
         tourType.setName("Mega Adventure Tour");
         List<String> imageList = new ArrayList<>();
@@ -1616,7 +1646,7 @@ public class InitDataConfig implements CommandLineRunner {
         createFourthTourType(local);
     }
     @Transactional
-    void generateTelecoms() throws NotFoundException {
+    public void generateTelecoms() throws NotFoundException {
         int numOfTelecoms = 7;
         Random random = new Random();
         List<String> telecomCompaniesInSG = new ArrayList<>();
@@ -1691,7 +1721,7 @@ public class InitDataConfig implements CommandLineRunner {
 
 
     @Transactional
-    void generateDeals() {
+    public void generateDeals() {
         int numOfDeals = 10;
         Random random = new Random();
 
@@ -2098,8 +2128,6 @@ public class InitDataConfig implements CommandLineRunner {
 
 
         }
-
-
 
 
 

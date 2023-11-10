@@ -5,6 +5,7 @@ import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.Accommodation;
 import com.nus.tt02backend.models.Category;
 import com.nus.tt02backend.models.Item;
+import com.nus.tt02backend.models.Vendor;
 import com.nus.tt02backend.services.CategoryService;
 import com.nus.tt02backend.services.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,9 +73,21 @@ public class ItemController {
         }
     }
 
+    @GetMapping("/getItemVendor/{itemId}")
+    public ResponseEntity<Vendor> getItemVendor(@PathVariable Long itemId) {
+        Vendor v = itemService.getItemVendor(itemId);
+        return ResponseEntity.ok(v);
+    }
+
     @PutMapping("/toggleSaveItem/{userId}/{itemId}")
     public ResponseEntity<List<Item>> toggleSaveItem(@PathVariable Long userId, @PathVariable Long itemId) throws NotFoundException {
         List<Item> itemList = itemService.toggleSaveItem(userId, itemId);
         return ResponseEntity.ok(itemList);
+    }
+
+    @GetMapping("/getUserSavedItems/{userId}")
+    public ResponseEntity<List<Item>> getUserSavedItems(@PathVariable Long userId) throws NotFoundException {
+        List<Item> item_list = itemService.getUserSavedItems(userId);
+        return ResponseEntity.ok(item_list);
     }
 }

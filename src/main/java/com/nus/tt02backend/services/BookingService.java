@@ -164,7 +164,7 @@ public class BookingService {
         }
 
         for (Booking booking : bookings) {
-            if (booking.getStatus() != BookingStatusEnum.CANCELLED) {
+            if (booking.getStatus() != BookingStatusEnum.CANCELLED && booking.getType() != BookingTypeEnum.ITEM) {
                 if (booking.getStart_datetime().toLocalDate().isEqual(LocalDate.now())) {
                     booking.setStatus(BookingStatusEnum.ONGOING);
                 } else if (booking.getStart_datetime().toLocalDate().isBefore(LocalDate.now())) {
@@ -228,7 +228,7 @@ public class BookingService {
             if (bookingOptional.isPresent()) {
                 Booking booking = bookingOptional.get();
 
-                if (!booking.getType().equals(BookingTypeEnum.TELECOM) &&
+                if (!booking.getType().equals(BookingTypeEnum.TELECOM ) && !booking.getType().equals(BookingTypeEnum.ITEM) &&
                         booking.getQr_code_list().isEmpty() && booking.getStatus() != BookingStatusEnum.CANCELLED) {
                     for (BookingItem bookingItem : booking.getBooking_item_list()) {
                         long[] voucherCodes = generateVoucherCodes(booking.getBooking_id(), bookingItem.getQuantity());
@@ -412,7 +412,57 @@ public class BookingService {
 
         return payments;
     }
-    
+
+    public List<Booking> getAllItemBookingsByVendor(Long vendorStaffId) throws NotFoundException {
+
+        VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
+        Vendor vendor = vendorStaff.getVendor();
+
+        List<Booking> bookingsToReturn = new ArrayList<Booking>();
+        List<Booking> bookingList = bookingRepository.getAllBookingsbyType(BookingTypeEnum.ITEM);
+
+        for (Booking b : bookingList) {
+            if (!vendor.getItem_list().isEmpty()) {
+                for (Item item : vendor.getItem_list()) {
+                    if (b.getItem() != null && Objects.equals(b.getItem().getItem_id(), item.getItem_id())) {
+                        bookingsToReturn.add(b);
+                    }
+
+                }
+            }
+
+        }
+
+        // setting of 2 way relationship to null
+        for (Booking b : bookingsToReturn) {
+            if (b.getLocal_user() != null) {
+                Local local = b.getLocal_user();
+                local.setSupport_ticket_list(null);
+                local.setBooking_list(null);
+                local.setPost_list(null);
+                local.setComment_list(null);
+                local.setCart_list(null);
+                local.setTour_type_list(null);
+                local.setItinerary(null);
+                local.setItem_list(null);
+
+            } else if (b.getTourist_user() != null) {
+                Tourist tourist = b.getTourist_user();
+                tourist.setSupport_ticket_list(null);
+                tourist.setBooking_list(null);
+                tourist.setPost_list(null);
+                tourist.setComment_list(null);
+                tourist.setCart_list(null);
+                tourist.setTour_type_list(null);
+                tourist.setItinerary(null);
+                tourist.setItem_list(null);
+            }
+            b.getPayment().setBooking(null);
+        }
+
+        return bookingsToReturn;
+    }
+
     public List<Booking> getAllBookingsByVendor(Long vendorStaffId) throws NotFoundException {
         createItemBooking();
 

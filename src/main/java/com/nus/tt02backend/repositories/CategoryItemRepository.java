@@ -19,6 +19,9 @@ public interface CategoryItemRepository extends JpaRepository<CategoryItem, Long
     @Query("SELECT c FROM CategoryItem c WHERE c.category_item_id=?1")
     CategoryItem getCategoryItemsById(Long categoryItemId);
 
+    @Query("SELECT c FROM CategoryItem c WHERE c.name=?1")
+    CategoryItem getCategoryItemsByName(String name);
+
     @Query("SELECT c FROM CategoryItem c JOIN c.post_list p WHERE p.post_id = ?1")
     CategoryItem getCategoryItemContainingPost(Long postId);
 }

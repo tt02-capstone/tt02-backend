@@ -57,6 +57,12 @@ public class BookingController {
         return ResponseEntity.ok(paymentList);
     }
 
+    @GetMapping("/getAllItemBookingsByVendor/{vendorId}")
+    public ResponseEntity<List<Booking>> getAllItemBookingsByVendor(@PathVariable Long vendorId) throws NotFoundException, BadRequestException {
+        List<Booking> itemList = bookingService.getAllItemBookingsByVendor(vendorId);
+        return ResponseEntity.ok(itemList);
+    }
+
     @PostMapping("/createTourBooking/{tourId}")
     public ResponseEntity<Long> createTourBooking(@PathVariable Long tourId, @RequestBody Booking booking) throws NotFoundException {
         System.out.println("aaa");

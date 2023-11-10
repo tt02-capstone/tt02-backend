@@ -16,4 +16,5 @@ public class CheckoutRequest {
 
     private List<Long> booking_ids;
     private List<BigDecimal> priceList;
+    private String selectedDeliveryType;
 }
