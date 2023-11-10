@@ -968,8 +968,14 @@ public class CartService {
         } else if (user instanceof Tourist) {
             Tourist tourist = (Tourist) user;
             newBooking.setTourist_user(tourist);
-        } else {
-            throw new IllegalArgumentException("Invalid user type");
+        }
+
+        String stripeAccountId = (newBooking.getLocal_user() != null) ? newBooking.getLocal_user().getStripe_account_id() :
+                (newBooking.getTourist_user() != null) ? newBooking.getTourist_user().getStripe_account_id() :
+                        null;
+
+        if(stripeAccountId == null) {
+            throw new IllegalStateException("No Stripe account ID found for the booking user.");
         }
 
         // Save the new booking
@@ -1001,9 +1007,6 @@ public class CartService {
                 (newBooking.getTourist_user() != null) ? newBooking.getTourist_user().getStripe_account_id() :
                         null;
 
-        if(stripeAccountId == null) {
-            throw new IllegalStateException("No Stripe account ID found for the booking user.");
-        }
 
         paymentParams.put("customer", stripeAccountId);
         paymentParams.put("payment_method", payment_method_id);
