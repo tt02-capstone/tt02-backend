@@ -39,8 +39,6 @@ public class DataDashboardController {
 
     @PostMapping("/bill")
     public ResponseEntity<String> bill(HttpServletRequest request) throws BadRequestException {
-
-
         String status = dataDashboardService.bill(request);
         return ResponseEntity.ok(status);
     }

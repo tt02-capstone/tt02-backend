@@ -45,7 +45,7 @@ public class AccommodationService {
     @Autowired
     LocalRepository localRepository;
 
-    public VendorStaff retrieveVendor(Long vendorStaffId) throws IllegalArgumentException, NotFoundException {
+    public VendorStaff retrieveVendor(Long vendorStaffId) throws NotFoundException {
         try {
             Optional<VendorStaff> vendorOptional = vendorStaffRepository.findById(vendorStaffId);
             if (vendorOptional.isPresent()) {

@@ -594,7 +594,7 @@ public class SupportTicketService {
 
     // FOR ATTRACTION SUPPORT TICKET
 
-    public List<Attraction> retrieveAllAttractionsByVendor(Vendor vendor) throws NotFoundException {
+    public List<Attraction> retrieveAllAttractionsByVendor(Vendor vendor) {
 
         List<Attraction> listToReturn = new ArrayList<>();
 
@@ -605,7 +605,7 @@ public class SupportTicketService {
         return listToReturn;
     }
 
-    public List<VendorStaff> getVendorByAttraction(Long attractionId) throws BadRequestException, NotFoundException {
+    public List<VendorStaff> getVendorByAttraction(Long attractionId) throws BadRequestException {
         Optional<Attraction> attractionOptional = attractionRepository.findById(attractionId);
         if (attractionOptional.isEmpty()) {
             throw new BadRequestException("Attraction does not exist!");
@@ -628,7 +628,7 @@ public class SupportTicketService {
 
     // FOR ACCOMMODATION SUPPORT TICKET
 
-    public List<Accommodation> retrieveAllAccommodationsByVendor(Vendor vendor) throws NotFoundException {
+    public List<Accommodation> retrieveAllAccommodationsByVendor(Vendor vendor) {
 
         List<Accommodation> listToReturn = new ArrayList<>();
 
@@ -640,7 +640,7 @@ public class SupportTicketService {
 
     }
 
-    public List<VendorStaff> getVendorByAccommodation(Long accommodationId) throws BadRequestException, NotFoundException {
+    public List<VendorStaff> getVendorByAccommodation(Long accommodationId) throws BadRequestException {
 
         Optional<Accommodation> accommodationOptional = accommodationRepository.findById(accommodationId);
         if (accommodationOptional.isEmpty()) {
@@ -699,7 +699,7 @@ public class SupportTicketService {
 
     // FOR TELECOM SUPPORT TICKET
 
-    public List<Telecom> retrieveAllTelecomsByVendor(Vendor vendor) throws NotFoundException {
+    public List<Telecom> retrieveAllTelecomsByVendor(Vendor vendor) {
 
         List<Telecom> listToReturn = new ArrayList<>();
 
@@ -711,7 +711,7 @@ public class SupportTicketService {
 
     }
 
-    public List<VendorStaff> getVendorByTelecom(Long telecomId) throws BadRequestException, NotFoundException {
+    public List<VendorStaff> getVendorByTelecom(Long telecomId) throws BadRequestException {
 
         Optional<Telecom> telecomOptional = telecomRepository.findById(telecomId);
         if (telecomOptional.isEmpty()) {
@@ -1078,7 +1078,7 @@ public class SupportTicketService {
         return user.getProfile_pic();
     }
 
-    public void sendEmail(String email, String subject, String content) throws MessagingException {
+    public void  sendEmail(String email, String subject, String content) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
         mimeMessageHelper.setTo(email);
