@@ -44,6 +44,7 @@ public class NotificationService {
     public void sendManualNotification(NotificationRequest notificationRequest, Long userId) throws NotFoundException, BadRequestException {
 
         LocalDateTime startDateTime = notificationRequest.getDate();
+        System.out.println("ddate bef: " + startDateTime);
         LocalDateTime endDateTime = startDateTime.plusHours(1);
         List<DIYEvent> list = diyEventRepository.getDiyEventByDate(startDateTime, endDateTime);
 
@@ -60,23 +61,27 @@ public class NotificationService {
             }
         }
 
-        String uri = "https://app.nativenotify.com/api/notification";
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        if (!concat.equals("")) { // there is a booking event
+            String uri = "https://app.nativenotify.com/api/notification";
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
-        NotificationResponse notificationResponse = new NotificationResponse();
-        notificationResponse.setAppId(13960);
-        notificationResponse.setAppToken("BEbA270k2T53VV6Cu8pZIZ");
-        notificationResponse.setTitle("WithinSG Notification");
-        notificationResponse.setBody(concat + " is about to start. Are you excited?" );
-        notificationResponse.setDateSent(new Date());
+            NotificationResponse notificationResponse = new NotificationResponse();
+            notificationResponse.setAppId(13960);
+            notificationResponse.setAppToken("BEbA270k2T53VV6Cu8pZIZ");
+            notificationResponse.setTitle("WithinSG Notification");
+            notificationResponse.setBody(concat + " is about to start. Are you excited?" );
+            notificationResponse.setDateSent(new Date());
 
-        HttpEntity<NotificationResponse> entity = new HttpEntity<>(notificationResponse, headers);
-        restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+            HttpEntity<NotificationResponse> entity = new HttpEntity<>(notificationResponse, headers);
+            restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
 
-        for (DIYEvent d : list) {
-            this.createNotification(d, userId);
+            for (DIYEvent d : list) {
+                this.createNotification(d, userId);
+            }
+        } else {
+            throw new BadRequestException("No event booking within 1hr of selected time!");
         }
     }
 

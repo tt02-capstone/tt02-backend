@@ -800,6 +800,7 @@ public class CartService {
         int index = 0;
         CartBooking cartBookingToCreate = null;
         for (CartBooking booking : bookingsToCheckout) {
+            System.out.println("cartbooking: " + booking.getStart_datetime() + ", " + booking.getEnd_datetime());
 
             if ("ATTRACTION".equals(String.valueOf(booking.getType()))) {
                 // Loop through cart items for the current booking to check for tours
@@ -1163,6 +1164,10 @@ public class CartService {
 
     // create a new itinerary event for the booking
     private void createBookingDIYEvent(User user, Booking booking) throws BadRequestException {
+        if (booking.getItem() != null) { // dont want to create diy event for booking
+            return;
+        }
+
         DIYEvent event = createUnusedEvent(user, booking); // in the event user delete itinerary, and remake, we want to add the booking in as well
 
         Itinerary itinerary = itineraryService.getItineraryByUser(user.getUser_id());
@@ -1183,6 +1188,25 @@ public class CartService {
         diyEvent.setStart_datetime(booking.getStart_datetime());
         diyEvent.setEnd_datetime(booking.getEnd_datetime());
         if (booking.getAttraction() != null) {
+
+            // replace time for attraction with opening hours and suggested duration of attraction
+            Attraction attraction = booking.getAttraction();
+            String openingHours = attraction.getOpening_hours();
+            StringBuilder b = new StringBuilder();
+            for (int i = 0; i < openingHours.length() && i < 2; i++) {
+                char x = openingHours.charAt(i);
+                if (Character.isDigit(x)) b.append(x);
+            }
+            Integer openHoursInInt = new Integer(b.toString());
+
+            LocalDate startDate = diyEvent.getStart_datetime().toLocalDate();
+            LocalDate endDate = diyEvent.getEnd_datetime().toLocalDate();
+            LocalTime startTime = LocalTime.of(openHoursInInt,0,0);
+            LocalTime endTime = LocalTime.of(openHoursInInt + attraction.getSuggested_duration(),0,0);
+            diyEvent.setStart_datetime((LocalDateTime.of(startDate, startTime)));
+            diyEvent.setEnd_datetime((LocalDateTime.of(endDate, endTime)));
+
+            // set address of location
             diyEvent.setLocation(booking.getAttraction().getAddress());
         } else if (booking.getRoom() != null) {
             diyEvent.setLocation(accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id()));

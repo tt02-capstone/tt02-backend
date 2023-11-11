@@ -144,28 +144,37 @@ public class DIYEventService {
                 LocalTime checkOutTime = accommodation.getCheck_out_time().toLocalTime();
 
                 DIYEvent diyEvent = new DIYEvent();
-                for (LocalDate date = checkInDate; date.isBefore(checkOutDate.plusDays(1)); date = date.plusDays(1)) {
-                    DIYEvent newDiyEvent = new DIYEvent();
-                    newDiyEvent.setName(diyEventToCreate.getName());
-                    newDiyEvent.setLocation(diyEventToCreate.getLocation());
-                    newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
-                    newDiyEvent.setAccommodation(accommodation);
+                diyEvent.setName(diyEventToCreate.getName());
+                diyEvent.setLocation(diyEventToCreate.getLocation());
+                diyEvent.setRemarks(diyEventToCreate.getRemarks());
+                diyEvent.setAccommodation(accommodation);
+                diyEvent.setStart_datetime(LocalDateTime.of(checkInDate, checkInTime));
+                diyEvent.setEnd_datetime(LocalDateTime.of(checkOutDate, checkOutTime));
+                diyEventRepository.save(diyEvent);
 
-                    if (date.isEqual(checkInDate)) {
-                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, checkInTime));
-                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
-                    } else if (date.isEqual(checkOutDate)) {
-                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
-                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, checkOutTime));
-                    } else {
-                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
-                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
-                    }
+//                for (LocalDate date = checkInDate; date.isBefore(checkOutDate.plusDays(1)); date = date.plusDays(1)) {
+//                    DIYEvent newDiyEvent = new DIYEvent();
+//                    newDiyEvent.setName(diyEventToCreate.getName());
+//                    newDiyEvent.setLocation(diyEventToCreate.getLocation());
+//                    newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
+//                    newDiyEvent.setAccommodation(accommodation);
+//
+//                    if (date.isEqual(checkInDate)) {
+//                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, checkInTime));
+//                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+//                    } else if (date.isEqual(checkOutDate)) {
+//                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+//                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, checkOutTime));
+//                    } else {
+//                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+//                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+//                    }
+//
+//                    diyEvent = diyEventRepository.save(newDiyEvent);
+//                    itinerary.getDiy_event_list().add(diyEvent);
+//                }
 
-                    diyEvent = diyEventRepository.save(newDiyEvent);
-                    itinerary.getDiy_event_list().add(diyEvent);
-                }
-
+                itinerary.getDiy_event_list().add(diyEvent);
                 itineraryRepository.save(itinerary);
                 return diyEvent;
 
@@ -178,31 +187,39 @@ public class DIYEventService {
                 Telecom telecom = telecomOptional.get();
                 LocalDate startDate = diyEventToCreate.getStart_datetime().toLocalDate();
                 LocalDate endDate = startDate.plusDays(telecom.getNum_of_days_valid());
-                LocalTime startTime = diyEventToCreate.getStart_datetime().toLocalTime();
 
                 DIYEvent diyEvent = new DIYEvent();
-                for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
-                    DIYEvent newDiyEvent = new DIYEvent();
-                    newDiyEvent.setName(diyEventToCreate.getName());
-                    newDiyEvent.setLocation(diyEventToCreate.getLocation());
-                    newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
-                    newDiyEvent.setTelecom(telecom);
+                diyEvent.setName(diyEventToCreate.getName());
+                diyEvent.setLocation(diyEventToCreate.getLocation());
+                diyEvent.setRemarks(diyEventToCreate.getRemarks());
+                diyEvent.setTelecom(telecom);
+                diyEvent.setStart_datetime(LocalDateTime.of(startDate, LocalTime.of(0, 0)));
+                diyEvent.setEnd_datetime(LocalDateTime.of(endDate, LocalTime.of(23, 59)));
+                diyEventRepository.save(diyEvent);
 
-                    if (date.isEqual(startDate)) {
-                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, startTime));
-                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
-                    } else if (date.isEqual(endDate)) {
-                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
-                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, startTime));
-                    } else {
-                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
-                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
-                    }
+//                for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
+//                    DIYEvent newDiyEvent = new DIYEvent();
+//                    newDiyEvent.setName(diyEventToCreate.getName());
+//                    newDiyEvent.setLocation(diyEventToCreate.getLocation());
+//                    newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
+//                    newDiyEvent.setTelecom(telecom);
+//
+//                    if (date.isEqual(startDate)) {
+//                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+//                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+//                    } else if (date.isEqual(endDate)) {
+//                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+//                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+//                    } else {
+//                        newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+//                        newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+//                    }
+//
+//                    diyEvent = diyEventRepository.save(newDiyEvent);
+//                    itinerary.getDiy_event_list().add(diyEvent);
+//                }
 
-                    diyEvent = diyEventRepository.save(newDiyEvent);
-                    itinerary.getDiy_event_list().add(diyEvent);
-                }
-
+                itinerary.getDiy_event_list().add(diyEvent);
                 itineraryRepository.save(itinerary);
                 return diyEvent;
 
@@ -236,27 +253,39 @@ public class DIYEventService {
             LocalTime startTime = diyEventToCreate.getStart_datetime().toLocalTime();
             LocalDate endDate = diyEventToCreate.getEnd_datetime().toLocalDate();
             LocalTime endTime = diyEventToCreate.getEnd_datetime().toLocalTime();
-            for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
-                DIYEvent newDiyEvent = new DIYEvent();
-                newDiyEvent.setName(diyEventToCreate.getName());
-                newDiyEvent.setLocation(diyEventToCreate.getLocation());
-                newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
 
-                if (date.isEqual(startDate)) {
-                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, startTime));
-                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
-                } else if (date.isEqual(endDate)) {
-                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
-                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, endTime));
-                } else {
-                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
-                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
-                }
+            DIYEvent diyEvent = new DIYEvent();
+            diyEvent.setName(diyEventToCreate.getName());
+            diyEvent.setLocation(diyEventToCreate.getLocation());
+            diyEvent.setRemarks(diyEventToCreate.getRemarks());
+            diyEvent.setStart_datetime(LocalDateTime.of(startDate, startTime));
+            diyEvent.setEnd_datetime(LocalDateTime.of(endDate, endTime));
+            diyEventRepository.save(diyEvent);
 
-                DIYEvent event = diyEventRepository.save(newDiyEvent);
-                itinerary.getDiy_event_list().add(event);
+//            for (LocalDate date = startDate; date.isBefore(endDate.plusDays(1)); date = date.plusDays(1)) {
+//                DIYEvent newDiyEvent = new DIYEvent();
+//                newDiyEvent.setName(diyEventToCreate.getName());
+//                newDiyEvent.setLocation(diyEventToCreate.getLocation());
+//                newDiyEvent.setRemarks(diyEventToCreate.getRemarks());
+//
+//                if (date.isEqual(startDate)) {
+//                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, startTime));
+//                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+//                } else if (date.isEqual(endDate)) {
+//                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+//                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, endTime));
+//                } else {
+//                    newDiyEvent.setStart_datetime(LocalDateTime.of(date, LocalTime.of(0, 0)));
+//                    newDiyEvent.setEnd_datetime(LocalDateTime.of(date, LocalTime.of(23, 59)));
+//                }
+//
+//                DIYEvent event = diyEventRepository.save(newDiyEvent);
+//                itinerary.getDiy_event_list().add(event);
+//                itineraryRepository.save(itinerary);
+//            }
+
+                itinerary.getDiy_event_list().add(diyEvent);
                 itineraryRepository.save(itinerary);
-            }
 
             return itinerary.getDiy_event_list().get(itinerary.getDiy_event_list().size() - 1); // return last one
         } else {
