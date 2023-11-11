@@ -61,6 +61,7 @@ public class InitDataConfig implements CommandLineRunner {
     private final BadgeRepository badgeRepository;
     private final ItineraryRepository itineraryRepository;
     private final DIYEventRepository diyEventRepository;
+    private final ItemRepository itemRepository;
 
 
     @Autowired
@@ -277,6 +278,50 @@ public class InitDataConfig implements CommandLineRunner {
             generateItinerary(local);
         }
 
+        if (itemRepository.count() == 0) {
+            generateItems(vendor1);
+        }
+
+    }
+
+    @Transactional
+    public void generateItems(Vendor vendor1) {
+        Item t1 = new Item();
+        t1.setName("Elmo Mug");
+        t1.setImage("https://tt02.s3.ap-southeast-1.amazonaws.com/item/init/elmo_mug.png");
+        t1.setPrice(new BigDecimal(14));
+        t1.setQuantity(10);
+        t1.setDescription("Newly release elmo mug from Sesame Street!");
+        t1.setIs_published(true);
+        t1.setIs_limited_edition(false);
+        itemRepository.save(t1);
+
+        Item t2 = new Item();
+        t2.setName("Laughing Minion Toy");
+        t2.setImage("https://tt02.s3.ap-southeast-1.amazonaws.com/item/init/minion_plushie.png");
+        t2.setPrice(new BigDecimal(20));
+        t2.setQuantity(10);
+        t2.setDescription("Get your hands on limited edition minion soft toy now! While stock last!");
+        t2.setIs_published(true);
+        t2.setIs_limited_edition(true);
+        itemRepository.save(t2);
+
+        Item t3 = new Item();
+        t3.setName("Minion Slippers");
+        t3.setImage("https://tt02.s3.ap-southeast-1.amazonaws.com/item/init/minion_slipper.png");
+        t3.setPrice(new BigDecimal(20));
+        t3.setQuantity(5);
+        t3.setDescription("Bring our cute and fluffy minion slipper home!");
+        t3.setIs_published(true);
+        t3.setIs_limited_edition(false);
+        itemRepository.save(t3);
+
+        List<Item> list = new ArrayList<>();
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        vendor1.setItem_list(list);
+        vendorRepository.save(vendor1);
     }
 
 
