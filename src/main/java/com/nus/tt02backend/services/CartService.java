@@ -1172,7 +1172,7 @@ public class CartService {
 
         DIYEvent event = createUnusedEvent(user, booking); // in the event user delete itinerary, and remake, we want to add the booking in as well
 
-        Itinerary itinerary = itineraryService.getItineraryByUser(user.getUser_id());
+        Itinerary itinerary = itineraryService.getItineraryByUserForOtherFunc(user.getUser_id());
         if (itinerary != null && !notWithinItineraryDates(itinerary, event)) { // booking falls within itinerary
             if (itinerary.getDiy_event_list() == null) itinerary.setDiy_event_list(new ArrayList<>());
             itinerary.getDiy_event_list().add(event);
