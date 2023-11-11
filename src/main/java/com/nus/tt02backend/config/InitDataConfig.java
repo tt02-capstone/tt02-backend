@@ -301,7 +301,7 @@ public class InitDataConfig implements CommandLineRunner {
         t2.setImage("https://tt02.s3.ap-southeast-1.amazonaws.com/item/init/minion_plushie.png");
         t2.setPrice(new BigDecimal(20));
         t2.setQuantity(10);
-        t2.setDescription("Get your hands on limited edition minion soft toy now! While stock last!");
+        t2.setDescription("Get your hands on our limited minion soft toy!");
         t2.setIs_published(true);
         t2.setIs_limited_edition(true);
         itemRepository.save(t2);
