@@ -661,6 +661,8 @@ public class CartService {
         Telecom telecom = telecomRepository.findById(telecomId).orElseThrow(() -> new NotFoundException("Telecom not found!"));
         Vendor vendor = vendorRepository.findVendorByTelecomId(telecomId);
 
+        if (vendor == null) throw new NotFoundException("Vendor not found!");
+
         List<CartItem> list = cartBooking.getCart_item_list();
         for (CartItem c : list) {
             cartItemRepository.save(c);
