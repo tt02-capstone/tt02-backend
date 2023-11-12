@@ -81,6 +81,24 @@ public class ItineraryService {
         return itineraryToReturn;
     }
 
+    public Itinerary getItineraryByUserForOtherFunc(Long userId) throws BadRequestException {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new BadRequestException("User does not exist!");
+        }
+        User user = userOptional.get();
+
+        if (user instanceof Tourist) {
+            Tourist t = (Tourist) user;
+            return t.getItinerary();
+        } else if (user instanceof Local) {
+            Local l = (Local) user;
+            return l.getItinerary();
+        } else {
+            throw new BadRequestException("User is not a tourist or local!");
+        }
+    }
+
     public Itinerary createItinerary(Long userId, Itinerary itineraryToCreate) throws BadRequestException {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
