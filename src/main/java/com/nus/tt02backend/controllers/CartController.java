@@ -94,7 +94,7 @@ public class CartController {
                                                @PathVariable Float totalPrice,
                                                @RequestBody CheckoutRequest checkoutRequest) throws StripeException, BadRequestException, NotFoundException {
 
-        List<Long> createdBookingIds =  cartService.checkout(user_type,tourist_email, payment_method_id, totalPrice, checkoutRequest.getBooking_ids(), checkoutRequest.getPriceList(), checkoutRequest.getSelectedDeliveryType());
+        List<Long> createdBookingIds =  cartService.checkout(user_type,tourist_email, payment_method_id, totalPrice, checkoutRequest.getBooking_ids(), checkoutRequest.getPriceList(), checkoutRequest.getSelectedDeliveryType(), checkoutRequest.getDeliveryAddress());
         return ResponseEntity.ok(createdBookingIds);
     }
 }
