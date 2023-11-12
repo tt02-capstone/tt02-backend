@@ -741,6 +741,15 @@ public class CartService {
             cartItemRepository.save(c);
         }
 
+        CartItem ci = list.get(0);
+        Integer quantity = ci.getQuantity();
+        String itemName = ci.getActivity_selection();
+
+        Item selected_item = itemRepository.getItemByName(itemName);
+        Integer remaining = selected_item.getQuantity() - quantity;
+        selected_item.setQuantity(remaining); // refresh the quantity after adding to cart
+        itemRepository.save(selected_item);
+
         cartBooking.setItem(item);
         vendor.setVendor_staff_list(null);
         cartBooking.setVendor(vendor);
@@ -797,7 +806,7 @@ public class CartService {
     }
 
 
-    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id, Float totalPrice, List<Long> booking_ids, List<BigDecimal> priceList, String selectedDeliveryType)
+    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id, Float totalPrice, List<Long> booking_ids, List<BigDecimal> priceList, String selectedDeliveryType, String deliveryAddress)
             throws StripeException, BadRequestException, NotFoundException {
 
         System.out.println(priceList);
@@ -936,7 +945,7 @@ public class CartService {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
                 //System.out.println(bookingToCheckout.getActivity_name() + " | " + bookingToCheckout.getStart_datetime());
                 //System.out.println(totalAmountPayable);
-                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType);
+                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType, deliveryAddress); // add on to check for delivery type + address
                 //monitor(currentTourist, "----------------- Booking No." + currentBookings.size() + "-----------------");
                 createdBooking.setBooked_user(UserTypeEnum.LOCAL);
                 createdBookings.add(createdBooking);
@@ -948,7 +957,7 @@ public class CartService {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
-                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType);
+                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType, deliveryAddress); // add on to check for delivery type + address
                 createdBooking.setBooked_user(UserTypeEnum.TOURIST);
                 createdBookings.add(createdBooking);
                 createdBookingIds.add(createdBooking.getBooking_id());
@@ -1031,11 +1040,11 @@ public class CartService {
 
     }
 
-    private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id, String selectedDeliveryType)
+    private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id, String selectedDeliveryType, String deliveryAddress)
             throws StripeException, NotFoundException, BadRequestException {
 
-        List<BookingItem> bookingItems = createBookingItems(bookingToCheckout);
-        Booking newBooking = createBooking(user, bookingToCheckout, bookingItems, selectedDeliveryType);
+        List<BookingItem> bookingItems = createBookingItems(bookingToCheckout,deliveryAddress);
+        Booking newBooking = createBooking(user, bookingToCheckout, bookingItems, selectedDeliveryType); // add on to check for delivery type + address
         currentBookings.add(newBooking);
         //monitor(user,"+++++++++++++Post add user to booking +++++++++++++");
         Payment newPayment = createPayment(newBooking, totalAmountPayable, payment_method_id);
@@ -1053,7 +1062,7 @@ public class CartService {
         return newBooking;
     }
 
-    private List<BookingItem> createBookingItems(CartBooking bookingToCheckout) {
+    private List<BookingItem> createBookingItems(CartBooking bookingToCheckout, String deliveryAddress) {
         List<BookingItem> bookingItems = new ArrayList<>();
         for (CartItem cartItem : bookingToCheckout.getCart_item_list()) {
             if (!(Objects.equals(String.valueOf(bookingToCheckout.getType()), "ATTRACTION") && Objects.equals(String.valueOf(cartItem.getType()), "TOUR"))) {
@@ -1062,11 +1071,15 @@ public class CartService {
                 newBookingItem.setStart_datetime(cartItem.getStart_datetime());
                 newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
                 newBookingItem.setType(cartItem.getType());
-                newBookingItem.setActivity_selection(cartItem.getActivity_selection());
+
+                if ((Objects.equals(String.valueOf(bookingToCheckout.getType()), "ITEM"))) {
+                    newBookingItem.setActivity_selection(cartItem.getActivity_selection() + "_" + deliveryAddress);
+                } else {
+                    newBookingItem.setActivity_selection(cartItem.getActivity_selection());
+                }
                 bookingItemRepository.save(newBookingItem);
                 bookingItems.add(newBookingItem);
             }
-
         }
         return bookingItems;
     }
