@@ -1,6 +1,8 @@
 package com.nus.tt02backend.services;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 import com.nus.tt02backend.models.*;
@@ -80,118 +82,190 @@ public class DataDashboardService {
         throw new NotFoundException("User Type Not Found");
     }
 
-    public String bill(HttpServletRequest request) throws BadRequestException {
+    public String bill(Event payload) throws BadRequestException, StripeException, JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
         Vendor vendor = null;
-        try (BufferedReader reader = request.getReader()) {
-            // Read the request body to get the payload
-            StringBuilder payload = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                payload.append(line);
-            }
 
-            // Retrieve the signature from the headers
-            String sigHeader = request.getHeader("Stripe-Signature");
+        String eventType = payload.getType();
 
-            // Verify and construct the event
-            Event event = null;
-            try {
-                event = Webhook.constructEvent(
-                        payload.toString(),
-                        sigHeader,
-                        endpointSecret
-                );
-            } catch (SignatureVerificationException e) {
-                System.out.println("⚠️  Webhook error while validating signature.");
-                throw new BadRequestException("Invalid signature.");
+        System.out.println("Event Type: " + eventType);
 
-            }
+        if (eventType.equals("invoice.created")) {// Your code to handle the invoice.upcoming event
+            System.out.println("Received created invoice");
+            //System.out.println(payload);
+            EventDataObjectDeserializer dataObjectDeserializer =  payload.getDataObjectDeserializer();
+            System.out.println(payload.getData());
+            System.out.println(dataObjectDeserializer.getRawJson());
+            System.out.println(dataObjectDeserializer.getObject().isPresent());
+            if (dataObjectDeserializer.getObject().isPresent()) {
+                Invoice invoice = (Invoice) dataObjectDeserializer.getObject().get();
+                System.out.println(invoice.getId());
+                Map<String, Object> params = new HashMap<>();
+                vendor = vendorRepository.findByStripeId(invoice.getCustomer());
+                BigDecimal payment_amount = BigDecimal.valueOf(invoice.getAmountDue()).divide(BigDecimal.valueOf(100));
+                BigDecimal currentWalletBalance  = vendor.getWallet_balance();
+                if (currentWalletBalance.compareTo(payment_amount) >= 0) {
+                    vendor.setWallet_balance(currentWalletBalance.subtract(payment_amount));
 
-
-            // Handle the event
-            if (event.getType().equals("invoice.created")) {// Your code to handle the invoice.upcoming event
-                System.out.println("Received");
-
-                Invoice invoice = (Invoice) event.getData().getObject();
-                if ("open".equals(invoice.getStatus())) {
-                    // If the payment for the invoice is handled internally,
-                    // mark the invoice as paid out of band
-                    Map<String, Object> params = new HashMap<>();
-                    vendor = vendorRepository.findByStripeId(invoice.getCustomer());
-                    BigDecimal payment_amount = BigDecimal.valueOf(invoice.getAmountDue()).divide(BigDecimal.valueOf(100));
-                    BigDecimal currentWalletBalance  = vendor.getWallet_balance();
-                    if (currentWalletBalance.compareTo(payment_amount) >= 0) {
-                        vendor.setWallet_balance(currentWalletBalance.subtract(payment_amount));
-
-                    } else {
-                        BigDecimal remainder = payment_amount.subtract(currentWalletBalance);
-                        if (currentWalletBalance.compareTo(BigDecimal.ZERO) >0 ) {
-                            vendor.setWallet_balance(BigDecimal.ZERO);
-
-                        }
-
-                        Map<String, Object> automaticPaymentMethods = new HashMap<>();
-                        automaticPaymentMethods.put("enabled", true);
-
-                        Map<String, Object> paymentParams = new HashMap<>();
-                        paymentParams.put("amount", remainder.multiply(new BigDecimal("100")).intValueExact());
-                        paymentParams.put("currency", "usd");
-                        paymentParams.put("confirm", true);
-
-
-                        paymentParams.put("customer", invoice.getCustomer());
-                        paymentParams.put("return_url", "yourappname://stripe/callback");
-
-                        PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
-
-
+                } else {
+                    BigDecimal remainder = payment_amount.subtract(currentWalletBalance);
+                    if (currentWalletBalance.compareTo(BigDecimal.ZERO) > 0) {
+                        vendor.setWallet_balance(BigDecimal.ZERO);
                     }
-                    vendorRepository.save(vendor);
-                    params.put("paid_out_of_band", true);
-                    invoice = invoice.pay(params);
+
+                    Map<String, Object> automaticPaymentMethods = new HashMap<>();
+                    automaticPaymentMethods.put("enabled", true);
+
+                    Map<String, Object> paymentParams = new HashMap<>();
+                    paymentParams.put("amount", remainder.multiply(new BigDecimal("100")).intValueExact());
+                    paymentParams.put("currency", "usd");
+                    paymentParams.put("confirm", true);
+
+
+                    paymentParams.put("customer", invoice.getCustomer());
+                    paymentParams.put("return_url", "yourappname://stripe/callback");
+
+                    PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
+
+
+
                 }
 
-            } else {
+                vendorRepository.save(vendor);
+                params.put("paid_out_of_band", true);
+                System.out.println("Finalizing invoice...");
+                Invoice invoiceToPay = Invoice.retrieve(invoice.getId());
+                Invoice finalizedInvoice = invoiceToPay.finalizeInvoice();
 
-                throw new BadRequestException("Unhandled event type");
+                System.out.println(finalizedInvoice);
+                System.out.println("Paying invoice...");
+                finalizedInvoice.pay(params);
+                System.out.println("Success");
+
             }
+
+
+
+
+        } else {
+
+            throw new BadRequestException("Unhandled event type");
+        }
 
             // Return a 200 response to acknowledge receipt of the event
-            return "Received.";
-
-        } catch (IOException e) {
-            throw new BadRequestException("An error occurred while processing the request.");
-
-        } catch (StripeException e) {
-            String subject = "[WithinSG] Error Processing Subscription Payment";
-            String content = "<p>Dear " + vendor.getPoc_name() + ",</p>" +
-                    "<p>Thank you for registering for a vendor account with WithinSG. " +
-                    "We are glad that you have chosen us as your service provider!</p>" +
-
-                    "<p>We have received your application and it is in the midst of processing. " +
-                    "Please verify your email address by clicking on the button below.</p>" +
-                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
-                    "Verify Email</button></a>" +
-                    "<p>An email will be sent to you once your account has been activated.</p>" +
-                    "<p>Kind Regards,<br> WithinSG</p>";
-
-            try {
-                List<VendorStaff> staffs = vendor.getVendor_staff_list();
-                String email = staffs.get(0).getEmail();
-                MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-                MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
-                mimeMessageHelper.setTo(email);
-                mimeMessageHelper.setSubject(subject);
-                mimeMessageHelper.setText(content, true);
-                javaMailSender.send(mimeMessage);
-            } catch (MessagingException r) {
-                throw new BadRequestException("An error occurred while processing the payment.");
-            }
+        return "Received.";
 
 
-            return "Received.";
+//        try (BufferedReader reader = request.getReader()) {
+//            // Read the request body to get the payload
+//            StringBuilder payload = new StringBuilder();
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                payload.append(line);
+//            }
+//
+//            // Retrieve the signature from the headers
+//            String sigHeader = request.getHeader("Stripe-Signature");
+//
+//            // Verify and construct the event
+//            Event event = null;
+//            try {
+//                event = Webhook.constructEvent(
+//                        payload.toString(),
+//                        sigHeader,
+//                        endpointSecret
+//                );
+//            } catch (SignatureVerificationException e) {
+//                System.out.println("⚠️  Webhook error while validating signature.");
+//                throw new BadRequestException("Invalid signature.");
+//
+//            }
+//
+//
+//            // Handle the event
+//            if (event.getType().equals("invoice.created")) {// Your code to handle the invoice.upcoming event
+//                System.out.println("Received");
+//
+//                Invoice invoice = (Invoice) event.getData().getObject();
+//                if ("open".equals(invoice.getStatus())) {
+//                    // If the payment for the invoice is handled internally,
+//                    // mark the invoice as paid out of band
+//                    Map<String, Object> params = new HashMap<>();
+//                    vendor = vendorRepository.findByStripeId(invoice.getCustomer());
+//                    BigDecimal payment_amount = BigDecimal.valueOf(invoice.getAmountDue()).divide(BigDecimal.valueOf(100));
+//                    BigDecimal currentWalletBalance  = vendor.getWallet_balance();
+//                    if (currentWalletBalance.compareTo(payment_amount) >= 0) {
+//                        vendor.setWallet_balance(currentWalletBalance.subtract(payment_amount));
+//
+//                    } else {
+//                        BigDecimal remainder = payment_amount.subtract(currentWalletBalance);
+//                        if (currentWalletBalance.compareTo(BigDecimal.ZERO) >0 ) {
+//                            vendor.setWallet_balance(BigDecimal.ZERO);
+//
+//                        }
+//
+//                        Map<String, Object> automaticPaymentMethods = new HashMap<>();
+//                        automaticPaymentMethods.put("enabled", true);
+//
+//                        Map<String, Object> paymentParams = new HashMap<>();
+//                        paymentParams.put("amount", remainder.multiply(new BigDecimal("100")).intValueExact());
+//                        paymentParams.put("currency", "usd");
+//                        paymentParams.put("confirm", true);
+//
+//
+//                        paymentParams.put("customer", invoice.getCustomer());
+//                        paymentParams.put("return_url", "yourappname://stripe/callback");
+//
+//                        PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
+//
+//
+//                    }
+//                    vendorRepository.save(vendor);
+//                    params.put("paid_out_of_band", true);
+//                    invoice = invoice.pay(params);
+//                }
+//
+//            } else {
+//
+//                throw new BadRequestException("Unhandled event type");
+//            }
+//
+//            // Return a 200 response to acknowledge receipt of the event
+//            return "Received.";
+//
+//        } catch (IOException e) {
+//            throw new BadRequestException("An error occurred while processing the request.");
+//
+//        } catch (StripeException e) {
+//            String subject = "[WithinSG] Error Processing Subscription Payment";
+//            String content = "<p>Dear " + vendor.getPoc_name() + ",</p>" +
+//                    "<p>Thank you for registering for a vendor account with WithinSG. " +
+//                    "We are glad that you have chosen us as your service provider!</p>" +
+//
+//                    "<p>We have received your application and it is in the midst of processing. " +
+//                    "Please verify your email address by clicking on the button below.</p>" +
+//                    "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
+//                    "Verify Email</button></a>" +
+//                    "<p>An email will be sent to you once your account has been activated.</p>" +
+//                    "<p>Kind Regards,<br> WithinSG</p>";
+//
+//            try {
+//                List<VendorStaff> staffs = vendor.getVendor_staff_list();
+//                String email = staffs.get(0).getEmail();
+//                MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+//                MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+//                mimeMessageHelper.setTo(email);
+//                mimeMessageHelper.setSubject(subject);
+//                mimeMessageHelper.setText(content, true);
+//                javaMailSender.send(mimeMessage);
+//            } catch (MessagingException r) {
+//                throw new BadRequestException("An error occurred while processing the payment.");
+//            }
 
-        }
+
+            //return "Received.";
+
+        //}
     }
 
     public BigDecimal updateWallet(String user_id, String user_type, BigDecimal amount) throws NotFoundException {
@@ -228,33 +302,7 @@ public class DataDashboardService {
     }
 
 
-    public ResponseEntity<String> handleStripeWebhook(HttpServletRequest request) {
-        StringBuilder payload = new StringBuilder();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(request.getInputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                payload.append(line);
-            }
-        } catch (IOException e) {
-            return new ResponseEntity<>("Error reading request body", HttpStatus.BAD_REQUEST);
-        }
 
-        String sigHeader = request.getHeader("Stripe-Signature");
-        Event event = null;
-
-        try {
-            event = Webhook.constructEvent(payload.toString(), sigHeader, endpointSecret);
-        } catch (StripeException e) {
-            return new ResponseEntity<>("Invalid signature", HttpStatus.BAD_REQUEST);
-        }
-
-        // Handle the event
-        if ("invoice.created".equals(event.getType())) {
-            // Your logic here
-        }
-
-        return new ResponseEntity<>("Received", HttpStatus.OK);
-    }
 
     public LocalDate LongToDate(Long dateLong) {
         return Instant.ofEpochSecond(dateLong)
@@ -264,7 +312,7 @@ public class DataDashboardService {
 
     public Map<String, Object> getExtractedFields(Subscription subscription) {
         String subscription_id = subscription.getId();
-        Boolean auto_renewal = subscription.getCancelAtPeriodEnd();
+        Boolean auto_renewal = !(subscription.getCancelAtPeriodEnd());
         String status = subscription.getStatus();
         Map<String, Object> extractedFields = new HashMap<>();
         Long currentPeriodEndLong = subscription.getCurrentPeriodEnd();
@@ -330,7 +378,7 @@ public class DataDashboardService {
 
         Customer customer =
                 Customer.retrieve(stripe_account_id);
-
+        long newCancelAt = calendar.getTimeInMillis();
         Map<String, String> subscription_price = new HashMap<>();
         if (Objects.equals(subscription_type, "Monthly")) {
 
@@ -340,7 +388,7 @@ public class DataDashboardService {
             );
 
             calendar.add(Calendar.MONTH, 1);
-            long newCancelAt = calendar.getTimeInMillis() / 1000L;
+            newCancelAt = calendar.getTimeInMillis() / 1000L;
             subscription_params.put("days_until_due", 30);
 
         } else if (Objects.equals(subscription_type, "Yearly")) {
@@ -351,7 +399,7 @@ public class DataDashboardService {
             );
 
             calendar.add(Calendar.YEAR, 1);
-            long newCancelAt = calendar.getTimeInMillis() / 1000L;
+            newCancelAt = calendar.getTimeInMillis() / 1000L;
             subscription_params.put("days_until_due", 365);
 
 
@@ -368,6 +416,8 @@ public class DataDashboardService {
 
         if (!auto_renew) {
             subscription_params.put("cancel_at_period_end", true);
+        } else {
+            subscription_params.put("cancel_at", newCancelAt);
         }
 
         subscription_params.put("collection_method", "send_invoice");
@@ -378,7 +428,7 @@ public class DataDashboardService {
         CustomerBalanceTransaction balanceTransaction =
                 customer.balanceTransactions().create(transaction_params);
 
-        updateWallet(user_id, user_type, subscription_payment);
+        //updateWallet(user_id, user_type, subscription_payment);
 
         return subscription.getId();
     }
@@ -446,15 +496,17 @@ public class DataDashboardService {
                 long newBillingCycleAnchor = subscription.getCurrentPeriodEnd() + TimeUnit.DAYS.toSeconds(30);
                 params.put("billing_cycle_anchor", newBillingCycleAnchor);
                 params.put("days_until_due", 30);
+                params.put("cancel_at", newCancelAt);
             } else if (Objects.equals(price.getId(), "price_1O1PfLJuLboRjh4qj2lYrFHi")) {
                 calendar.add(Calendar.YEAR, 1);
                 long newCancelAt = calendar.getTimeInMillis() / 1000L;
                 long newBillingCycleAnchor = subscription.getCurrentPeriodEnd() + TimeUnit.DAYS.toSeconds(365);
                 params.put("billing_cycle_anchor", newBillingCycleAnchor);
                 params.put("days_until_due", 365);
+                params.put("cancel_at", newCancelAt);
             }
 
-            params.put("cancel_at_period_end", true);
+           // params.put("cancel_at_period_end", true);
 
 
 
@@ -528,9 +580,17 @@ public class DataDashboardService {
         SubscriptionCollection subscriptions =
                 Subscription.list(params);
 
-        Subscription current_subscription = subscriptions.getData().get(0);
+        String status = "";
 
-        return current_subscription.getStatus();
+        if (subscriptions.getData().size() > 0) {
+            Subscription current_subscription = subscriptions.getData().get(0);
+
+            return current_subscription.getStatus();
+        } else {
+            return "Never subscribed";
+        }
+
+
     }
 
     public Map<String,Object> getSubscription(String user_id, String user_type) throws NotFoundException, StripeException {
