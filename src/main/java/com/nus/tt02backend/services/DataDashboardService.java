@@ -353,8 +353,8 @@ public class DataDashboardService {
         }
 
         extractedFields.put("subscription_id",  subscription_id);
+        if (!auto_renewal && subscription.getCancelAtPeriodEnd()) {
 
-        if (subscription.getCancelAtPeriodEnd()) {
             extractedFields.put("current_period_start", "-");
         } else {
             extractedFields.put("current_period_start", currentPeriodEnd);
@@ -948,8 +948,21 @@ public class DataDashboardService {
                 for (Booking booking : bookings) {
 
                     String countryCode = null;
-                    String roomType = String.valueOf(booking.getRoom().getRoom_type());
-                    categoryCounts.put(roomType, categoryCounts.getOrDefault(roomType, 0) + 1);
+
+                    String category = "";
+
+                    if (Objects.equals(type, "ACCOMMODATION")) {
+                        category = String.valueOf(booking.getRoom().getRoom_type());
+                    } else if (Objects.equals(type, "ATTRACTION")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TELECOM")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TOUR")) {
+                        category = booking.getActivity_name();
+                    }
+
+                    //String roomType = String.valueOf(booking.getRoom().getRoom_type());
+                    categoryCounts.put(category, categoryCounts.getOrDefault(category, 0) + 1);
 
                     if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
                         countryCode = booking.getTourist_user().getCountry_code();
@@ -1016,8 +1029,22 @@ public class DataDashboardService {
                     BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
 
                     String countryCode = null;
-                    String roomType = String.valueOf(booking.getRoom().getRoom_type());
-                    categoryRevenues.put(roomType, categoryRevenues.getOrDefault(roomType, BigDecimal.valueOf(0)).add(revenue));
+
+                    String category = "";
+
+                    if (Objects.equals(type, "ACCOMMODATION")) {
+                        category = String.valueOf(booking.getRoom().getRoom_type());
+                    } else if (Objects.equals(type, "ATTRACTION")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TELECOM")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TOUR")) {
+                        category = booking.getActivity_name();
+                    }
+
+
+                    //String roomType = String.valueOf(booking.getRoom().getRoom_type());
+                    categoryRevenues.put(category, categoryRevenues.getOrDefault(category, BigDecimal.valueOf(0)).add(revenue));
 
                     if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
                         countryCode = booking.getTourist_user().getCountry_code();
@@ -1250,8 +1277,50 @@ public class DataDashboardService {
 
                 String category = String.valueOf(booking.getType());
 
+                String subcategory = "";
+
+                String vendorName = "";
+
+                if (booking.getAttraction() != null) {
+
+                    subcategory = String.valueOf(booking.getAttraction().getAttraction_category());
+
+                    vendorName = vendorRepository.findVendorByAttractionName(booking.getAttraction().getName()).getBusiness_name();
+
+                } else if (booking.getRoom() != null) {
+
+                    //String accommodation = accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id());
+
+                    subcategory = String.valueOf(booking.getRoom().getRoom_type()); // To change to accoms
+
+                    Vendor vendor = vendorRepository.findVendorByRoomId(booking.getRoom().getRoom_id());
+
+
+                    vendorName = vendor.getBusiness_name();
+
+                } else if (booking.getTour() != null) {
+
+                    subcategory = "Tour"; // Get tour's attraction
+
+                    vendorName = localRepository.findLocalByTour(booking.getTour()).getName();
+
+
+                } else if (booking.getTelecom() != null) {
+
+                    subcategory = booking.getTelecom().getName();
+
+                    vendorName = vendorRepository.findVendorByTelecomName(booking.getTelecom().getName()).getBusiness_name();
+
+                } else if (booking.getItem() != null) {
+
+                    subcategory = "Item";
+
+                    vendorName = vendorRepository.findVendorByItemId(booking.getItem().getItem_id()).getBusiness_name();
+
+                }
+
                 // Create [Date, Country, Revenue] triple and add to the list
-                List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue, category);
+                List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue, category, subcategory, vendorName);
                 dateCountryRevenueList.add(dateCountryRevenueTriple);
 
                 // To add vendors
@@ -1268,6 +1337,8 @@ public class DataDashboardService {
 
             Map<String, Object> result = new HashMap<>();
             Map<String, Integer> categoryCounts = new HashMap<>();
+            Map<String, Integer> subcategoryCounts = new HashMap<>();
+            Map<String, Integer> vendorCounts = new HashMap<>();
             Map<String, Integer> countryCounts = new HashMap<>();
             Map<String, Integer> statusCounts = new HashMap<>();
 
@@ -1289,6 +1360,52 @@ public class DataDashboardService {
 
                 countryCounts.put(country, countryCounts.getOrDefault(country, 0) + 1);
 
+                String subcategory = "";
+
+                String vendorName = "";
+
+                if (booking.getAttraction() != null) {
+
+                    subcategory = String.valueOf(booking.getAttraction().getAttraction_category());
+
+                    vendorName = vendorRepository.findVendorByAttractionName(booking.getAttraction().getName()).getBusiness_name();
+
+                } else if (booking.getRoom() != null) {
+
+                    //String accommodation = accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id());
+
+                    subcategory = String.valueOf(booking.getRoom().getRoom_type()); // To change to accoms
+
+                    Vendor vendor = vendorRepository.findVendorByRoomId(booking.getRoom().getRoom_id());
+
+
+                    vendorName = vendor.getBusiness_name();
+
+                } else if (booking.getTour() != null) {
+
+                    subcategory = "Tour"; // Get tour's attraction
+
+                    vendorName = localRepository.findLocalByTour(booking.getTour()).getName();
+
+
+                } else if (booking.getTelecom() != null) {
+
+                    subcategory = booking.getTelecom().getName();
+
+                    vendorName = vendorRepository.findVendorByTelecomName(booking.getTelecom().getName()).getBusiness_name();
+
+                } else if (booking.getItem() != null) {
+
+                    subcategory = "Item";
+
+                    vendorName = vendorRepository.findVendorByItemId(booking.getItem().getItem_id()).getBusiness_name();
+
+                }
+
+                subcategoryCounts.put(subcategory, subcategoryCounts.getOrDefault(subcategory, 0) + 1);
+
+                vendorCounts.put(vendorName,  vendorCounts.getOrDefault(vendorName, 0) + 1);
+
                 String bookingStatus = String.valueOf(booking.getStatus());
 
                 statusCounts.put(bookingStatus, statusCounts.getOrDefault(bookingStatus, 0) + 1);
@@ -1299,6 +1416,8 @@ public class DataDashboardService {
             result.put("Category", categoryCounts);
             result.put("Country", countryCounts);
             result.put("Status", statusCounts);
+            result.put("Vendor", vendorCounts);
+            result.put("Subcategory", subcategoryCounts);
 
             System.out.println(result);
 
@@ -1317,6 +1436,8 @@ public class DataDashboardService {
             Map<String, BigDecimal> categoryRevenues = new HashMap<>();
             Map<String, BigDecimal> countryRevenues = new HashMap<>();
             Map<String, BigDecimal> statusRevenues = new HashMap<>();
+            Map<String, BigDecimal> subcategoryRevenues = new HashMap<>();
+            Map<String, BigDecimal> vendorRevenues = new HashMap<>();
 
             for (Booking booking : bookings) {
 
@@ -1338,6 +1459,52 @@ public class DataDashboardService {
 
                 countryRevenues.put(country, countryRevenues.getOrDefault(country, BigDecimal.valueOf(0)).add(revenue));
 
+                String subcategory = "";
+
+                String vendorName = "";
+
+                if (booking.getAttraction() != null) {
+
+                    subcategory = String.valueOf(booking.getAttraction().getAttraction_category());
+
+                    vendorName = vendorRepository.findVendorByAttractionName(booking.getAttraction().getName()).getBusiness_name();
+
+                } else if (booking.getRoom() != null) {
+
+                    //String accommodation = accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id());
+
+                    subcategory = String.valueOf(booking.getRoom().getRoom_type()); // To change to accoms
+
+                    Vendor vendor = vendorRepository.findVendorByRoomId(booking.getRoom().getRoom_id());
+
+
+                    vendorName = vendor.getBusiness_name();
+
+                } else if (booking.getTour() != null) {
+
+                    subcategory = "Tour"; // Get tour's attraction
+
+                    vendorName = localRepository.findLocalByTour(booking.getTour()).getName();
+
+
+                } else if (booking.getTelecom() != null) {
+
+                    subcategory = booking.getTelecom().getName();
+
+                    vendorName = vendorRepository.findVendorByTelecomName(booking.getTelecom().getName()).getBusiness_name();
+
+                } else if (booking.getItem() != null) {
+
+                    subcategory = "Item";
+
+                    vendorName = vendorRepository.findVendorByItemId(booking.getItem().getItem_id()).getBusiness_name();
+
+                }
+
+                subcategoryRevenues.put(subcategory , subcategoryRevenues.getOrDefault(subcategory , BigDecimal.valueOf(0)).add(revenue));
+
+                vendorRevenues.put(vendorName, vendorRevenues.getOrDefault(vendorName, BigDecimal.valueOf(0)).add(revenue));
+
                 String bookingStatus = String.valueOf(booking.getStatus());
 
                 statusRevenues.put(bookingStatus, statusRevenues.getOrDefault(bookingStatus, BigDecimal.valueOf(0)).add(revenue));
@@ -1348,6 +1515,8 @@ public class DataDashboardService {
             result.put("Category", categoryRevenues);
             result.put("Country", countryRevenues);
             result.put("Status", statusRevenues);
+            result.put("Subcategory", subcategoryRevenues);
+            result.put("Vendor", vendorRevenues);
 
             System.out.println(result);
 
