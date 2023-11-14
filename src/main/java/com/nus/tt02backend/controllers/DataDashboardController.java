@@ -110,6 +110,13 @@ public class DataDashboardController {
         return ResponseEntity.ok(subscriptionStatus);
     }
 
+    @DeleteMapping("/removeSubscription/{subscription_id}")
+    public ResponseEntity<String> removeSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException {
+        String subscriptionStatus = dataDashboardService.removeSubscription(subscription_id);
+
+        return ResponseEntity.ok(subscriptionStatus);
+    }
+
     @PostMapping("/getData/{data_usecase}/{type}/{vendor_id}")
     public ResponseEntity<List<List<Object>>> getData(@PathVariable String data_usecase,
                                                       @PathVariable String type, @PathVariable String vendor_id,

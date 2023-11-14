@@ -579,6 +579,19 @@ public class DataDashboardService {
 
     }
 
+    public String removeSubscription(String subscription_id) throws StripeException {
+
+        Subscription subscription =
+                Subscription.retrieve(
+                        subscription_id
+                );
+
+        Subscription deletedSubscription =
+                subscription.cancel();
+
+        return deletedSubscription.getId();
+    }
+
     public Map<String,Object> cancelSubscription(String subscription_id) throws StripeException {
 
         Subscription subscription = Subscription.retrieve(subscription_id);
@@ -718,6 +731,9 @@ public class DataDashboardService {
     UserRepository userRepository;
     @Autowired
     AttractionRepository attractionRepository;
+
+    @Autowired
+    AccommodationRepository accommodationRepository;
 
     @Autowired
     TouristRepository touristRepository;
@@ -1152,12 +1168,59 @@ public class DataDashboardService {
 
                 String category = String.valueOf(booking.getType());
 
-                String status = String.valueOf(booking.getStatus());
+                //String status = String.valueOf(booking.getStatus());
 
-                //String vendor = booking.g
+                // Sub-category
+
+                String subcategory = "";
+
+                String vendorName = "";
+
+                if (booking.getAttraction() != null) {
+
+                    subcategory = String.valueOf(booking.getAttraction().getAttraction_category());
+
+                    vendorName = vendorRepository.findVendorByAttractionName(booking.getAttraction().getName()).getBusiness_name();
+
+                } else if (booking.getRoom() != null) {
+
+                    //String accommodation = accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id());
+
+                    subcategory = String.valueOf(booking.getRoom().getRoom_type()); // To change to accoms
+
+                    Vendor vendor = vendorRepository.findVendorByRoomId(booking.getRoom().getRoom_id());
+
+
+                    vendorName = vendor.getBusiness_name();
+
+                } else if (booking.getTour() != null) {
+
+                    subcategory = "Tour"; // Get tour's attraction
+
+                    vendorName = localRepository.findLocalByTour(booking.getTour()).getName();
+
+
+                } else if (booking.getTelecom() != null) {
+
+                    subcategory = booking.getTelecom().getName();
+
+                    vendorName = vendorRepository.findVendorByTelecomName(booking.getTelecom().getName()).getBusiness_name();
+
+                } else if (booking.getItem() != null) {
+
+                    subcategory = "Item";
+
+                    vendorName = vendorRepository.findVendorByItemId(booking.getItem().getItem_id()).getBusiness_name();
+
+                }
+
+
+
+                // Vendor
+
 
                 // Create [Date, Country] pair and add to the list
-                List<Object> dateCountryPair = Arrays.asList(bookingDate, country, category, status);
+                List<Object> dateCountryPair = Arrays.asList(bookingDate, country, category, subcategory, vendorName);
                 dateCountryList.add(dateCountryPair);
             }
 
