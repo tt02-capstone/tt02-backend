@@ -464,8 +464,6 @@ public class BookingService {
     }
 
     public List<Booking> getAllBookingsByVendor(Long vendorStaffId) throws NotFoundException {
-        createItemBooking();
-
         VendorStaff vendorStaff = retrieveVendor(vendorStaffId);
         Vendor vendor = vendorStaff.getVendor();
 

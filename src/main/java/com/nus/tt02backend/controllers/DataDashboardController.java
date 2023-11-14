@@ -1,5 +1,6 @@
 package com.nus.tt02backend.controllers;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.nus.tt02backend.exceptions.BadRequestException;
 import com.nus.tt02backend.exceptions.NotFoundException;
 
@@ -7,6 +8,7 @@ import com.nus.tt02backend.services.DataDashboardService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.Invoice;
 import com.stripe.net.Webhook;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +22,11 @@ import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
-
+import java.util.stream.Collectors;
+import com.stripe.net.Webhook;
 
 @RestController
 @CrossOrigin
@@ -33,13 +36,25 @@ public class DataDashboardController {
     @Autowired
     DataDashboardService dataDashboardService;
 
-
+    private final String endpointSecret = "whsec_19210bb5627b1217d600750b798aa67de0d91bdbd5d0ae50efcff3801e3026b6";
 
 
 
     @PostMapping("/bill")
-    public ResponseEntity<String> bill(HttpServletRequest request) throws BadRequestException {
-        String status = dataDashboardService.bill(request);
+    public ResponseEntity<String> bill(@RequestBody String payload,
+                                       @RequestHeader("Stripe-Signature") String sigHeader) throws BadRequestException, IOException, StripeException {
+
+
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        //objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        // Assuming the JSON structure is a simple key-value pair at the top level
+        Event event = Webhook.constructEvent(
+                payload, sigHeader, endpointSecret
+        );
+        String status = dataDashboardService.bill(event);
+        //System.out.println(objectMapper.readValue(request, Invoice.class));
+
         return ResponseEntity.ok(status);
     }
 
@@ -89,8 +104,15 @@ public class DataDashboardController {
     }
 
     @DeleteMapping("/cancelSubscription/{subscription_id}")
-    public ResponseEntity<String> cancelSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException {
-        String subscriptionStatus = dataDashboardService.cancelSubscription(subscription_id);
+    public ResponseEntity<Map<String,Object>> cancelSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException {
+        Map<String,Object> subscriptionStatus = dataDashboardService.cancelSubscription(subscription_id);
+
+        return ResponseEntity.ok(subscriptionStatus);
+    }
+
+    @DeleteMapping("/removeSubscription/{subscription_id}")
+    public ResponseEntity<String> removeSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException {
+        String subscriptionStatus = dataDashboardService.removeSubscription(subscription_id);
 
         return ResponseEntity.ok(subscriptionStatus);
     }

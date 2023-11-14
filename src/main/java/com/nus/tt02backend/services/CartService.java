@@ -22,6 +22,7 @@ import java.util.*;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
@@ -70,6 +71,8 @@ public class CartService {
     ItineraryRepository itineraryRepository;
     @Autowired
     ItemRepository itemRepository;
+
+    private List<Booking> currentBookings = new ArrayList<>();
 
     public Long addCartItems(String user_type, String tourist_email, String activity_name, List<CartItem> cartItems) throws NotFoundException, BadRequestException {
 
@@ -738,6 +741,15 @@ public class CartService {
             cartItemRepository.save(c);
         }
 
+        CartItem ci = list.get(0);
+        Integer quantity = ci.getQuantity();
+        String itemName = ci.getActivity_selection();
+
+        Item selected_item = itemRepository.getItemByName(itemName);
+        Integer remaining = selected_item.getQuantity() - quantity;
+        selected_item.setQuantity(remaining); // refresh the quantity after adding to cart
+        itemRepository.save(selected_item);
+
         cartBooking.setItem(item);
         vendor.setVendor_staff_list(null);
         cartBooking.setVendor(vendor);
@@ -794,11 +806,23 @@ public class CartService {
     }
 
 
-    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id, Float totalPrice, List<Long> booking_ids, List<BigDecimal> priceList, String selectedDeliveryType)
+    public List<Long> checkout(String user_type, String tourist_email, String payment_method_id, Float totalPrice, List<Long> booking_ids, List<BigDecimal> priceList, String selectedDeliveryType, String deliveryAddress)
             throws StripeException, BadRequestException, NotFoundException {
+
+        System.out.println(priceList);
 
         // Should fetch via User if possible
         List<CartBooking> bookingsToCheckout = cartBookingRepository.findCartBookingsByIds(booking_ids);
+
+        Map<Long, Integer> idToIndexMap = new HashMap<>();
+        for (int i = 0; i < booking_ids.size(); i++) {
+            idToIndexMap.put(booking_ids.get(i), i);
+        }
+
+// Sort bookingsToCheckout based on the order of their IDs in booking_ids
+        bookingsToCheckout = bookingsToCheckout.stream()
+                .sorted(Comparator.comparingInt(booking -> idToIndexMap.getOrDefault(booking.getCart_booking_id(), -1)))
+                .collect(Collectors.toList());
         int index = 0;
         CartBooking cartBookingToCreate = null;
         for (CartBooking booking : bookingsToCheckout) {
@@ -906,6 +930,9 @@ public class CartService {
 
         Map<Long, BigDecimal> map = new HashMap<>();
         for (int i = 0; i < bookingsToCheckout.size(); i++) {
+            //System.out.println("zzzzzzz Initial map zzzzzzzzzz");
+            //System.out.println(bookingsToCheckout.get(i).getActivity_name() + " | " + bookingsToCheckout.get(i).getStart_datetime());
+            //System.out.println(priceList.get(i));
             map.put(bookingsToCheckout.get(i).getCart_booking_id(), priceList.get(i));
         }
 
@@ -914,23 +941,29 @@ public class CartService {
         if (user_type.equals("LOCAL")) {
             Local currentTourist = localRepository.retrieveLocalByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
+                //System.out.println("llllllllllllll Get map lllllllllll");
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
-                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType);
+                //System.out.println(bookingToCheckout.getActivity_name() + " | " + bookingToCheckout.getStart_datetime());
+                //System.out.println(totalAmountPayable);
+                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType, deliveryAddress); // add on to check for delivery type + address
+                //monitor(currentTourist, "----------------- Booking No." + currentBookings.size() + "-----------------");
                 createdBooking.setBooked_user(UserTypeEnum.LOCAL);
                 createdBookings.add(createdBooking);
                 createdBookingIds.add(createdBooking.getBooking_id());
             }
             updateLocalUser(currentTourist, bookingsToCheckout, createdBookings);
+            //monitor(currentTourist, "+++++++++++After Set Local+++++++++++++++");
         } else if (user_type.equals("TOURIST")) {
             Tourist currentTourist = touristRepository.retrieveTouristByEmail(tourist_email);
             for (CartBooking bookingToCheckout : bookingsToCheckout) {
                 BigDecimal totalAmountPayable = map.get(bookingToCheckout.getCart_booking_id()).setScale(2, RoundingMode.HALF_UP);
-                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType);
+                Booking createdBooking = processBookingAndPayment(currentTourist, bookingToCheckout, totalAmountPayable, payment_method_id, selectedDeliveryType, deliveryAddress); // add on to check for delivery type + address
                 createdBooking.setBooked_user(UserTypeEnum.TOURIST);
                 createdBookings.add(createdBooking);
                 createdBookingIds.add(createdBooking.getBooking_id());
             }
             updateTouristUser(currentTourist, bookingsToCheckout, createdBookings);
+
         } else {
             throw new BadRequestException("Invalid user type");
         }
@@ -938,24 +971,98 @@ public class CartService {
         return createdBookingIds;
     }
 
-    private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id, String selectedDeliveryType)
+    private <T> void monitor(T user, String header) {
+
+        List<Booking> bookings = new ArrayList<>();
+
+        if (user instanceof Local) {
+            Local local = (Local) user;
+            bookings = local.getBooking_list();
+        } else if (user instanceof Tourist) {
+            Tourist tourist = (Tourist) user;
+            bookings = tourist.getBooking_list();
+        }
+
+        System.out.println(header);
+        if (Objects.equals(header, "+++++++++++After Set Local+++++++++++++++")) {
+
+            for (Booking booking: bookings) {
+                if (currentBookings.contains(booking)) {
+                    System.out.println(booking.getActivity_name() + "|" + booking.getStart_datetime());
+                    System.out.println(booking.getBooked_user());
+
+                    if (user instanceof Local) {
+                        System.out.println(booking.getLocal_user().getUser_type());
+                    } else if (user instanceof Tourist) {
+                        System.out.println(booking.getTourist_user().getUser_type());
+                    }
+                } else {
+                    System.out.println("11111111111111 PAST BOOKING!!!!! 11111111111111111");
+                    System.out.println(booking.getActivity_name() + "|" + booking.getStart_datetime());
+                    System.out.println(booking.getBooked_user());
+
+                    if (user instanceof Local) {
+                        System.out.println(booking.getLocal_user().getUser_type());
+                    } else if (user instanceof Tourist) {
+                        System.out.println(booking.getTourist_user().getUser_type());
+                    }
+                }
+            }
+        } else {
+            for (Booking booking: currentBookings) {
+
+                System.out.println(booking.getActivity_name() + "|" + booking.getStart_datetime());
+                System.out.println(booking.getBooked_user());
+
+                if (user instanceof Local) {
+                    System.out.println(booking.getLocal_user().getUser_type());
+                } else if (user instanceof Tourist) {
+                    System.out.println(booking.getTourist_user().getUser_type());
+                }
+
+            }
+
+            for (Booking booking: bookings) {
+                System.out.println("11111111111111 PAST BOOKING!!!!! 11111111111111111");
+                System.out.println(booking.getActivity_name() + "|" + booking.getStart_datetime());
+                System.out.println(booking.getBooked_user());
+
+                if (user instanceof Local) {
+                    System.out.println(booking.getLocal_user().getUser_type());
+                } else if (user instanceof Tourist) {
+                    System.out.println(booking.getTourist_user().getUser_type());
+                }
+            }
+        }
+
+        // Check for bookings from user that match current Bookings
+
+
+    }
+
+    private <T> Booking processBookingAndPayment(T user, CartBooking bookingToCheckout, BigDecimal totalAmountPayable, String payment_method_id, String selectedDeliveryType, String deliveryAddress)
             throws StripeException, NotFoundException, BadRequestException {
 
-        List<BookingItem> bookingItems = createBookingItems(bookingToCheckout);
-        Booking newBooking = createBooking(user, bookingToCheckout, bookingItems, selectedDeliveryType);
+        List<BookingItem> bookingItems = createBookingItems(bookingToCheckout,deliveryAddress);
+        Booking newBooking = createBooking(user, bookingToCheckout, bookingItems, selectedDeliveryType); // add on to check for delivery type + address
+        currentBookings.add(newBooking);
+        //monitor(user,"+++++++++++++Post add user to booking +++++++++++++");
         Payment newPayment = createPayment(newBooking, totalAmountPayable, payment_method_id);
         newBooking.setPayment(newPayment);
         newPayment.setBooking(newBooking);
-        Booking savedBooking = bookingRepository.save(newBooking);
+        newBooking = bookingRepository.save(newBooking);
+        //monitor(user, "xxxxxxxxxxxxxxxxxxxx Booking after save xxxxxxxxxxxxxxxxxx");
         paymentRepository.save(newPayment);
 
         // create a diy booking event
-        this.createBookingDIYEvent((User) user, savedBooking);
+        this.createBookingDIYEvent((User) user, newBooking);
+
+        //monitor(user, "xxxxxxxxxxxxxxxxxxxx Booking after DIY xxxxxxxxxxxxxxxxxx");
 
         return newBooking;
     }
 
-    private List<BookingItem> createBookingItems(CartBooking bookingToCheckout) {
+    private List<BookingItem> createBookingItems(CartBooking bookingToCheckout, String deliveryAddress) {
         List<BookingItem> bookingItems = new ArrayList<>();
         for (CartItem cartItem : bookingToCheckout.getCart_item_list()) {
             if (!(Objects.equals(String.valueOf(bookingToCheckout.getType()), "ATTRACTION") && Objects.equals(String.valueOf(cartItem.getType()), "TOUR"))) {
@@ -964,11 +1071,15 @@ public class CartService {
                 newBookingItem.setStart_datetime(cartItem.getStart_datetime());
                 newBookingItem.setEnd_datetime(cartItem.getEnd_datetime());
                 newBookingItem.setType(cartItem.getType());
-                newBookingItem.setActivity_selection(cartItem.getActivity_selection());
+
+                if ((Objects.equals(String.valueOf(bookingToCheckout.getType()), "ITEM"))) {
+                    newBookingItem.setActivity_selection(cartItem.getActivity_selection() + "_" + deliveryAddress);
+                } else {
+                    newBookingItem.setActivity_selection(cartItem.getActivity_selection());
+                }
                 bookingItemRepository.save(newBookingItem);
                 bookingItems.add(newBookingItem);
             }
-
         }
         return bookingItems;
     }
@@ -1097,6 +1208,8 @@ public class CartService {
 
             } else if (Objects.equals(activity_type, "ACCOMMODATION")) {
                 vendor = vendorRepository.findVendorByAccommodationName(newBooking.getActivity_name());
+            } else if (Objects.equals(activity_type, "ITEMS")) {
+                vendor = vendorRepository.findVendorByItemId(newBooking.getItem().getItem_id());
             }
 
             if (!(vendor == null)) {
@@ -1136,7 +1249,7 @@ public class CartService {
         }
         currentBookings.addAll(createdBookings);
         currentTourist.setBooking_list(currentBookings);
-
+        //monitor(currentTourist);
         // Remove the checked-out cart bookings from the Local user's cart
         List<CartBooking> currentCartBookings = currentTourist.getCart_list();
         currentCartBookings.removeAll(bookingsToCheckout);
@@ -1171,11 +1284,17 @@ public class CartService {
         }
 
         DIYEvent event = createUnusedEvent(user, booking); // in the event user delete itinerary, and remake, we want to add the booking in as well
-
         Itinerary itinerary = itineraryService.getItineraryByUserForOtherFunc(user.getUser_id());
         if (itinerary != null && !notWithinItineraryDates(itinerary, event)) { // booking falls within itinerary
-            if (itinerary.getDiy_event_list() == null) itinerary.setDiy_event_list(new ArrayList<>());
+            //monitor(user, "2222222222 notWithinItineraryDates  222222222222");
+            if (itinerary.getDiy_event_list() == null) {
+
+                itinerary.setDiy_event_list(new ArrayList<>());
+                //monitor(user, "????????????? itinerary.setDiy_event_list(new ArrayList<>())  ????????????????");
+            }
+
             itinerary.getDiy_event_list().add(event);
+            //monitor(user, "3333333333333 itinerary.getDiy_event_list().add(event)  333333333333");
             itineraryRepository.save(itinerary);
         }
     }
