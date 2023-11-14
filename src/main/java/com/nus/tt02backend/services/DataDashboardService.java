@@ -313,7 +313,7 @@ public class DataDashboardService {
     public Map<String, Object> getExtractedFields(Subscription subscription) {
         System.out.println(subscription);
         String subscription_id = subscription.getId();
-        Boolean auto_renewal = !(subscription.getCancelAtPeriodEnd());
+        Boolean auto_renewal = Boolean.valueOf(subscription.getMetadata().get("auto_renewal"));
         String status = subscription.getStatus();
         Map<String, Object> extractedFields = new HashMap<>();
         Long currentPeriodEndLong = subscription.getCurrentPeriodEnd();
@@ -353,11 +353,15 @@ public class DataDashboardService {
         }
 
         extractedFields.put("subscription_id",  subscription_id);
-        if (auto_renewal) {
-            extractedFields.put("current_period_start", currentPeriodEnd);
-        } else {
+
+        if (subscription.getCancelAtPeriodEnd()) {
             extractedFields.put("current_period_start", "-");
+        } else {
+            extractedFields.put("current_period_start", currentPeriodEnd);
         }
+
+
+
 
 
         extractedFields.put("auto_renewal", auto_renewal);
@@ -420,11 +424,19 @@ public class DataDashboardService {
         metadata.put("transaction_type", "Subscription");
         transaction_params.put("metadata", metadata);
 
+        Map<String, Object> sub_metadata = new HashMap<>();
+
         if (!auto_renew) {
             subscription_params.put("cancel_at_period_end", true);
+            sub_metadata.put("auto_renewal", false);
+
+
         } else {
             subscription_params.put("cancel_at", newCancelAt);
+            sub_metadata.put("auto_renewal", true);
         }
+
+        subscription_params.put("metadata", sub_metadata);
 
         subscription_params.put("collection_method", "send_invoice");
 
@@ -445,16 +457,13 @@ public class DataDashboardService {
 
         Map<String, Object> params = new HashMap<>();
 
-        if (!auto_renew) {
-            params.put("cancel_at_period_end", true);
-        }
-
 
         SubscriptionItem subscriptionItem = subscription.getItems().getData().get(0); // Get the first item
         String currentPriceId = subscriptionItem.getPrice().getId(); // Get the current price ID
         String newPriceId = (Objects.equals(subscription_type, "Monthly")) ? "price_1O1Pf2JuLboRjh4qv1wswh2w" : "price_1O1PfLJuLboRjh4qj2lYrFHi";
 
         if (!currentPriceId.equals(newPriceId)) {
+            System.out.println("Change of plans");
             Map<String, Object> itemParams = new HashMap<>();
             itemParams.put("id", subscriptionItem.getId());
             itemParams.put("price", newPriceId); // Set the new price ID
@@ -465,9 +474,16 @@ public class DataDashboardService {
             params.put("items", items);
         }
 
+        Map<String, Object> sub_metadata = new HashMap<>();
+
         if (!auto_renew) {
             params.put("cancel_at_period_end", true);
+            sub_metadata.put("auto_renewal", false);
+        } else {
+            sub_metadata.put("auto_renewal", true);
         }
+
+        params.put("metadata", sub_metadata);
 
         Subscription updatedSubscription = subscription.update(params);
 
@@ -567,7 +583,7 @@ public class DataDashboardService {
 
         Subscription subscription = Subscription.retrieve(subscription_id);
 
-
+        //Boolean updatedAutoRenew = !(Boolean.valueOf(subscription.getMetadata().get("auto_renewal")));
 
         Map<String, Object> params = new HashMap<>();
 
@@ -588,6 +604,13 @@ public class DataDashboardService {
             //params.put("cancel_at", newCancelAt);
 
         }
+
+        Map<String, Object> sub_metadata = new HashMap<>();
+
+        //params.put("cancel_at_period_end", true);
+        sub_metadata.put("auto_renewal", false);
+
+        params.put("metadata", sub_metadata);
 
         Subscription updatedSubscription = subscription.update(params);
 
