@@ -347,7 +347,7 @@ public class InitDataConfig implements CommandLineRunner {
         p2.setContent("This is the best burger I have in Singapore");
         p2.setIs_published(true);
         List<String> imgList1 = new ArrayList<>();
-        imgList1.add("https://tt02.s3.ap-southeast-1.amazonaws.com/post/init/burger3.jpeg");
+        imgList1.add("https://tt02.s3.ap-southeast-1.amazonaws.com/post/init/wanton.jpeg");
         p2.setPost_image_list(imgList1);
         p2.setPublish_time(LocalDateTime.parse("2023-11-12T16:00:00"));
         p2.setUpdated_time(LocalDateTime.parse("2023-11-12T16:01:00"));
