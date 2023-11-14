@@ -311,8 +311,9 @@ public class DataDashboardService {
     }
 
     public Map<String, Object> getExtractedFields(Subscription subscription) {
+        System.out.println(subscription);
         String subscription_id = subscription.getId();
-        Boolean auto_renewal = !(subscription.getCancelAtPeriodEnd());
+        Boolean auto_renewal = Boolean.valueOf(subscription.getMetadata().get("auto_renewal"));
         String status = subscription.getStatus();
         Map<String, Object> extractedFields = new HashMap<>();
         Long currentPeriodEndLong = subscription.getCurrentPeriodEnd();
@@ -321,8 +322,8 @@ public class DataDashboardService {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
 
-        if (subscription.getCancelAtPeriodEnd()) {
-            extractedFields.put("current_period_start", "NA");
+        if (auto_renewal) {
+            extractedFields.put("current_period_end", "-");
 
 
 
@@ -334,7 +335,7 @@ public class DataDashboardService {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
 
-                extractedFields.put("current_period_start", cancelAt);
+                extractedFields.put("current_period_end", cancelAt);
             }
 
         }
@@ -352,7 +353,16 @@ public class DataDashboardService {
         }
 
         extractedFields.put("subscription_id",  subscription_id);
-        extractedFields.put("current_period_end", currentPeriodEnd);
+
+        if (subscription.getCancelAtPeriodEnd()) {
+            extractedFields.put("current_period_start", "-");
+        } else {
+            extractedFields.put("current_period_start", currentPeriodEnd);
+        }
+
+
+
+
 
         extractedFields.put("auto_renewal", auto_renewal);
         extractedFields.put("status", status);
@@ -414,11 +424,19 @@ public class DataDashboardService {
         metadata.put("transaction_type", "Subscription");
         transaction_params.put("metadata", metadata);
 
+        Map<String, Object> sub_metadata = new HashMap<>();
+
         if (!auto_renew) {
             subscription_params.put("cancel_at_period_end", true);
+            sub_metadata.put("auto_renewal", false);
+
+
         } else {
             subscription_params.put("cancel_at", newCancelAt);
+            sub_metadata.put("auto_renewal", true);
         }
+
+        subscription_params.put("metadata", sub_metadata);
 
         subscription_params.put("collection_method", "send_invoice");
 
@@ -439,16 +457,13 @@ public class DataDashboardService {
 
         Map<String, Object> params = new HashMap<>();
 
-        if (!auto_renew) {
-            params.put("cancel_at_period_end", true);
-        }
-
 
         SubscriptionItem subscriptionItem = subscription.getItems().getData().get(0); // Get the first item
         String currentPriceId = subscriptionItem.getPrice().getId(); // Get the current price ID
         String newPriceId = (Objects.equals(subscription_type, "Monthly")) ? "price_1O1Pf2JuLboRjh4qv1wswh2w" : "price_1O1PfLJuLboRjh4qj2lYrFHi";
 
         if (!currentPriceId.equals(newPriceId)) {
+            System.out.println("Change of plans");
             Map<String, Object> itemParams = new HashMap<>();
             itemParams.put("id", subscriptionItem.getId());
             itemParams.put("price", newPriceId); // Set the new price ID
@@ -459,9 +474,16 @@ public class DataDashboardService {
             params.put("items", items);
         }
 
+        Map<String, Object> sub_metadata = new HashMap<>();
+
         if (!auto_renew) {
             params.put("cancel_at_period_end", true);
+            sub_metadata.put("auto_renewal", false);
+        } else {
+            sub_metadata.put("auto_renewal", true);
         }
+
+        params.put("metadata", sub_metadata);
 
         Subscription updatedSubscription = subscription.update(params);
 
@@ -489,24 +511,24 @@ public class DataDashboardService {
             Price price = subscription.getItems().getData().get(0).getPrice();
 
             Map<String, Object> params = new HashMap<>();
-            params.put("billing_cycle_anchor", "now");
+            //params.put("billing_cycle_anchor", "unchanged");
             if (Objects.equals(price.getId(), "price_1O1Pf2JuLboRjh4qv1wswh2w")) {
                 calendar.add(Calendar.MONTH, 1);
                 long newCancelAt = calendar.getTimeInMillis() / 1000L;
                 long newBillingCycleAnchor = subscription.getCurrentPeriodEnd() + TimeUnit.DAYS.toSeconds(30);
-                params.put("billing_cycle_anchor", newBillingCycleAnchor);
+                //params.put("billing_cycle_anchor", newBillingCycleAnchor);
                 params.put("days_until_due", 30);
                 params.put("cancel_at", newCancelAt);
             } else if (Objects.equals(price.getId(), "price_1O1PfLJuLboRjh4qj2lYrFHi")) {
                 calendar.add(Calendar.YEAR, 1);
                 long newCancelAt = calendar.getTimeInMillis() / 1000L;
                 long newBillingCycleAnchor = subscription.getCurrentPeriodEnd() + TimeUnit.DAYS.toSeconds(365);
-                params.put("billing_cycle_anchor", newBillingCycleAnchor);
+                //params.put("billing_cycle_anchor", newBillingCycleAnchor);
                 params.put("days_until_due", 365);
                 params.put("cancel_at", newCancelAt);
             }
 
-           // params.put("cancel_at_period_end", true);
+           //params.put("cancel_at_period_end", true);
 
 
 
@@ -557,7 +579,7 @@ public class DataDashboardService {
 
     }
 
-    public String cancelSubscription(String subscription_id) throws StripeException {
+    public String removeSubscription(String subscription_id) throws StripeException {
 
         Subscription subscription =
                 Subscription.retrieve(
@@ -568,6 +590,48 @@ public class DataDashboardService {
                 subscription.cancel();
 
         return deletedSubscription.getId();
+    }
+
+    public Map<String,Object> cancelSubscription(String subscription_id) throws StripeException {
+
+        Subscription subscription = Subscription.retrieve(subscription_id);
+
+        //Boolean updatedAutoRenew = !(Boolean.valueOf(subscription.getMetadata().get("auto_renewal")));
+
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("cancel_at_period_end", true);
+        Long currentCancelAt = subscription.getCancelAt();
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTimeInMillis(currentCancelAt * 1000L); // Stripe timestamps are in seconds
+        Price price = subscription.getItems().getData().get(0).getPrice();
+
+        if (Objects.equals(price.getId(), "price_1O1Pf2JuLboRjh4qv1wswh2w")) {
+            calendar.add(Calendar.MONTH, 1);
+            long newCancelAt = calendar.getTimeInMillis() / 1000L;
+            //params.put("cancel_at", newCancelAt);
+
+        } else if (Objects.equals(price.getId(), "price_1O1PfLJuLboRjh4qj2lYrFHi")) {
+            calendar.add(Calendar.YEAR, 1);
+            long newCancelAt = calendar.getTimeInMillis() / 1000L;
+            //params.put("cancel_at", newCancelAt);
+
+        }
+
+        Map<String, Object> sub_metadata = new HashMap<>();
+
+        //params.put("cancel_at_period_end", true);
+        sub_metadata.put("auto_renewal", false);
+
+        params.put("metadata", sub_metadata);
+
+        Subscription updatedSubscription = subscription.update(params);
+
+        Map<String, Object> extractedFields = getExtractedFields(updatedSubscription);
+
+        return extractedFields;
+
+
     }
 
 
@@ -667,6 +731,9 @@ public class DataDashboardService {
     UserRepository userRepository;
     @Autowired
     AttractionRepository attractionRepository;
+
+    @Autowired
+    AccommodationRepository accommodationRepository;
 
     @Autowired
     TouristRepository touristRepository;
@@ -804,7 +871,56 @@ public class DataDashboardService {
                 throw new NotFoundException("Vendor not found");
             }
 
-        } else if (Objects.equals(data_usecase, "Bookings Breakdown by Activity, Nationality, Age")) {
+        } else if (Objects.equals(data_usecase, "Revenue to Bookings Ratio Over Time")) {
+
+            Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
+            if (vendorOptional.isPresent()) {
+
+
+
+                Vendor vendor = vendorOptional.get();
+
+                List<Accommodation> accommodations = vendor.getAccommodation_list();
+
+                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+
+                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
+
+                Map<LocalDate, Integer> dateCounts = new HashMap<>();
+                List<List<Object>> dateCountryRevenueList = new ArrayList<>();
+
+                for (Booking booking : bookings) {
+                    LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
+                    BigDecimal commission = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
+                    BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
+                    String countryCode = null;
+
+                    // Determine which user type (tourist or local) is not null and get the country code
+                    if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
+                        countryCode = booking.getTourist_user().getCountry_code();
+                    } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
+                        countryCode = booking.getLocal_user().getCountry_code();
+                    }
+
+                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                    // Create [Date, Country, Revenue] triple and add to the list
+                    List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue);
+                    dateCountryRevenueList.add(dateCountryRevenueTriple);
+                }
+
+                System.out.println(dateCountryRevenueList);
+
+                return dateCountryRevenueList;
+
+            } else {
+                throw new NotFoundException("Vendor not found");
+            }
+
+        }
+        else if (Objects.equals(data_usecase, "Bookings Breakdown by Activity, Nationality, Age")) {
 
             Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
             if (vendorOptional.isPresent()) {
@@ -1050,8 +1166,61 @@ public class DataDashboardService {
 
                 String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
 
+                String category = String.valueOf(booking.getType());
+
+                //String status = String.valueOf(booking.getStatus());
+
+                // Sub-category
+
+                String subcategory = "";
+
+                String vendorName = "";
+
+                if (booking.getAttraction() != null) {
+
+                    subcategory = String.valueOf(booking.getAttraction().getAttraction_category());
+
+                    vendorName = vendorRepository.findVendorByAttractionName(booking.getAttraction().getName()).getBusiness_name();
+
+                } else if (booking.getRoom() != null) {
+
+                    //String accommodation = accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id());
+
+                    subcategory = String.valueOf(booking.getRoom().getRoom_type()); // To change to accoms
+
+                    Vendor vendor = vendorRepository.findVendorByRoomId(booking.getRoom().getRoom_id());
+
+
+                    vendorName = vendor.getBusiness_name();
+
+                } else if (booking.getTour() != null) {
+
+                    subcategory = "Tour"; // Get tour's attraction
+
+                    vendorName = localRepository.findLocalByTour(booking.getTour()).getName();
+
+
+                } else if (booking.getTelecom() != null) {
+
+                    subcategory = booking.getTelecom().getName();
+
+                    vendorName = vendorRepository.findVendorByTelecomName(booking.getTelecom().getName()).getBusiness_name();
+
+                } else if (booking.getItem() != null) {
+
+                    subcategory = "Item";
+
+                    vendorName = vendorRepository.findVendorByItemId(booking.getItem().getItem_id()).getBusiness_name();
+
+                }
+
+
+
+                // Vendor
+
+
                 // Create [Date, Country] pair and add to the list
-                List<Object> dateCountryPair = Arrays.asList(bookingDate, country);
+                List<Object> dateCountryPair = Arrays.asList(bookingDate, country, category, subcategory, vendorName);
                 dateCountryList.add(dateCountryPair);
             }
 
@@ -1079,8 +1248,10 @@ public class DataDashboardService {
 
                 String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
 
+                String category = String.valueOf(booking.getType());
+
                 // Create [Date, Country, Revenue] triple and add to the list
-                List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue);
+                List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue, category);
                 dateCountryRevenueList.add(dateCountryRevenueTriple);
 
                 // To add vendors

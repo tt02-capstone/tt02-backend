@@ -104,8 +104,15 @@ public class DataDashboardController {
     }
 
     @DeleteMapping("/cancelSubscription/{subscription_id}")
-    public ResponseEntity<String> cancelSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException {
-        String subscriptionStatus = dataDashboardService.cancelSubscription(subscription_id);
+    public ResponseEntity<Map<String,Object>> cancelSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException {
+        Map<String,Object> subscriptionStatus = dataDashboardService.cancelSubscription(subscription_id);
+
+        return ResponseEntity.ok(subscriptionStatus);
+    }
+
+    @DeleteMapping("/removeSubscription/{subscription_id}")
+    public ResponseEntity<String> removeSubscription(@PathVariable String subscription_id) throws StripeException, NotFoundException {
+        String subscriptionStatus = dataDashboardService.removeSubscription(subscription_id);
 
         return ResponseEntity.ok(subscriptionStatus);
     }
