@@ -137,12 +137,16 @@ public class TouristService {
     public List<Tourist> retrieveAllTourist() {
         List<Tourist> touristList = touristRepository.findAll();
 
-        for (Tourist t : touristList) {
-            t.setPassword(null);
-            t.setBooking_list(null);
-            t.setPost_list(null);
-            t.setComment_list(null);
-            t.setSupport_ticket_list(null);
+        for (Tourist tourist : touristList) {
+            tourist.setSupport_ticket_list(null);
+            tourist.setBooking_list(null);
+            tourist.setPost_list(null);
+            tourist.setComment_list(null);
+            tourist.setCart_list(null);
+            tourist.setTour_type_list(null);
+            tourist.setItinerary(null);
+            tourist.setUnused_diy_event_list(null);
+            tourist.setItem_list(null);
         }
 
         return touristList;

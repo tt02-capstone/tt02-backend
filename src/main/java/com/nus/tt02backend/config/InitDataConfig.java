@@ -1800,7 +1800,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             d1.setIs_published(true);
             List<String> imgList = new ArrayList<>();
-            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.jpeg");
+            imgList.add("https://tt02.s3.ap-southeast-1.amazonaws.com/static/deals/deals_gov.png");
             d1.setDeal_image_list(imgList);
 
             d1 = dealRepository.save(d1);

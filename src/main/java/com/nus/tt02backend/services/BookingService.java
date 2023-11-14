@@ -444,6 +444,7 @@ public class BookingService {
                 local.setCart_list(null);
                 local.setTour_type_list(null);
                 local.setItinerary(null);
+                local.setUnused_diy_event_list(null);
                 local.setItem_list(null);
 
             } else if (b.getTourist_user() != null) {
@@ -455,6 +456,7 @@ public class BookingService {
                 tourist.setCart_list(null);
                 tourist.setTour_type_list(null);
                 tourist.setItinerary(null);
+                tourist.setUnused_diy_event_list(null);
                 tourist.setItem_list(null);
             }
             b.getPayment().setBooking(null);
@@ -529,6 +531,7 @@ public class BookingService {
                 local.setCart_list(null);
                 local.setTour_type_list(null);
                 local.setItinerary(null);
+                local.setUnused_diy_event_list(null);
                 local.setItem_list(null);
 
             } else if (b.getTourist_user() != null) {
@@ -540,6 +543,7 @@ public class BookingService {
                 tourist.setCart_list(null);
                 tourist.setTour_type_list(null);
                 tourist.setItinerary(null);
+                tourist.setUnused_diy_event_list(null);
                 tourist.setItem_list(null);
             }
             b.getPayment().setBooking(null);

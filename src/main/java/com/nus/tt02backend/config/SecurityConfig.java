@@ -126,13 +126,13 @@ public class SecurityConfig {
                 "/user/**").permitAll()
         .requestMatchers(HttpMethod.GET,
                 "/vendorStaff/verifyEmail/**",
-                "/itinerary/**", // to remove
                 "/diyEvent/**", // to remove
                 "/comment/**", // to remove
                 "/post/**", // to remove
                 "/recommendation/**", // to remove
                 "/itinerary/**", // to remove
                 "/diyEvent/**", // to remove
+                "/itinerary/**", // to remo
                 "/user/**").permitAll()
         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
       .anyRequest().authenticated()
