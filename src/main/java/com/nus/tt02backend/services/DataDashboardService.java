@@ -42,6 +42,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class DataDashboardService {
@@ -920,7 +921,7 @@ public class DataDashboardService {
             }
 
         }
-        else if (Objects.equals(data_usecase, "Bookings Breakdown by Activity, Nationality, Age")) {
+        else if (Objects.equals(data_usecase, "Bookings Breakdown")) {
 
             Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
             if (vendorOptional.isPresent()) {
@@ -1003,7 +1004,7 @@ public class DataDashboardService {
                 throw new NotFoundException("Vendor not found");
             }
 
-        } else if (Objects.equals(data_usecase, "Revenue Breakdown by Activity, Nationality, Age")) {
+        } else if (Objects.equals(data_usecase, "Revenue Breakdown")) {
 
             Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
             if (vendorOptional.isPresent()) {
@@ -1085,7 +1086,7 @@ public class DataDashboardService {
             }
 
 
-        } else if (Objects.equals(data_usecase, "Customer Retention (Number of Repeat Bookings Over Time)")) {
+        } else if (Objects.equals(data_usecase, "Customer Retention Over Time")) {
 
             Optional<Vendor> vendorOptional = vendorRepository.findById(Long.valueOf(vendorId));
             if (vendorOptional.isPresent()) {
@@ -1262,8 +1263,8 @@ public class DataDashboardService {
 
             for (Booking booking : bookings) {
                 LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
-                BigDecimal commission = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
-                BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
+                BigDecimal revenue = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
+
                 String countryCode = null;
 
                 // Determine which user type (tourist or local) is not null and get the country code
@@ -1330,7 +1331,7 @@ public class DataDashboardService {
 
             return dateCountryRevenueList;
 
-        } else if (Objects.equals(data_usecase, "Platform Bookings Breakdown by Category, Nationality, Status")) {
+        } else if (Objects.equals(data_usecase, "Platform Bookings Breakdown")) {
 
             Map<LocalDate, Integer> dateCounts = new HashMap<>();
             List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -1429,7 +1430,7 @@ public class DataDashboardService {
 
             return dateCountryRevenueList;
 
-        } else if (Objects.equals(data_usecase, "Platform Revenue Breakdown by Category, Nationality, Status")) {
+        } else if (Objects.equals(data_usecase, "Platform Revenue Breakdown")) {
 
             Map<String, Object> result = new HashMap<>();
             List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -1441,8 +1442,7 @@ public class DataDashboardService {
 
             for (Booking booking : bookings) {
 
-                BigDecimal commission = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
-                BigDecimal revenue = booking.getPayment().getPayment_amount().subtract(commission);
+                BigDecimal revenue = booking.getPayment().getPayment_amount().multiply(BigDecimal.valueOf(0.1));
 
                 String countryCode = null;
                 String category = String.valueOf(booking.getType());
@@ -1530,7 +1530,7 @@ public class DataDashboardService {
             System.out.println(dateCountryRevenueList);
 
             return dateCountryRevenueList;
-        } else if (Objects.equals(data_usecase, "Customer Retention (Number of Repeat Bookings Over Time)")) {
+        } else if (Objects.equals(data_usecase, "Customer Retention Over Time")) {
 
 
 
@@ -1574,9 +1574,14 @@ public class DataDashboardService {
                 }
             }
 
-// Convert the map to a list of [Date, Count, Revenue, Country] for sending to the frontend
+
+            List<Map.Entry<LocalDate, List<Object>>> sortedEntries = bookingDataByDate.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .collect(Collectors.toList());
+
             List<List<Object>> dateBookingDataList = new ArrayList<>();
-            for (Map.Entry<LocalDate, List<Object>> entry : bookingDataByDate.entrySet()) {
+            for (Map.Entry<LocalDate, List<Object>> entry : sortedEntries) {
                 LocalDate date = entry.getKey();
                 List<Object> data = entry.getValue();
                 dateBookingDataList.add(Arrays.asList(date, data.get(0), data.get(1), data.get(2)));
