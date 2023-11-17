@@ -951,7 +951,7 @@ public class DataDashboardService {
                     String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
 
                     // Create [Date, Country, Revenue] triple and add to the list
-                    List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue, category);
+                    List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue);
                     dateCountryRevenueList.add(dateCountryRevenueTriple);
                 }
 
@@ -1610,7 +1610,7 @@ public class DataDashboardService {
             result.put("Country", countryCounts);
             result.put("Status", statusCounts);
             result.put("Vendor", vendorCounts);
-            result.put("Subcategory", subcategoryCounts);
+            //result.put("Subcategory", subcategoryCounts);
 
             System.out.println(result);
 
@@ -1707,7 +1707,7 @@ public class DataDashboardService {
             result.put("Category", categoryRevenues);
             result.put("Country", countryRevenues);
             result.put("Status", statusRevenues);
-            result.put("Subcategory", subcategoryRevenues);
+            //result.put("Subcategory", subcategoryRevenues);
             result.put("Vendor", vendorRevenues);
 
             System.out.println(result);
