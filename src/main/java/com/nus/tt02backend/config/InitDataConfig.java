@@ -267,7 +267,7 @@ public class InitDataConfig implements CommandLineRunner {
         }
 
         if (bookingRepository.count() == 0) {
-            createBookingsAndPayments(100);
+            createBookingsAndPayments(250);
         }
 
         if (postRepository.count() == 0) {
@@ -1871,7 +1871,7 @@ public class InitDataConfig implements CommandLineRunner {
 
             Random rand = new Random();
 
-            String[] activityTypes = {"ACCOMMODATION", "TELECOM", "ATTRACTION"};
+            String[] activityTypes = {"ATTRACTION", "ACCOMMODATION", "ATTRACTION", "TELECOM", "ATTRACTION"};
             String activity_type = activityTypes[rand.nextInt(activityTypes.length)];
 
             Long selected_id = null;

@@ -114,20 +114,47 @@ public class DataDashboardService {
                         vendor.setWallet_balance(BigDecimal.ZERO);
                     }
 
-                    Map<String, Object> automaticPaymentMethods = new HashMap<>();
-                    automaticPaymentMethods.put("enabled", true);
+                    try {
+                        Map<String, Object> automaticPaymentMethods = new HashMap<>();
+                        automaticPaymentMethods.put("enabled", true);
 
-                    Map<String, Object> paymentParams = new HashMap<>();
-                    paymentParams.put("amount", remainder.multiply(new BigDecimal("100")).intValueExact());
-                    paymentParams.put("currency", "usd");
-                    paymentParams.put("confirm", true);
+                        Map<String, Object> paymentParams = new HashMap<>();
+                        paymentParams.put("amount", remainder.multiply(new BigDecimal("100")).intValueExact());
+                        paymentParams.put("currency", "usd");
+                        paymentParams.put("confirm", true);
 
 
-                    paymentParams.put("customer", invoice.getCustomer());
-                    paymentParams.put("return_url", "yourappname://stripe/callback");
+                        paymentParams.put("customer", invoice.getCustomer());
+                        paymentParams.put("return_url", "yourappname://stripe/callback");
 
-                    PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
+                        PaymentIntent paymentIntent = PaymentIntent.create(paymentParams);
+                    } catch (StripeException e) {
+                        String subject = "[WithinSG] Error Processing Subscription Payment";
+                        String content = "<p>Dear " + vendor.getPoc_name() + ",</p>" +
+                                "<p>Thank you for registering for a vendor account with WithinSG. " +
+                                "We are glad that you have chosen us as your service provider!</p>" +
 
+                                "<p>We have received your application and it is in the midst of processing. " +
+                                "Please verify your email address by clicking on the button below.</p>" +
+                                "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
+                                "Verify Email</button></a>" +
+                                "<p>An email will be sent to you once your account has been activated.</p>" +
+                                "<p>Kind Regards,<br> WithinSG</p>";
+
+                        try {
+                            List<VendorStaff> staffs = vendor.getVendor_staff_list();
+                            String email = staffs.get(0).getEmail();
+                            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+                            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+                            mimeMessageHelper.setTo(email);
+                            mimeMessageHelper.setSubject(subject);
+                            mimeMessageHelper.setText(content, true);
+                            javaMailSender.send(mimeMessage);
+                        } catch (MessagingException r) {
+                            throw new BadRequestException("An error occurred while processing the payment.");
+                        }
+
+                    }
 
 
                 }
@@ -141,7 +168,21 @@ public class DataDashboardService {
                 System.out.println(finalizedInvoice);
                 System.out.println("Paying invoice...");
                 finalizedInvoice.pay(params);
+
+                Map<String, Object> transaction_params = new HashMap<>();
+                transaction_params.put("amount",invoice.getAmountDue());
+                transaction_params.put("currency", "sgd");
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("transaction_type", "Subscription");
+                transaction_params.put("metadata", metadata);
                 System.out.println("Success");
+
+                Customer customer =
+                        Customer.retrieve(invoice.getCustomer());
+
+                CustomerBalanceTransaction balanceTransaction =
+                        customer.balanceTransactions().create(transaction_params);
+
 
             }
 
@@ -155,6 +196,8 @@ public class DataDashboardService {
 
             // Return a 200 response to acknowledge receipt of the event
         return "Received.";
+
+
 
 
 //        try (BufferedReader reader = request.getReader()) {
@@ -419,11 +462,11 @@ public class DataDashboardService {
         subscription_params.put("items", items);
         Price price = Price.retrieve(subscription_price.get("price"));
         BigDecimal subscription_payment = price.getUnitAmountDecimal();
-        transaction_params.put("amount",subscription_payment);
-        transaction_params.put("currency", "sgd");
+        //transaction_params.put("amount",subscription_payment);
+        //transaction_params.put("currency", "sgd");
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("transaction_type", "Subscription");
-        transaction_params.put("metadata", metadata);
+        //transaction_params.put("metadata", metadata);
 
         Map<String, Object> sub_metadata = new HashMap<>();
 
@@ -444,8 +487,8 @@ public class DataDashboardService {
         Subscription subscription =
                 Subscription.create(subscription_params);
 
-        CustomerBalanceTransaction balanceTransaction =
-                customer.balanceTransactions().create(transaction_params);
+//        CustomerBalanceTransaction balanceTransaction =
+//                customer.balanceTransactions().create(transaction_params);
 
         //updateWallet(user_id, user_type, subscription_payment);
 
@@ -789,9 +832,23 @@ public class DataDashboardService {
 
                 Vendor vendor = vendorOptional.get();
 
-                List<Accommodation> accommodations = vendor.getAccommodation_list();
+                Long entityId = null;
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
+                if (Objects.equals(type, "ACCOMMODATION")) {
+                    List<Accommodation> accommodations = vendor.getAccommodation_list();
+                    entityId = accommodations.get(0).getAccommodation_id();
+
+                } else if (Objects.equals(type, "ATTRACTION")) {
+                    List<Attraction> attractions = vendor.getAttraction_list();
+                    entityId = attractions.get(0).getAttraction_id();
+
+                } else if (Objects.equals(type, "TELECOM")) {
+
+                } else if (Objects.equals(type, "TOUR")) {
+
+                }
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, entityId, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
 
@@ -833,13 +890,27 @@ public class DataDashboardService {
 
                 Vendor vendor = vendorOptional.get();
 
-                List<Accommodation> accommodations = vendor.getAccommodation_list();
+                Long entityId = null;
+
+                if (Objects.equals(type, "ACCOMMODATION")) {
+                    List<Accommodation> accommodations = vendor.getAccommodation_list();
+                    entityId = accommodations.get(0).getAccommodation_id();
+
+                } else if (Objects.equals(type, "ATTRACTION")) {
+                    List<Attraction> attractions = vendor.getAttraction_list();
+                    entityId = attractions.get(0).getAttraction_id();
+
+                } else if (Objects.equals(type, "TELECOM")) {
+
+                } else if (Objects.equals(type, "TOUR")) {
+
+                }
 
                 LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
 
                 LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, entityId, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
                 List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -881,13 +952,27 @@ public class DataDashboardService {
 
                 Vendor vendor = vendorOptional.get();
 
-                List<Accommodation> accommodations = vendor.getAccommodation_list();
+                Long entityId = null;
+
+                if (Objects.equals(type, "ACCOMMODATION")) {
+                    List<Accommodation> accommodations = vendor.getAccommodation_list();
+                    entityId = accommodations.get(0).getAccommodation_id();
+
+                } else if (Objects.equals(type, "ATTRACTION")) {
+                    List<Attraction> attractions = vendor.getAttraction_list();
+                    entityId = attractions.get(0).getAttraction_id();
+
+                } else if (Objects.equals(type, "TELECOM")) {
+
+                } else if (Objects.equals(type, "TOUR")) {
+
+                }
 
                 LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
 
                 LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, entityId, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
                 List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -930,13 +1015,27 @@ public class DataDashboardService {
 
                 Vendor vendor = vendorOptional.get();
 
-                List<Accommodation> accommodations = vendor.getAccommodation_list();
+                Long entityId = null;
+
+                if (Objects.equals(type, "ACCOMMODATION")) {
+                    List<Accommodation> accommodations = vendor.getAccommodation_list();
+                    entityId = accommodations.get(0).getAccommodation_id();
+
+                } else if (Objects.equals(type, "ATTRACTION")) {
+                    List<Attraction> attractions = vendor.getAttraction_list();
+                    entityId = attractions.get(0).getAttraction_id();
+
+                } else if (Objects.equals(type, "TELECOM")) {
+
+                } else if (Objects.equals(type, "TOUR")) {
+
+                }
 
                 LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
 
                 LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, entityId, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
                 List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -1011,10 +1110,24 @@ public class DataDashboardService {
 
                 Vendor vendor = vendorOptional.get();
 
-                List<Accommodation> accommodations = vendor.getAccommodation_list();
+                Long entityId = null;
+
+                if (Objects.equals(type, "ACCOMMODATION")) {
+                    List<Accommodation> accommodations = vendor.getAccommodation_list();
+                    entityId = accommodations.get(0).getAccommodation_id();
+
+                } else if (Objects.equals(type, "ATTRACTION")) {
+                    List<Attraction> attractions = vendor.getAttraction_list();
+                    entityId = attractions.get(0).getAttraction_id();
+
+                } else if (Objects.equals(type, "TELECOM")) {
+
+                } else if (Objects.equals(type, "TOUR")) {
+
+                }
 
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, entityId, type);
 
                 Map<LocalDate, Integer> dateCounts = new HashMap<>();
                 List<List<Object>> dateCountryRevenueList = new ArrayList<>();
@@ -1095,30 +1208,60 @@ public class DataDashboardService {
 
                 Vendor vendor = vendorOptional.get();
 
-                List<Accommodation> accommodations = vendor.getAccommodation_list();
+                Long entityId = null;
 
-                LocalDateTime startDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 1), LocalTime.MIDNIGHT);
+                if (Objects.equals(type, "ACCOMMODATION")) {
+                    List<Accommodation> accommodations = vendor.getAccommodation_list();
+                    entityId = accommodations.get(0).getAccommodation_id();
 
-                LocalDateTime endDate = LocalDateTime.of(LocalDate.ofYearDay(2023, 304), LocalTime.MIDNIGHT);
+                } else if (Objects.equals(type, "ATTRACTION")) {
+                    List<Attraction> attractions = vendor.getAttraction_list();
+                    entityId = attractions.get(0).getAttraction_id();
 
-                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, 1L, type);
+                } else if (Objects.equals(type, "TELECOM")) {
 
-// Create a map to store the booking count, revenue, and country for each date
+                } else if (Objects.equals(type, "TOUR")) {
+
+                }
+
+                System.out.println(entityId);
+
+
+
+                List<Booking> bookings = bookingRepository.getBookingsOverTime(start_date, end_date, entityId, type);
+
+                System.out.println(bookings.size());
+
+                Set<Long> usersWithPriorBookings = new HashSet<>();
                 Map<LocalDate, List<Object>> bookingDataByDate = new HashMap<>();
 
                 for (Booking booking : bookings) {
+
+                    Long userId = null;
+
+                    if (booking.getLocal_user() != null) {
+                        userId = booking.getLocal_user().getUser_id();
+                    } else if (booking.getTourist_user() != null) {
+                        userId = booking.getTourist_user().getUser_id();
+                    }
+
+                    if (!usersWithPriorBookings.contains(userId)) {
+                        usersWithPriorBookings.add(userId);
+                        continue;
+                    }
+
                     LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
                     BigDecimal revenue = booking.getPayment().getPayment_amount();
                     String countryCode = null;
 
-                    // Determine which user type (tourist or local) is not null and get the country code
+
                     if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
                         countryCode = booking.getTourist_user().getCountry_code();
                     } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
                         countryCode = booking.getLocal_user().getCountry_code();
                     }
 
-                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+                    String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown");
 
                     // Check if the booking date is already in the map
                     if (bookingDataByDate.containsKey(bookingDate)) {
@@ -1132,16 +1275,21 @@ public class DataDashboardService {
                     } else {
                         // Initialize the list with count, revenue, and country
                         List<Object> newData = new ArrayList<>();
-                        newData.add(1); // Count for the first booking on this date
+                        newData.add(1);
                         newData.add(revenue);
                         newData.add(country);
                         bookingDataByDate.put(bookingDate, newData);
                     }
+                    System.out.println(bookingDataByDate);
                 }
 
-// Convert the map to a list of [Date, Count, Revenue, Country] for sending to the frontend
+                List<Map.Entry<LocalDate, List<Object>>> sortedEntries = bookingDataByDate.entrySet()
+                        .stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .collect(Collectors.toList());
+
                 List<List<Object>> dateBookingDataList = new ArrayList<>();
-                for (Map.Entry<LocalDate, List<Object>> entry : bookingDataByDate.entrySet()) {
+                for (Map.Entry<LocalDate, List<Object>> entry : sortedEntries) {
                     LocalDate date = entry.getKey();
                     List<Object> data = entry.getValue();
                     dateBookingDataList.add(Arrays.asList(date, data.get(0), data.get(1), data.get(2)));
@@ -1533,20 +1681,29 @@ public class DataDashboardService {
         } else if (Objects.equals(data_usecase, "Customer Retention Over Time")) {
 
 
-
-
-
-
-
-// Create a map to store the booking count, revenue, and country for each date
+            Set<Long> usersWithPriorBookings = new HashSet<>();
             Map<LocalDate, List<Object>> bookingDataByDate = new HashMap<>();
 
             for (Booking booking : bookings) {
+
+                Long userId = null;
+
+                if (booking.getLocal_user() != null) {
+                    userId = booking.getLocal_user().getUser_id();
+                } else if (booking.getTourist_user() != null) {
+                    userId = booking.getTourist_user().getUser_id();
+                }
+
+
+                // Skip the booking if it's the user's first booking
+                if (!usersWithPriorBookings.contains(userId)) {
+                    usersWithPriorBookings.add(userId);
+                    continue;
+                }
+
                 LocalDate bookingDate = booking.getStart_datetime().toLocalDate();
                 BigDecimal revenue = booking.getPayment().getPayment_amount();
                 String countryCode = null;
-
-                // Determine which user type (tourist or local) is not null and get the country code
                 if (booking.getTourist_user() != null && booking.getTourist_user().getCountry_code() != null) {
                     countryCode = booking.getTourist_user().getCountry_code();
                 } else if (booking.getLocal_user() != null && booking.getLocal_user().getCountry_code() != null) {
@@ -1554,6 +1711,54 @@ public class DataDashboardService {
                 }
 
                 String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
+
+                String category = String.valueOf(booking.getType());
+
+                //String status = String.valueOf(booking.getStatus());
+
+                // Sub-category
+
+                String subcategory = "";
+
+                String vendorName = "";
+
+                if (booking.getAttraction() != null) {
+
+                    subcategory = String.valueOf(booking.getAttraction().getAttraction_category());
+
+                    vendorName = vendorRepository.findVendorByAttractionName(booking.getAttraction().getName()).getBusiness_name();
+
+                } else if (booking.getRoom() != null) {
+
+                    //String accommodation = accommodationRepository.getAccomodationByRoomId(booking.getRoom().getRoom_id());
+
+                    subcategory = String.valueOf(booking.getRoom().getRoom_type()); // To change to accoms
+
+                    Vendor vendor = vendorRepository.findVendorByRoomId(booking.getRoom().getRoom_id());
+
+
+                    vendorName = vendor.getBusiness_name();
+
+                } else if (booking.getTour() != null) {
+
+                    subcategory = "Tour"; // Get tour's attraction
+
+                    vendorName = localRepository.findLocalByTour(booking.getTour()).getName();
+
+
+                } else if (booking.getTelecom() != null) {
+
+                    subcategory = booking.getTelecom().getName();
+
+                    vendorName = vendorRepository.findVendorByTelecomName(booking.getTelecom().getName()).getBusiness_name();
+
+                } else if (booking.getItem() != null) {
+
+                    subcategory = "Item";
+
+                    vendorName = vendorRepository.findVendorByItemId(booking.getItem().getItem_id()).getBusiness_name();
+
+                }
 
                 // Check if the booking date is already in the map
                 if (bookingDataByDate.containsKey(bookingDate)) {
@@ -1565,15 +1770,17 @@ public class DataDashboardService {
                     existingData.set(0, currentCount + 1);
                     existingData.set(1, currentRevenue.add(revenue));
                 } else {
-                    // Initialize the list with count, revenue, and country
+                    // Initialize the list with count, revenue, and other details for the first repeated booking on this date
                     List<Object> newData = new ArrayList<>();
-                    newData.add(1); // Count for the first booking on this date
+                    newData.add(1); // Count for the first repeated booking on this date
                     newData.add(revenue);
                     newData.add(country);
+                    newData.add(category);
+                    newData.add(subcategory);
+                    newData.add(vendorName);
                     bookingDataByDate.put(bookingDate, newData);
                 }
             }
-
 
             List<Map.Entry<LocalDate, List<Object>>> sortedEntries = bookingDataByDate.entrySet()
                     .stream()
@@ -1584,10 +1791,8 @@ public class DataDashboardService {
             for (Map.Entry<LocalDate, List<Object>> entry : sortedEntries) {
                 LocalDate date = entry.getKey();
                 List<Object> data = entry.getValue();
-                dateBookingDataList.add(Arrays.asList(date, data.get(0), data.get(1), data.get(2)));
+                dateBookingDataList.add(Arrays.asList(date, data.get(0), data.get(1), data.get(2), data.get(3), data.get(4), data.get(5)));
             }
-
-            System.out.println(dateBookingDataList);
 
             return dateBookingDataList;
 
