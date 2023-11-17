@@ -131,14 +131,10 @@ public class DataDashboardService {
                     } catch (StripeException e) {
                         String subject = "[WithinSG] Error Processing Subscription Payment";
                         String content = "<p>Dear " + vendor.getPoc_name() + ",</p>" +
-                                "<p>Thank you for registering for a vendor account with WithinSG. " +
-                                "We are glad that you have chosen us as your service provider!</p>" +
+                                "<p>There was an error processing your subscription payment. " +
+                                "Please use another credit card or bank account to pay for the subscription</p>" +
 
-                                "<p>We have received your application and it is in the midst of processing. " +
-                                "Please verify your email address by clicking on the button below.</p>" +
-                                "<button style=\"background-color: #F6BE00; color: #000; padding: 10px 20px; border: none; cursor: pointer;\">" +
-                                "Verify Email</button></a>" +
-                                "<p>An email will be sent to you once your account has been activated.</p>" +
+                                "<p>Once completed, please try subscribing again. " +
                                 "<p>Kind Regards,<br> WithinSG</p>";
 
                         try {
@@ -443,7 +439,7 @@ public class DataDashboardService {
 
             calendar.add(Calendar.MONTH, 1);
             newCancelAt = calendar.getTimeInMillis() / 1000L;
-            subscription_params.put("days_until_due", 30);
+            subscription_params.put("days_until_due", 1);
 
         } else if (Objects.equals(subscription_type, "Yearly")) {
 
@@ -454,7 +450,7 @@ public class DataDashboardService {
 
             calendar.add(Calendar.YEAR, 1);
             newCancelAt = calendar.getTimeInMillis() / 1000L;
-            subscription_params.put("days_until_due", 365);
+            subscription_params.put("days_until_due", 1);
 
 
         }
@@ -867,10 +863,22 @@ public class DataDashboardService {
                         countryCode = booking.getLocal_user().getCountry_code();
                     }
 
+                    String category = "";
+
+                    if (Objects.equals(type, "ACCOMMODATION")) {
+                        category = String.valueOf(booking.getRoom().getRoom_type());
+                    } else if (Objects.equals(type, "ATTRACTION")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TELECOM")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TOUR")) {
+                        category = booking.getActivity_name();
+                    }
+
                     String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
 
                     // Create [Date, Country] pair and add to the list
-                    List<Object> dateCountryPair = Arrays.asList(bookingDate, country);
+                    List<Object> dateCountryPair = Arrays.asList(bookingDate, country, category);
                     dateCountryList.add(dateCountryPair);
                 }
 
@@ -928,10 +936,22 @@ public class DataDashboardService {
                         countryCode = booking.getLocal_user().getCountry_code();
                     }
 
+                    String category = "";
+
+                    if (Objects.equals(type, "ACCOMMODATION")) {
+                        category = String.valueOf(booking.getRoom().getRoom_type());
+                    } else if (Objects.equals(type, "ATTRACTION")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TELECOM")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TOUR")) {
+                        category = booking.getActivity_name();
+                    }
+
                     String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
 
                     // Create [Date, Country, Revenue] triple and add to the list
-                    List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue);
+                    List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue, category);
                     dateCountryRevenueList.add(dateCountryRevenueTriple);
                 }
 
@@ -990,10 +1010,22 @@ public class DataDashboardService {
                         countryCode = booking.getLocal_user().getCountry_code();
                     }
 
+                    String category = "";
+
+                    if (Objects.equals(type, "ACCOMMODATION")) {
+                        category = String.valueOf(booking.getRoom().getRoom_type());
+                    } else if (Objects.equals(type, "ATTRACTION")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TELECOM")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TOUR")) {
+                        category = booking.getActivity_name();
+                    }
+
                     String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown"); // Default to "Unknown" if not found in the mapping
 
                     // Create [Date, Country, Revenue] triple and add to the list
-                    List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue);
+                    List<Object> dateCountryRevenueTriple = Arrays.asList(bookingDate, country, revenue, category);
                     dateCountryRevenueList.add(dateCountryRevenueTriple);
                 }
 
@@ -1262,6 +1294,18 @@ public class DataDashboardService {
                     }
 
                     String country = countryCodeToCountry.getOrDefault(countryCode, "Unknown");
+
+                    String category = "";
+
+                    if (Objects.equals(type, "ACCOMMODATION")) {
+                        category = String.valueOf(booking.getRoom().getRoom_type());
+                    } else if (Objects.equals(type, "ATTRACTION")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TELECOM")) {
+                        category = booking.getActivity_name();
+                    } else if (Objects.equals(type, "TOUR")) {
+                        category = booking.getActivity_name();
+                    }
 
                     // Check if the booking date is already in the map
                     if (bookingDataByDate.containsKey(bookingDate)) {
